@@ -1,12 +1,19 @@
-*.class
-
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
-
-# Package Files #
-*.jar
+*/.groovy
+.classpath
+*/.classpath
+.metadata
+.project
+.settings
+target
+*.log
 *.war
-*.ear
-
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
-hs_err_pid*
+Servers
+.DS_Store
+Thumbs.db
+nbactions.xml
+Version.java
+idrop-web/web-app/WEB-INF/classes/
+*.jar
+nb-configuration.xml
+**/bin
+/idrop-web/target-eclipse/
