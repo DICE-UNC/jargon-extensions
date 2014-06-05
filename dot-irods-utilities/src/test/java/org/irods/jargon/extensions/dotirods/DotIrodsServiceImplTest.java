@@ -47,7 +47,6 @@ public class DotIrodsServiceImplTest {
 	
 		DotIrodsService dotIrodsService = new DotIrodsServiceImpl(irodsFileSystem.getIRODSAccessObjectFactory(), irodsAccount);
 		dotIrodsService.findUserHomeCollection("obviously a bogus user");
-		
 	}
 	
 	
@@ -69,7 +68,91 @@ public class DotIrodsServiceImplTest {
 		Assert.assertEquals("didnt set path correctly", dotIrodsPath, dotIrodsCollection.getAbsolutePath());
 		Assert.assertTrue("did not set as home dir", dotIrodsCollection.isHomeDir());
 		Assert.assertNotNull("did not set collection", dotIrodsCollection.getCollection());
+	}
+	
+	@Test
+	public void deleteDotIrodsForUserHome()
+			throws Exception {
 		
+		IRODSAccount irodsAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		
+		String dotIrodsPath = MiscIRODSUtils.buildIRODSUserHomeForAccountUsingDefaultScheme(irodsAccount) + "/.irods";
+		IRODSFile dotIrodsFile = irodsFileSystem.getIRODSFileFactory(irodsAccount).instanceIRODSFile(dotIrodsPath);
+		dotIrodsFile.delete();
+		dotIrodsFile.mkdirs();
+		
+		DotIrodsService dotIrodsService = new DotIrodsServiceImpl(irodsFileSystem.getIRODSAccessObjectFactory(), irodsAccount);
+		dotIrodsService.deleteDotIrodsForUserHome(irodsAccount.getUserName());
+		dotIrodsFile = irodsFileSystem.getIRODSFileFactory(irodsAccount).instanceIRODSFile(dotIrodsPath);
+		Assert.assertFalse("file not deleted", dotIrodsFile.exists());
+		
+	}
+	
+	@Test
+	public void deleteDotIrodsFileAtPath()
+			throws Exception {
+		
+		String testSubdir = "deleteDotIrodsFileAtPath";
+		String targetIrodsCollection = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
+								+ testSubdir);
+		
+		IRODSAccount irodsAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		
+		String dotIrodsPath = targetIrodsCollection + "/.irods";
+		IRODSFile dotIrodsFile = irodsFileSystem.getIRODSFileFactory(irodsAccount).instanceIRODSFile(dotIrodsPath);
+		dotIrodsFile.delete();
+		dotIrodsFile.mkdirs();
+		
+		DotIrodsService dotIrodsService = new DotIrodsServiceImpl(irodsFileSystem.getIRODSAccessObjectFactory(), irodsAccount);
+		dotIrodsService.deleteDotIrodsFileAtPath(dotIrodsPath);
+		dotIrodsFile = irodsFileSystem.getIRODSFileFactory(irodsAccount).instanceIRODSFile(dotIrodsPath);
+		Assert.assertFalse("file not deleted", dotIrodsFile.exists());
+		
+	}
+	
+	@Test
+	public void createDotIrodsForUserHome()
+			throws Exception {
+		
+		IRODSAccount irodsAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		
+		String dotIrodsPath = MiscIRODSUtils.buildIRODSUserHomeForAccountUsingDefaultScheme(irodsAccount) + "/.irods";
+		IRODSFile dotIrodsFile = irodsFileSystem.getIRODSFileFactory(irodsAccount).instanceIRODSFile(dotIrodsPath);
+		dotIrodsFile.delete();
+		dotIrodsFile.mkdirs();
+		
+		DotIrodsService dotIrodsService = new DotIrodsServiceImpl(irodsFileSystem.getIRODSAccessObjectFactory(), irodsAccount);
+		dotIrodsService.createDotIrodsForUserHome(irodsAccount.getUserName());
+		dotIrodsFile = irodsFileSystem.getIRODSFileFactory(irodsAccount).instanceIRODSFile(dotIrodsPath);
+		Assert.assertTrue("file not created", dotIrodsFile.exists());	
+	}
+	
+	@Test
+	public void createDotIrodsAtPath()
+			throws Exception {
+		
+		String testSubdir = "createDotIrodsAtPath";
+		String targetIrodsCollection = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
+								+ testSubdir);
+		
+		IRODSAccount irodsAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		
+		IRODSFile dotIrodsFile = irodsFileSystem.getIRODSFileFactory(irodsAccount).instanceIRODSFile(targetIrodsCollection);
+		dotIrodsFile.delete();
+		dotIrodsFile.mkdirs();
+		
+		DotIrodsService dotIrodsService = new DotIrodsServiceImpl(irodsFileSystem.getIRODSAccessObjectFactory(), irodsAccount);
+		dotIrodsService.createDotIrodsUnderParent(targetIrodsCollection);
+		dotIrodsFile = irodsFileSystem.getIRODSFileFactory(irodsAccount).instanceIRODSFile(targetIrodsCollection + "/" + DotIrodsConstants.DOT_IRODS_DIR);
+		Assert.assertTrue("file not created", dotIrodsFile.exists());
 		
 	}
 	

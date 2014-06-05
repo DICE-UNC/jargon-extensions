@@ -6,7 +6,6 @@ import org.irods.jargon.core.exception.JargonException;
 /**
  * Interface for service to discover and manipulate .irods collections
  * @author Mike Conway - DICE
- *
  */
 public interface DotIrodsService {
 
@@ -34,5 +33,39 @@ public interface DotIrodsService {
 	public abstract DotIrodsCollection retrieveDotIrodsAtPath(
 			String irodsAbsolutePath, boolean homeDir)
 			throws FileNotFoundException, JargonException;
+
+	/**
+	 * Delete the .irods collection for the user home dir
+	 * @param userName <code>String</code> user name that will be used to find the home directory
+	 * @throws JargonException
+	 */
+	public abstract void deleteDotIrodsForUserHome(final String userName)
+			throws JargonException;
+
+	/**
+	 * Delete the .irods collection at the given absolute path
+	 * @param irodsAbsolutePath <code>String</code> with the absolute path to a .irods collection
+	 * @throws JargonException
+	 */
+	public abstract void deleteDotIrodsFileAtPath(final String irodsAbsolutePath)
+			throws JargonException;
+
+	/**
+	 * Create a .irods collection in the user home dir
+	 * @param userName <code>String</code> user name that will be used to find the home directory
+	 * @throws JargonException
+	 */
+	public abstract void createDotIrodsForUserHome(final String userName)
+			throws JargonException;
+
+	/**
+	 * Create a .irods directory under the given parent path
+	 * @param irodsAbsolutePathToParentUnderWhichDotIrodsWillBeCreated <code>String</code> absolute path to the parent collection 
+	 * under which the .irods collection will be created
+	 * @throws JargonException
+	 */
+	public abstract void createDotIrodsUnderParent(final String irodsAbsolutePathToParentUnderWhichDotIrodsWillBeCreated)
+			throws JargonException;
+
 
 }
