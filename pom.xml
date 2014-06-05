@@ -1,16 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.irods</groupId>
-    <artifactId>idrop</artifactId>
+    <groupId>org.irods.jargon</groupId>
+    <artifactId>jargon-extensions</artifactId>
     <packaging>pom</packaging>
-    <version>2.0.1-SNAPSHOT</version>
+    <version>3.3.6-SNAPSHOT</version>
     <name>jargon-extensions</name>
     <description>Jargon Extensions - higher level general services built on top of jargon core to support indexing and general interface supporting abstractions</description>
     <url>https://github.com/DICE-UNC/jargon-extensions</url>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jargon.version>3.3.6-SNAPSHOT</jargon.version>  
-      
     </properties>
     <issueManagement>
         <system>GitHub</system>
@@ -306,4 +306,7 @@
         </profile>
     </profiles>
 
+  <modules>
+    <module>dot-irods-utilities</module>
+  </modules>
 </project>
