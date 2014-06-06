@@ -25,14 +25,14 @@ import org.slf4j.LoggerFactory;
  *
  * @author Mike Conway - DICE
  */
-public class DotIrodsServiceImpl extends AbstractJargonService implements DotIrodsService {
+public class DotIrodsServiceImpl extends AbstractJargonService implements
+		DotIrodsService {
 
 	private final CollectionAO collectionAO;
 
 	public static final Logger log = LoggerFactory
 			.getLogger(DotIrodsServiceImpl.class);
-	
-	
+
 	private String computeHomeDirPathForDotIrodsFile(final String userName) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(MiscIRODSUtils
@@ -42,20 +42,25 @@ public class DotIrodsServiceImpl extends AbstractJargonService implements DotIro
 		sb.append(DotIrodsConstants.DOT_IRODS_DIR);
 		return sb.toString();
 	}
-	
-	private String computeDotIrodsPathUnderParent(final String irodsAbsolutePathToParent) {
+
+	private String computeDotIrodsPathUnderParent(
+			final String irodsAbsolutePathToParent) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(irodsAbsolutePathToParent);
 		sb.append("/");
 		sb.append(DotIrodsConstants.DOT_IRODS_DIR);
 		return sb.toString();
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.irods.jargon.extensions.dotirods.DotIrodsService#createDotIrodsForUserHome(java.lang.String)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.irods.jargon.extensions.dotirods.DotIrodsService#
+	 * createDotIrodsForUserHome(java.lang.String)
 	 */
 	@Override
-	public void createDotIrodsForUserHome(final String userName) throws JargonException {
+	public void createDotIrodsForUserHome(final String userName)
+			throws JargonException {
 		log.info("createDotIrodsForUserHome()");
 
 		if (userName == null || userName.isEmpty()) {
@@ -64,20 +69,26 @@ public class DotIrodsServiceImpl extends AbstractJargonService implements DotIro
 
 		log.info("userName:{}", userName);
 
-		String homeDirPath =computeHomeDirPathForDotIrodsFile(userName);
-		
+		String homeDirPath = computeHomeDirPathForDotIrodsFile(userName);
+
 		log.info("home dir computed to be:{}", homeDirPath);
-		IRODSFile dotIrodsFile = this.getIrodsAccessObjectFactory().getIRODSFileFactory(getIrodsAccount()).instanceIRODSFile(homeDirPath);
+		IRODSFile dotIrodsFile = this.getIrodsAccessObjectFactory()
+				.getIRODSFileFactory(getIrodsAccount())
+				.instanceIRODSFile(homeDirPath);
 		dotIrodsFile.mkdirs();
 		log.info("created");
-		
+
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.irods.jargon.extensions.dotirods.DotIrodsService#deleteDotIrodsForUserHome(java.lang.String)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.irods.jargon.extensions.dotirods.DotIrodsService#
+	 * deleteDotIrodsForUserHome(java.lang.String)
 	 */
 	@Override
-	public void deleteDotIrodsForUserHome(final String userName) throws JargonException {
+	public void deleteDotIrodsForUserHome(final String userName)
+			throws JargonException {
 		log.info("deleteDotIrodsForUserHome()");
 
 		if (userName == null || userName.isEmpty()) {
@@ -86,35 +97,48 @@ public class DotIrodsServiceImpl extends AbstractJargonService implements DotIro
 
 		log.info("userName:{}", userName);
 
-		String homeDirPath =computeHomeDirPathForDotIrodsFile(userName);
-		
+		String homeDirPath = computeHomeDirPathForDotIrodsFile(userName);
+
 		log.info("home dir computed to be:{}", homeDirPath);
-		IRODSFile dotIrodsFile = this.getIrodsAccessObjectFactory().getIRODSFileFactory(getIrodsAccount()).instanceIRODSFile(homeDirPath);
+		IRODSFile dotIrodsFile = this.getIrodsAccessObjectFactory()
+				.getIRODSFileFactory(getIrodsAccount())
+				.instanceIRODSFile(homeDirPath);
 		dotIrodsFile.deleteWithForceOption();
 		log.info("deleted");
-		
+
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.irods.jargon.extensions.dotirods.DotIrodsService#deleteDotIrodsFileAtPath(java.lang.String)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.irods.jargon.extensions.dotirods.DotIrodsService#deleteDotIrodsFileAtPath
+	 * (java.lang.String)
 	 */
 	@Override
-	public void deleteDotIrodsFileAtPath(final String irodsAbsolutePath) throws JargonException {
+	public void deleteDotIrodsFileAtPath(final String irodsAbsolutePath)
+			throws JargonException {
 		log.info("deleteDotIrodsFileAtPath()");
 		if (irodsAbsolutePath == null || irodsAbsolutePath.isEmpty()) {
-			throw new IllegalArgumentException("null or empty irodsAbsolutePath");
+			throw new IllegalArgumentException(
+					"null or empty irodsAbsolutePath");
 		}
-		
+
 		log.info("irodsAbsolutePath:{}", irodsAbsolutePath);
-		IRODSFile dotIrodsFile = this.getIrodsAccessObjectFactory().getIRODSFileFactory(getIrodsAccount()).instanceIRODSFile(irodsAbsolutePath);
+		IRODSFile dotIrodsFile = this.getIrodsAccessObjectFactory()
+				.getIRODSFileFactory(getIrodsAccount())
+				.instanceIRODSFile(irodsAbsolutePath);
 		dotIrodsFile.deleteWithForceOption();
 		log.info("deleted");
 	}
 
 	/**
 	 * Constructor
-	 * @param irodsAccessObjectFactory {@link IRODSAccessObjectFactory} for obtaining service objects
-	 * @param irodsAccount {@link IRODSAccount} with logged in identity
+	 * 
+	 * @param irodsAccessObjectFactory
+	 *            {@link IRODSAccessObjectFactory} for obtaining service objects
+	 * @param irodsAccount
+	 *            {@link IRODSAccount} with logged in identity
 	 */
 	public DotIrodsServiceImpl(
 			final IRODSAccessObjectFactory irodsAccessObjectFactory,
@@ -129,8 +153,12 @@ public class DotIrodsServiceImpl extends AbstractJargonService implements DotIro
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.irods.jargon.extensions.dotirods.DotIrodsService#findUserHomeCollection(java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.irods.jargon.extensions.dotirods.DotIrodsService#findUserHomeCollection
+	 * (java.lang.String)
 	 */
 	@Override
 	public DotIrodsCollection findUserHomeCollection(final String userName)
@@ -155,8 +183,34 @@ public class DotIrodsServiceImpl extends AbstractJargonService implements DotIro
 
 	}
 
-	/* (non-Javadoc)
-	 * @see org.irods.jargon.extensions.dotirods.DotIrodsService#retrieveDotIrodsAtPath(java.lang.String, boolean)
+	public DotIrodsCollection findOrCreateUserHomeCollection(
+			final String userName) throws JargonException {
+
+		log.info("findOrCreateUserHomeCollection()");
+
+		if (userName == null || userName.isEmpty()) {
+			throw new IllegalArgumentException("null or empty userName");
+		}
+
+		log.info("userName:{}", userName);
+
+		try {
+			return findUserHomeCollection(userName);
+		} catch (FileNotFoundException dnf) {
+			log.info("didn't find home, create one");
+			createDotIrodsForUserHome(userName);
+			return findUserHomeCollection(userName);
+
+		}
+
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.irods.jargon.extensions.dotirods.DotIrodsService#retrieveDotIrodsAtPath
+	 * (java.lang.String, boolean)
 	 */
 	@Override
 	public DotIrodsCollection retrieveDotIrodsAtPath(
@@ -179,25 +233,37 @@ public class DotIrodsServiceImpl extends AbstractJargonService implements DotIro
 		log.info("found dotIrodsCollection:{}", dotIrodsCollection);
 		return dotIrodsCollection;
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.irods.jargon.extensions.dotirods.DotIrodsService#createDotIrodsUnderParent(java.lang.String)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.irods.jargon.extensions.dotirods.DotIrodsService#
+	 * createDotIrodsUnderParent(java.lang.String)
 	 */
 	@Override
-	public void createDotIrodsUnderParent(final String irodsAbsolutePathToParentUnderWhichDotIrodsWillBeCreated) throws JargonException {
+	public void createDotIrodsUnderParent(
+			final String irodsAbsolutePathToParentUnderWhichDotIrodsWillBeCreated)
+			throws JargonException {
 		log.info("createDotIrodsUnderParent()");
 
-		if (irodsAbsolutePathToParentUnderWhichDotIrodsWillBeCreated == null || irodsAbsolutePathToParentUnderWhichDotIrodsWillBeCreated.isEmpty()) {
-			throw new IllegalArgumentException("null or empty irodsAbsolutePathToParentUnderWhichDotIrodsWillBeCreated");
+		if (irodsAbsolutePathToParentUnderWhichDotIrodsWillBeCreated == null
+				|| irodsAbsolutePathToParentUnderWhichDotIrodsWillBeCreated
+						.isEmpty()) {
+			throw new IllegalArgumentException(
+					"null or empty irodsAbsolutePathToParentUnderWhichDotIrodsWillBeCreated");
 		}
 
-		log.info("irodsAbsolutePathToParentUnderWhichDotIrodsWillBeCreated:{}", irodsAbsolutePathToParentUnderWhichDotIrodsWillBeCreated);
-		String dotIrodsPath = this.computeDotIrodsPathUnderParent(irodsAbsolutePathToParentUnderWhichDotIrodsWillBeCreated);
+		log.info("irodsAbsolutePathToParentUnderWhichDotIrodsWillBeCreated:{}",
+				irodsAbsolutePathToParentUnderWhichDotIrodsWillBeCreated);
+		String dotIrodsPath = this
+				.computeDotIrodsPathUnderParent(irodsAbsolutePathToParentUnderWhichDotIrodsWillBeCreated);
 		log.info("dotIrodsPath computed to be:{}", dotIrodsPath);
-		IRODSFile dotIrodsFile = this.getIrodsAccessObjectFactory().getIRODSFileFactory(getIrodsAccount()).instanceIRODSFile(dotIrodsPath);
+		IRODSFile dotIrodsFile = this.getIrodsAccessObjectFactory()
+				.getIRODSFileFactory(getIrodsAccount())
+				.instanceIRODSFile(dotIrodsPath);
 		dotIrodsFile.mkdirs();
 		log.info("created");
-		
+
 	}
 
 }

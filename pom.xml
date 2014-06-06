@@ -308,5 +308,6 @@
 
   <modules>
     <module>dot-irods-utilities</module>
+    <module>virtual-collections</module>
   </modules>
 </project>
