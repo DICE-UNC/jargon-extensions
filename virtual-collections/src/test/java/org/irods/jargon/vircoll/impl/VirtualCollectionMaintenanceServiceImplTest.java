@@ -1,0 +1,101 @@
+package org.irods.jargon.vircoll.impl;
+
+import java.util.Properties;
+
+import junit.framework.Assert;
+
+import org.irods.jargon.core.connection.IRODSAccount;
+import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
+import org.irods.jargon.core.pub.IRODSFileSystem;
+import org.irods.jargon.core.query.PagingAwareCollectionListing.PagingStyle;
+import org.irods.jargon.testutils.TestingPropertiesHelper;
+import org.irods.jargon.vircoll.VirtualCollectionMaintenanceService;
+import org.irods.jargon.vircoll.types.ConfigurableVirtualCollection;
+import org.junit.After;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.mockito.Mockito;
+
+public class VirtualCollectionMaintenanceServiceImplTest {
+
+	private static Properties testingProperties = new Properties();
+	private static TestingPropertiesHelper testingPropertiesHelper = new TestingPropertiesHelper();
+	private static IRODSFileSystem irodsFileSystem;
+	public static final String IRODS_TEST_SUBDIR_PATH = "VirtualCollectionMaintenanceServiceImplTest";
+	private static org.irods.jargon.testutils.IRODSTestSetupUtilities irodsTestSetupUtilities = null;
+
+	@BeforeClass
+	public static void setUpBeforeClass() throws Exception {
+		TestingPropertiesHelper testingPropertiesLoader = new TestingPropertiesHelper();
+		testingProperties = testingPropertiesLoader.getTestProperties();
+		irodsFileSystem = IRODSFileSystem.instance();
+		irodsTestSetupUtilities = new org.irods.jargon.testutils.IRODSTestSetupUtilities();
+		irodsTestSetupUtilities.clearIrodsScratchDirectory();
+		irodsTestSetupUtilities.initializeIrodsScratchDirectory();
+		irodsTestSetupUtilities
+				.initializeDirectoryForTest(IRODS_TEST_SUBDIR_PATH);
+	}
+
+	@After
+	public void tearDown() throws Exception {
+		irodsFileSystem.closeAndEatExceptions();
+	}
+
+	@Test
+	public void retrieveVirtualCollectionFromFile() throws Exception {
+
+		IRODSAccount irodsAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+
+		String vcName = "retrieveVirtualCollectionFromFile";
+
+		ConfigurableVirtualCollection configurableVirtualCollection = new ConfigurableVirtualCollection();
+		configurableVirtualCollection.setDescription("description");
+		configurableVirtualCollection.setI18Description("i18ndescription");
+		configurableVirtualCollection.setI18icon("i18icon");
+		configurableVirtualCollection.setI18Name("i18name");
+		configurableVirtualCollection.setPagingStyle(PagingStyle.MIXED);
+		configurableVirtualCollection.setUniqueName(vcName);
+		configurableVirtualCollection.getParameters().put("test", "hello");
+
+		VirtualCollectionMaintenanceService virtualCollectionMaintenanceService = new VirtualCollectionMaintenanceServiceImpl(
+				irodsFileSystem.getIRODSAccessObjectFactory(), irodsAccount);
+
+		virtualCollectionMaintenanceService
+				.addVirtualCollectionToUserCollection(configurableVirtualCollection);
+
+		ConfigurableVirtualCollection actual = virtualCollectionMaintenanceService
+				.retrieveVirtualCollectionFromUserCollection(
+						irodsAccount.getUserName(), vcName);
+
+		Assert.assertNotNull("null vc returned", actual);
+
+	}
+
+	@Test
+	public void serializeVirtualCollectionToJson() throws Exception {
+		ConfigurableVirtualCollection configurableVirtualCollection = new ConfigurableVirtualCollection();
+		configurableVirtualCollection.setDescription("description");
+		configurableVirtualCollection.setI18Description("i18ndescription");
+		configurableVirtualCollection.setI18icon("i18icon");
+		configurableVirtualCollection.setI18Name("i18name");
+		configurableVirtualCollection.setPagingStyle(PagingStyle.MIXED);
+		configurableVirtualCollection.setUniqueName("sparql1");
+		configurableVirtualCollection.getParameters().put("test", "hello");
+
+		IRODSAccessObjectFactory irodsAccessObjectFactory = Mockito
+				.mock(IRODSAccessObjectFactory.class);
+		IRODSAccount irodsAccount = TestingPropertiesHelper
+				.buildDummyIrodsAccount();
+
+		VirtualCollectionMaintenanceService virtualCollectionMaintenanceService = new VirtualCollectionMaintenanceServiceImpl(
+				irodsAccessObjectFactory, irodsAccount);
+
+		String json = virtualCollectionMaintenanceService
+				.serializeVirtualCollectionToJson(configurableVirtualCollection);
+		Assert.assertNotNull("null json from service", json);
+		Assert.assertFalse("empty json", json.isEmpty());
+
+	}
+
+}

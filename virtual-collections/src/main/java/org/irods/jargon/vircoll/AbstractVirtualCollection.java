@@ -14,9 +14,9 @@ import org.irods.jargon.core.query.PagingAwareCollectionListing.PagingStyle;
  * <p/>
  * The function of a virtual collection is to break away from reliance on a
  * hierarchical file tree as the sole arrangement of collections.
- *
+ * 
  * @author Mike Conway - DICE
- *
+ * 
  */
 public abstract class AbstractVirtualCollection {
 
@@ -24,7 +24,7 @@ public abstract class AbstractVirtualCollection {
 	 * The style of paging for this collection
 	 * 
 	 * @author Mike Conway - DICE
-	 *
+	 * 
 	 */
 
 	public static final String DEFAULT_ICON_KEY = "virtual.collection.default.icon";
@@ -42,12 +42,6 @@ public abstract class AbstractVirtualCollection {
 	 * Plain language descripton
 	 */
 	private String description = "Collection";
-
-	/**
-	 * TODO: extract to a readable interface? iRODS absolute path to the
-	 * definition for this virtual collection
-	 */
-	private String sourcePath = "";
 
 	/**
 	 * i18n selector that can be used to name this collection
@@ -78,14 +72,6 @@ public abstract class AbstractVirtualCollection {
 
 	public void setDescription(final String description) {
 		this.description = description;
-	}
-
-	public String getSourcePath() {
-		return sourcePath;
-	}
-
-	public void setSourcePath(final String sourcePath) {
-		this.sourcePath = sourcePath;
 	}
 
 	public String getI18Name() {

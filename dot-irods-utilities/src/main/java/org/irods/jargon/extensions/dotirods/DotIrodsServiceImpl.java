@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
  * Specific implementations of .irods collections will use this service to
  * locate and maintain the parent configurations. Examples include virtual
  * collections and metadata template stores.
- *
+ * 
  * @author Mike Conway - DICE
  */
 public class DotIrodsServiceImpl extends AbstractJargonService implements
@@ -183,6 +183,13 @@ public class DotIrodsServiceImpl extends AbstractJargonService implements
 
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.irods.jargon.extensions.dotirods.DotIrodsService#
+	 * findOrCreateUserHomeCollection(java.lang.String)
+	 */
+	@Override
 	public DotIrodsCollection findOrCreateUserHomeCollection(
 			final String userName) throws JargonException {
 
@@ -200,9 +207,7 @@ public class DotIrodsServiceImpl extends AbstractJargonService implements
 			log.info("didn't find home, create one");
 			createDotIrodsForUserHome(userName);
 			return findUserHomeCollection(userName);
-
 		}
-
 	}
 
 	/*
