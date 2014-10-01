@@ -9,10 +9,11 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.irods.jargon.core.query.PagingAwareCollectionListing.PagingStyle;
+import org.irods.jargon.vircoll.impl.VirtualCollectionTypeEnum;
 
 /**
- * Abstract model of a virtual collection, which is an arbitrary source that can
- * be serialized into an iRODS file, and which produces an 'ils' like listing.
+ * Model of a virtual collection, which is an arbitrary source that can be
+ * serialized into an iRODS file, and which produces an 'ils' like listing.
  * <p/>
  * The function of a virtual collection is to break away from reliance on a
  * hierarchical file tree as the sole arrangement of collections.
@@ -20,7 +21,7 @@ import org.irods.jargon.core.query.PagingAwareCollectionListing.PagingStyle;
  * @author Mike Conway - DICE
  * 
  */
-public abstract class AbstractVirtualCollection {
+public class VirtualCollection {
 
 	/**
 	 * The style of paging for this collection
@@ -28,8 +29,12 @@ public abstract class AbstractVirtualCollection {
 	 * @author Mike Conway - DICE
 	 * 
 	 */
-
 	public static final String DEFAULT_ICON_KEY = "virtual.collection.default.icon";
+
+	/**
+	 * Enumarated type of this virtual collection
+	 */
+	public VirtualCollectionTypeEnum virtualCollectionTypeEnum;
 
 	/**
 	 * Map of optional parameters used in the operation of the virtual
@@ -44,7 +49,8 @@ public abstract class AbstractVirtualCollection {
 
 	/**
 	 * Unique name for this virtual collection, used when presenting the
-	 * collection in a listing
+	 * collection in a listing. If this VC is serializable to JSON, the unique
+	 * name will be the absolute path to the VC
 	 */
 	private String uniqueName = "Collection";
 
@@ -67,18 +73,6 @@ public abstract class AbstractVirtualCollection {
 	 * i18n selector that can be mapped to an icon depiction of this collection
 	 */
 	private String i18icon = DEFAULT_ICON_KEY;
-
-	/**
-	 * Fully qualified class name of an executor, which can run the given
-	 * virtual collection query to obtain results
-	 */
-	private String executorClass = null;
-
-	/**
-	 * Fully qualified class name of a serializer which can store and retrieve
-	 * the details of a virtual collection
-	 */
-	private String serializerClass = null;
 
 	public String getUniqueName() {
 		return uniqueName;
@@ -136,46 +130,25 @@ public abstract class AbstractVirtualCollection {
 		this.parameters = parameters;
 	}
 
-	/**
-	 * @return the executorClass
-	 */
-	public String getExecutorClass() {
-		return executorClass;
+	public VirtualCollectionTypeEnum getVirtualCollectionTypeEnum() {
+		return virtualCollectionTypeEnum;
 	}
 
-	/**
-	 * @param executorClass
-	 *            the executorClass to set
-	 */
-	public void setExecutorClass(String executorClass) {
-		this.executorClass = executorClass;
+	public void setVirtualCollectionTypeEnum(
+			VirtualCollectionTypeEnum virtualCollectionTypeEnum) {
+		this.virtualCollectionTypeEnum = virtualCollectionTypeEnum;
 	}
 
-	/**
-	 * @return the serializerClass
-	 */
-	public String getSerializerClass() {
-		return serializerClass;
-	}
-
-	/**
-	 * @param serializerClass
-	 *            the serializerClass to set
-	 */
-	public void setSerializerClass(String serializerClass) {
-		this.serializerClass = serializerClass;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
-		final int maxLen = 10;
+		final int maxLen = 4;
 		StringBuilder builder = new StringBuilder();
-		builder.append("AbstractVirtualCollection [");
+		builder.append("VirtualCollection [");
+		if (virtualCollectionTypeEnum != null) {
+			builder.append("virtualCollectionTypeEnum=");
+			builder.append(virtualCollectionTypeEnum);
+			builder.append(", ");
+		}
 		if (parameters != null) {
 			builder.append("parameters=");
 			builder.append(toString(parameters.entrySet(), maxLen));
@@ -209,16 +182,6 @@ public abstract class AbstractVirtualCollection {
 		if (i18icon != null) {
 			builder.append("i18icon=");
 			builder.append(i18icon);
-			builder.append(", ");
-		}
-		if (executorClass != null) {
-			builder.append("executorClass=");
-			builder.append(executorClass);
-			builder.append(", ");
-		}
-		if (serializerClass != null) {
-			builder.append("serializerClass=");
-			builder.append(serializerClass);
 		}
 		builder.append("]");
 		return builder.toString();

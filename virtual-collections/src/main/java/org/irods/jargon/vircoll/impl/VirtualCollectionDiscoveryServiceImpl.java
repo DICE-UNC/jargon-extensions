@@ -13,9 +13,11 @@ import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.core.service.AbstractJargonService;
 import org.irods.jargon.core.utils.MiscIRODSUtils;
-import org.irods.jargon.vircoll.AbstractVirtualCollection;
+import org.irods.jargon.extensions.dotirods.DotIrodsService;
+import org.irods.jargon.vircoll.VirtualCollection;
 import org.irods.jargon.vircoll.AbstractVirtualCollectionSerializer;
 import org.irods.jargon.vircoll.VirtualCollectionDiscoveryService;
+import org.irods.jargon.vircoll.VirtualCollectionFactory;
 import org.irods.jargon.vircoll.VirtualCollectionMarshalingException;
 import org.irods.jargon.vircoll.types.CollectionBasedVirtualCollection;
 import org.irods.jargon.vircoll.types.StarredFoldersVirtualCollection;
@@ -39,6 +41,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class VirtualCollectionDiscoveryServiceImpl extends
 		AbstractJargonService implements VirtualCollectionDiscoveryService {
+
+	/**
+	 * Settable factory for virtual collections
+	 */
+	private VirtualCollectionFactory virtualCollectionFactory;
+	private final ObjectMapper mapper = new ObjectMapper();
 
 	private static Logger log = LoggerFactory
 			.getLogger(VirtualCollectionDiscoveryServiceImpl.class);
@@ -69,20 +77,23 @@ public class VirtualCollectionDiscoveryServiceImpl extends
 	 * @throws VirtualCollectionMarshalingException
 	 */
 	public String stringRepresentationFromVirtualCollection(
-			final AbstractVirtualCollection abstractVirtualCollection)
+			final VirtualCollection abstractVirtualCollection)
 			throws VirtualCollectionMarshalingException {
 		log.info("stringRepresentationFromVirtualCollection()");
-		if (abstractVirtualCollection == null) {
-			throw new IllegalArgumentException("null abstractVirtualCollection");
-		}
 
-		AbstractVirtualCollectionSerializer serializerObject;
-		serializerObject = instantiateSerializerFromName(abstractVirtualCollection
-				.getSerializerClass());
-
-		log.info("...got serializer, parse JSON as that object type");
-		return serializerObject
-				.serializeToStringRepresentation(abstractVirtualCollection);
+		/*
+		 * if (abstractVirtualCollection == null) { throw new
+		 * IllegalArgumentException("null abstractVirtualCollection"); }
+		 * 
+		 * AbstractVirtualCollectionSerializer serializerObject;
+		 * serializerObject =
+		 * instantiateSerializerFromName(abstractVirtualCollection
+		 * .getSerializerClass());
+		 * 
+		 * log.info("...got serializer, parse JSON as that object type"); return
+		 * serializerObject
+		 * .serializeToStringRepresentation(abstractVirtualCollection);
+		 */return null;
 	}
 
 	/**
@@ -96,83 +107,44 @@ public class VirtualCollectionDiscoveryServiceImpl extends
 	 * @param stringRepresentation
 	 *            <code>String</code> with a representation of the virtual
 	 *            collection
-	 * @return {@link AbstractVirtualCollection}
+	 * @return {@link VirtualCollection}
 	 * @throws VirtualCollectionMarshalingException
 	 */
-	public AbstractVirtualCollection virtualCollectionFromStringRepresentation(
+	public VirtualCollection virtualCollectionFromStringRepresentation(
 			final String stringRepresentation)
 			throws VirtualCollectionMarshalingException {
 
-		log.info("virtualCollectionFromStringRepresentation()");
-		if (stringRepresentation == null || stringRepresentation.isEmpty()) {
-			throw new IllegalArgumentException(
-					"null or empty stringRepresentation");
-		}
+		/*
+		 * log.info("virtualCollectionFromStringRepresentation()"); if
+		 * (stringRepresentation == null || stringRepresentation.isEmpty()) {
+		 * throw new IllegalArgumentException(
+		 * "null or empty stringRepresentation"); }
+		 * 
+		 * log.info("..turning underlying JSON representation into a map...");
+		 * 
+		 * try {
+		 * 
+		 * @SuppressWarnings("unchecked") Map<String, Object> result = new
+		 * ObjectMapper().readValue( stringRepresentation, HashMap.class);
+		 * log.info("unmarshalled..."); String serializerClassName = (String)
+		 * result.get("serializerClass"); AbstractVirtualCollectionSerializer
+		 * serializerObject =
+		 * instantiateSerializerFromName(serializerClassName);
+		 * 
+		 * log.info("...got serializer, parse JSON as that object type"); return
+		 * serializerObject
+		 * .deserializeFromStringRepresentation(stringRepresentation);
+		 * 
+		 * } catch (JsonParseException e) { log.info("JsonParseException", e);
+		 * throw new VirtualCollectionMarshalingException(e); } catch
+		 * (JsonMappingException e) { log.info("JsonMappingException", e); throw
+		 * new VirtualCollectionMarshalingException(e); } catch (IOException e)
+		 * { log.info("IOException", e); throw new
+		 * VirtualCollectionMarshalingException(e); }
+		 */
 
-		log.info("..turning underlying JSON representation into a map...");
+		return null;
 
-		try {
-			@SuppressWarnings("unchecked")
-			Map<String, Object> result = new ObjectMapper().readValue(
-					stringRepresentation, HashMap.class);
-			log.info("unmarshalled...");
-			String serializerClassName = (String) result.get("serializerClass");
-			AbstractVirtualCollectionSerializer serializerObject = instantiateSerializerFromName(serializerClassName);
-
-			log.info("...got serializer, parse JSON as that object type");
-			return serializerObject
-					.deserializeFromStringRepresentation(stringRepresentation);
-
-		} catch (JsonParseException e) {
-			log.info("JsonParseException", e);
-			throw new VirtualCollectionMarshalingException(e);
-		} catch (JsonMappingException e) {
-			log.info("JsonMappingException", e);
-			throw new VirtualCollectionMarshalingException(e);
-		} catch (IOException e) {
-			log.info("IOException", e);
-			throw new VirtualCollectionMarshalingException(e);
-		}
-
-	}
-
-	/**
-	 * @param serializerClassName
-	 * @return
-	 * @throws VirtualCollectionMarshalingException
-	 * @throws InstantiationException
-	 * @throws IllegalAccessException
-	 * @throws ClassNotFoundException
-	 */
-	private AbstractVirtualCollectionSerializer instantiateSerializerFromName(
-			String serializerClassName)
-			throws VirtualCollectionMarshalingException {
-		if (serializerClassName == null || serializerClassName.isEmpty()) {
-			throw new VirtualCollectionMarshalingException(
-					"no serializerClass in the JSON description of the virtual collection");
-		}
-
-		Object serializerObject;
-		try {
-			serializerObject = Class.forName(serializerClassName).newInstance();
-		} catch (InstantiationException e) {
-			log.error("InstantiationException", e);
-			throw new VirtualCollectionMarshalingException(e);
-		} catch (IllegalAccessException e) {
-			log.error("IllegalAccessException", e);
-			throw new VirtualCollectionMarshalingException(e);
-		} catch (ClassNotFoundException e) {
-			log.error("ClassNotFoundException", e);
-			throw new VirtualCollectionMarshalingException(e);
-		}
-
-		if (!(serializerObject instanceof AbstractVirtualCollectionSerializer)) {
-			log.info("not a AbstractVirtualCollectionSerializer object");
-			throw new VirtualCollectionMarshalingException(
-					"serializer object not a virtual collection serializer");
-		}
-
-		return (AbstractVirtualCollectionSerializer) serializerObject;
 	}
 
 	/*
@@ -182,10 +154,10 @@ public class VirtualCollectionDiscoveryServiceImpl extends
 	 * listDefaultUserCollections()
 	 */
 	@Override
-	public List<AbstractVirtualCollection> listDefaultUserCollections() {
+	public List<VirtualCollection> listDefaultUserCollections() {
 		log.info("listDefaultUserCollections()");
 
-		List<AbstractVirtualCollection> virtualCollections = new ArrayList<AbstractVirtualCollection>();
+		List<VirtualCollection> virtualCollections = new ArrayList<VirtualCollection>();
 		// add root
 		virtualCollections
 				.add(new CollectionBasedVirtualCollection("root", "/"));
@@ -200,6 +172,15 @@ public class VirtualCollectionDiscoveryServiceImpl extends
 		log.info("done...");
 		return virtualCollections;
 
+	}
+
+	public VirtualCollectionFactory getVirtualCollectionFactory() {
+		return virtualCollectionFactory;
+	}
+
+	public void setVirtualCollectionFactory(
+			VirtualCollectionFactory virtualCollectionFactory) {
+		this.virtualCollectionFactory = virtualCollectionFactory;
 	}
 
 }

@@ -60,16 +60,17 @@ public class CollectionBasedVirtualCollectionExecutor extends
 
 		log.info("offset:{}", offset);
 
-		log.info("collection parent:{}", getCollection().getRootPath());
+		log.info("collection parent:{}", getVirtualCollection().getRootPath());
 
 		CollectionPagerAO collectionPager = getIrodsAccessObjectFactory()
 				.getCollectionPagerAO(getIrodsAccount());
-		return collectionPager.retrieveFirstPageUnderParent(getCollection()
-				.getRootPath());
+		return collectionPager
+				.retrieveFirstPageUnderParent(getVirtualCollection()
+						.getRootPath());
 	}
 
 	public String getCollectionParentAbsolutePath() {
-		return getCollection().getRootPath();
+		return getVirtualCollection().getRootPath();
 	}
 
 	/*
@@ -90,11 +91,11 @@ public class CollectionBasedVirtualCollectionExecutor extends
 		log.info("offset:{}", offset);
 		log.info("path:{}", path);
 
-		log.info("collection parent:{}", getCollection().getRootPath());
+		log.info("collection parent:{}", getVirtualCollection().getRootPath());
 		String myPath;
 		if (path.isEmpty()) {
-			myPath = getCollection().getRootPath();
-		} else if (path.indexOf(getCollection().getRootPath()) != 0) {
+			myPath = getVirtualCollection().getRootPath();
+		} else if (path.indexOf(getVirtualCollection().getRootPath()) != 0) {
 			log.error("my given path is not under the root path");
 			throw new JargonException(
 					"given path is not under root path of virtual collection");

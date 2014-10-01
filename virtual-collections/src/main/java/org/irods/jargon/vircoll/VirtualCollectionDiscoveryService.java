@@ -11,6 +11,6 @@ public interface VirtualCollectionDiscoveryService {
 	 *
 	 * @return
 	 */
-	public List<AbstractVirtualCollection> listDefaultUserCollections();
+	public List<VirtualCollection> listDefaultUserCollections();
 
 }

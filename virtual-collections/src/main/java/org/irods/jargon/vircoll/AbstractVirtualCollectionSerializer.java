@@ -25,11 +25,11 @@ public abstract class AbstractVirtualCollectionSerializer {
 	 * 
 	 * @param stringRepresentation
 	 *            <code>String</code> with the raw string representation
-	 * @return {@link AbstractVirtualCollection} that is deserialzied from the
+	 * @return {@link VirtualCollection} that is deserialzied from the
 	 *         string representation
 	 * @throws VirtualCollectionMarshalingException
 	 */
-	public abstract AbstractVirtualCollection deserializeFromStringRepresentation(
+	public abstract VirtualCollection deserializeFromStringRepresentation(
 			final String stringRepresentation)
 			throws VirtualCollectionMarshalingException;
 
@@ -38,12 +38,12 @@ public abstract class AbstractVirtualCollectionSerializer {
 	 * is via JSON.
 	 * 
 	 * @param abstractVirtualCollection
-	 *            {@link AbstractVirtualCollection}
+	 *            {@link VirtualCollection}
 	 * @return
 	 * @throws VirtualCollectionMarshalingException
 	 */
 	public abstract String serializeToStringRepresentation(
-			AbstractVirtualCollection abstractVirtualCollection)
+			VirtualCollection abstractVirtualCollection)
 			throws VirtualCollectionMarshalingException;
 
 }

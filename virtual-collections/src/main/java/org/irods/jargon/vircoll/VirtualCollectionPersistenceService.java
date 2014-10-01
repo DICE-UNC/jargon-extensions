@@ -3,7 +3,6 @@ package org.irods.jargon.vircoll;
 import org.irods.jargon.core.exception.DuplicateDataException;
 import org.irods.jargon.core.exception.FileNotFoundException;
 import org.irods.jargon.core.exception.JargonException;
-import org.irods.jargon.vircoll.types.ConfigurableVirtualCollection;
 
 /**
  * Interface for a service to maintain and modify virtual collection metadata
@@ -11,7 +10,7 @@ import org.irods.jargon.vircoll.types.ConfigurableVirtualCollection;
  * @author Mike Conway - DICE
  * 
  */
-public interface VirtualCollectionMaintenanceService {
+public interface VirtualCollectionPersistenceService {
 
 	/**
 	 * Add the given virtual collection, in a serialized form, to the user
@@ -25,7 +24,7 @@ public interface VirtualCollectionMaintenanceService {
 	 * @throws JargonException
 	 */
 	public abstract void addVirtualCollectionToUserCollection(
-			ConfigurableVirtualCollection configurableVirtualCollection)
+			VirtualCollection configurableVirtualCollection)
 			throws DuplicateDataException, JargonException;
 
 	/**
@@ -39,7 +38,7 @@ public interface VirtualCollectionMaintenanceService {
 	 * @throws VirtualCollectionException
 	 */
 	public abstract String serializeVirtualCollectionToJson(
-			ConfigurableVirtualCollection configurableVirtualCollection)
+			VirtualCollection configurableVirtualCollection)
 			throws VirtualCollectionException;
 
 	/**
@@ -53,11 +52,11 @@ public interface VirtualCollectionMaintenanceService {
 	 * @throws FileNotFoundException
 	 * @throws VirtualCollectionException
 	 */
-	public abstract ConfigurableVirtualCollection retrieveVirtualCollectionFromFile(
+	public abstract VirtualCollection retrieveVirtualCollectionFromFile(
 			final String virtualCollectionAbsolutePath)
 			throws FileNotFoundException, VirtualCollectionException;
 
-	public abstract ConfigurableVirtualCollection retrieveVirtualCollectionFromUserCollection(
+	public abstract VirtualCollection retrieveVirtualCollectionFromUserCollection(
 			final String userName, final String virtualCollectionName)
 			throws FileNotFoundException, VirtualCollectionException;
 

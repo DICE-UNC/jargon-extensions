@@ -4,7 +4,7 @@ import junit.framework.Assert;
 
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
-import org.irods.jargon.vircoll.VirtualCollectionExecutorFactory;
+import org.irods.jargon.vircoll.VirtualCollectionFactory;
 import org.irods.jargon.vircoll.types.CollectionBasedVirtualCollection;
 import org.irods.jargon.vircoll.types.CollectionBasedVirtualCollectionExecutor;
 import org.irods.jargon.vircoll.types.StarredFoldersVirtualCollection;
@@ -22,7 +22,7 @@ public class VirtualCollectionExecutorFactoryImplTest {
 		IRODSAccessObjectFactory irodsAccessObjectFactory = Mockito
 				.mock(IRODSAccessObjectFactory.class);
 
-		VirtualCollectionExecutorFactory factory = new VirtualCollectionExecutorFactoryImpl(
+		VirtualCollectionFactory factory = new VirtualCollectionFactoryImpl(
 				irodsAccessObjectFactory, irodsAccount);
 		CollectionBasedVirtualCollection collectionBasedVirtualCollection = new CollectionBasedVirtualCollection(
 				"blah", "blah");
@@ -40,7 +40,7 @@ public class VirtualCollectionExecutorFactoryImplTest {
 		IRODSAccessObjectFactory irodsAccessObjectFactory = Mockito
 				.mock(IRODSAccessObjectFactory.class);
 
-		VirtualCollectionExecutorFactory factory = new VirtualCollectionExecutorFactoryImpl(
+		VirtualCollectionFactory factory = new VirtualCollectionFactoryImpl(
 				irodsAccessObjectFactory, irodsAccount);
 		StarredFoldersVirtualCollection virtualCollection = new StarredFoldersVirtualCollection();
 		StarredFoldersVirtualCollectionExecutor actual = (StarredFoldersVirtualCollectionExecutor) factory

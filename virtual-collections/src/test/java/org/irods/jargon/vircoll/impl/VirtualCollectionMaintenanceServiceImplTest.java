@@ -9,7 +9,7 @@ import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.core.pub.IRODSFileSystem;
 import org.irods.jargon.core.query.PagingAwareCollectionListing.PagingStyle;
 import org.irods.jargon.testutils.TestingPropertiesHelper;
-import org.irods.jargon.vircoll.VirtualCollectionMaintenanceService;
+import org.irods.jargon.vircoll.VirtualCollectionPersistenceService;
 import org.irods.jargon.vircoll.types.ConfigurableVirtualCollection;
 import org.junit.After;
 import org.junit.BeforeClass;
@@ -60,7 +60,7 @@ public class VirtualCollectionMaintenanceServiceImplTest {
 		configurableVirtualCollection.setUniqueName(vcName);
 		configurableVirtualCollection.getParameters().put("test", "hello");
 
-		VirtualCollectionMaintenanceService virtualCollectionMaintenanceService = new VirtualCollectionMaintenanceServiceImpl(
+		VirtualCollectionPersistenceService virtualCollectionMaintenanceService = new VirtualCollectionPersistenceServiceImpl(
 				irodsFileSystem.getIRODSAccessObjectFactory(), irodsAccount);
 
 		virtualCollectionMaintenanceService
@@ -90,7 +90,7 @@ public class VirtualCollectionMaintenanceServiceImplTest {
 		IRODSAccount irodsAccount = TestingPropertiesHelper
 				.buildDummyIrodsAccount();
 
-		VirtualCollectionMaintenanceService virtualCollectionMaintenanceService = new VirtualCollectionMaintenanceServiceImpl(
+		VirtualCollectionPersistenceService virtualCollectionMaintenanceService = new VirtualCollectionPersistenceServiceImpl(
 				irodsAccessObjectFactory, irodsAccount);
 
 		String json = virtualCollectionMaintenanceService

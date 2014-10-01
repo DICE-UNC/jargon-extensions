@@ -18,10 +18,10 @@ import org.irods.jargon.core.service.AbstractJargonService;
 import org.irods.jargon.extensions.dotirods.DotIrodsCollection;
 import org.irods.jargon.extensions.dotirods.DotIrodsService;
 import org.irods.jargon.extensions.dotirods.DotIrodsServiceImpl;
+import org.irods.jargon.vircoll.VirtualCollection;
 import org.irods.jargon.vircoll.VirtualCollectionConstants;
 import org.irods.jargon.vircoll.VirtualCollectionException;
-import org.irods.jargon.vircoll.VirtualCollectionMaintenanceService;
-import org.irods.jargon.vircoll.types.ConfigurableVirtualCollection;
+import org.irods.jargon.vircoll.VirtualCollectionPersistenceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,13 +34,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author Mike Conway - DICE
  * 
  */
-public class VirtualCollectionMaintenanceServiceImpl extends
-		AbstractJargonService implements VirtualCollectionMaintenanceService {
+public class VirtualCollectionPersistenceServiceImpl extends
+		AbstractJargonService implements VirtualCollectionPersistenceService {
 
 	private final DotIrodsService dotIrodsService;
 
 	private static Logger log = LoggerFactory
-			.getLogger(VirtualCollectionMaintenanceServiceImpl.class);
+			.getLogger(VirtualCollectionPersistenceServiceImpl.class);
 
 	private final ObjectMapper mapper = new ObjectMapper();
 
@@ -52,7 +52,7 @@ public class VirtualCollectionMaintenanceServiceImpl extends
 	 * java.lang.String)
 	 */
 	@Override
-	public ConfigurableVirtualCollection retrieveVirtualCollectionFromUserCollection(
+	public VirtualCollection retrieveVirtualCollectionFromUserCollection(
 			final String userName, final String virtualCollectionName)
 			throws FileNotFoundException, VirtualCollectionException {
 
@@ -93,7 +93,7 @@ public class VirtualCollectionMaintenanceServiceImpl extends
 	 */
 	@Override
 	public void addVirtualCollectionToUserCollection(
-			final ConfigurableVirtualCollection configurableVirtualCollection)
+			final VirtualCollection configurableVirtualCollection)
 			throws DuplicateDataException, JargonException {
 
 		log.info("addVirtualCollectionToUserCollection()");
@@ -103,8 +103,8 @@ public class VirtualCollectionMaintenanceServiceImpl extends
 					"null configurableVirtualCollection");
 		}
 
-		String liveVirtualCollectionPath = createIfNecessaryAndReturnVirtualCollectionPathInUserHome(this
-				.getIrodsAccount().getUserName());
+		String liveVirtualCollectionPath = createIfNecessaryAndReturnVirtualCollectionPathInUserHome(getIrodsAccount()
+				.getUserName());
 
 		StringBuilder sb = new StringBuilder();
 		sb.append(liveVirtualCollectionPath);
@@ -112,9 +112,8 @@ public class VirtualCollectionMaintenanceServiceImpl extends
 		sb.append(configurableVirtualCollection.getUniqueName());
 		String absPathToVc = sb.toString();
 
-		IRODSFile vcFile = this.getIrodsAccessObjectFactory()
-				.getIRODSFileFactory(getIrodsAccount())
-				.instanceIRODSFile(absPathToVc);
+		IRODSFile vcFile = getIrodsAccessObjectFactory().getIRODSFileFactory(
+				getIrodsAccount()).instanceIRODSFile(absPathToVc);
 		if (vcFile.exists()) {
 			log.error("vc exists");
 			throw new DuplicateDataException(
@@ -125,7 +124,7 @@ public class VirtualCollectionMaintenanceServiceImpl extends
 
 		log.info("saving virtual collection to path:{}", absPathToVc);
 
-		Stream2StreamAO stream2StreamAO = this.getIrodsAccessObjectFactory()
+		Stream2StreamAO stream2StreamAO = getIrodsAccessObjectFactory()
 				.getStream2StreamAO(getIrodsAccount());
 		stream2StreamAO.streamBytesToIRODSFile(jsonForVc.getBytes(), vcFile);
 
@@ -140,7 +139,7 @@ public class VirtualCollectionMaintenanceServiceImpl extends
 	 * retrieveVirtualCollectionFromFile(java.lang.String)
 	 */
 	@Override
-	public ConfigurableVirtualCollection retrieveVirtualCollectionFromFile(
+	public VirtualCollection retrieveVirtualCollectionFromFile(
 			final String virtualCollectionAbsolutePath)
 			throws FileNotFoundException, VirtualCollectionException {
 
@@ -154,9 +153,9 @@ public class VirtualCollectionMaintenanceServiceImpl extends
 
 		IRODSFile virtualCollectionFile;
 		try {
-			virtualCollectionFile = this.getIrodsAccessObjectFactory()
-					.getIRODSFileFactory(getIrodsAccount())
-					.instanceIRODSFile(virtualCollectionAbsolutePath);
+			virtualCollectionFile = getIrodsAccessObjectFactory()
+					.getIRODSFileFactory(getIrodsAccount()).instanceIRODSFile(
+							virtualCollectionAbsolutePath);
 		} catch (JargonException e) {
 			log.error("exception getting virtual collection file", e);
 			throw new VirtualCollectionException(
@@ -170,13 +169,13 @@ public class VirtualCollectionMaintenanceServiceImpl extends
 		}
 
 		try {
-			InputStream irodsFileInputStream = new BufferedInputStream(this
-					.getIrodsAccessObjectFactory()
-					.getIRODSFileFactory(getIrodsAccount())
-					.instanceIRODSFileInputStream(virtualCollectionFile));
+			InputStream irodsFileInputStream = new BufferedInputStream(
+					getIrodsAccessObjectFactory().getIRODSFileFactory(
+							getIrodsAccount()).instanceIRODSFileInputStream(
+							virtualCollectionFile));
 
 			return mapper.readValue(irodsFileInputStream,
-					ConfigurableVirtualCollection.class);
+					VirtualCollection.class);
 		} catch (JsonProcessingException e) {
 			log.error("error writing virtual collection as string", e);
 			throw new VirtualCollectionException(
@@ -206,7 +205,7 @@ public class VirtualCollectionMaintenanceServiceImpl extends
 	 */
 	@Override
 	public String serializeVirtualCollectionToJson(
-			ConfigurableVirtualCollection configurableVirtualCollection)
+			final VirtualCollection configurableVirtualCollection)
 			throws VirtualCollectionException {
 
 		log.info("serializeVirtualCollectionToJson()");
@@ -229,7 +228,7 @@ public class VirtualCollectionMaintenanceServiceImpl extends
 
 	}
 
-	private String returnVirtualCollectionPathInUserHome(String userName)
+	private String returnVirtualCollectionPathInUserHome(final String userName)
 			throws FileNotFoundException, JargonException {
 
 		log.info("returnVirtualCollectionPathInUserHome()");
@@ -251,9 +250,9 @@ public class VirtualCollectionMaintenanceServiceImpl extends
 		String virtualCollectionsDir = sb.toString();
 		log.info("virtualCollectionsDir:{}", virtualCollectionsDir);
 
-		IRODSFile virtualCollectionFile = this.getIrodsAccessObjectFactory()
-				.getIRODSFileFactory(getIrodsAccount())
-				.instanceIRODSFile(virtualCollectionsDir);
+		IRODSFile virtualCollectionFile = getIrodsAccessObjectFactory()
+				.getIRODSFileFactory(getIrodsAccount()).instanceIRODSFile(
+						virtualCollectionsDir);
 
 		if (!virtualCollectionFile.exists()) {
 			throw new FileNotFoundException(
@@ -265,7 +264,7 @@ public class VirtualCollectionMaintenanceServiceImpl extends
 	}
 
 	private String createIfNecessaryAndReturnVirtualCollectionPathInUserHome(
-			String userName) throws JargonException {
+			final String userName) throws JargonException {
 
 		log.info("createIfNecessaryAndReturnVirtualCollectionPathInUserHome()");
 
@@ -286,9 +285,9 @@ public class VirtualCollectionMaintenanceServiceImpl extends
 		String virtualCollectionsDir = sb.toString();
 		log.info("virtualCollectionsDir:{}", virtualCollectionsDir);
 
-		IRODSFile virtualCollectionFile = this.getIrodsAccessObjectFactory()
-				.getIRODSFileFactory(getIrodsAccount())
-				.instanceIRODSFile(virtualCollectionsDir);
+		IRODSFile virtualCollectionFile = getIrodsAccessObjectFactory()
+				.getIRODSFileFactory(getIrodsAccount()).instanceIRODSFile(
+						virtualCollectionsDir);
 		virtualCollectionFile.mkdirs();
 
 		return virtualCollectionsDir;
@@ -299,12 +298,12 @@ public class VirtualCollectionMaintenanceServiceImpl extends
 	 * @param irodsAccessObjectFactory
 	 * @param irodsAccount
 	 */
-	public VirtualCollectionMaintenanceServiceImpl(
-			IRODSAccessObjectFactory irodsAccessObjectFactory,
-			IRODSAccount irodsAccount) {
+	public VirtualCollectionPersistenceServiceImpl(
+			final IRODSAccessObjectFactory irodsAccessObjectFactory,
+			final IRODSAccount irodsAccount) {
 		super(irodsAccessObjectFactory, irodsAccount);
-		this.dotIrodsService = new DotIrodsServiceImpl(
-				irodsAccessObjectFactory, irodsAccount);
+		dotIrodsService = new DotIrodsServiceImpl(irodsAccessObjectFactory,
+				irodsAccount);
 	}
 
 }

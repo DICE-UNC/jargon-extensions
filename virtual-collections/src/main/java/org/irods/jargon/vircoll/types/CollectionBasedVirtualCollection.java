@@ -4,7 +4,7 @@
 package org.irods.jargon.vircoll.types;
 
 import org.irods.jargon.core.query.PagingAwareCollectionListing.PagingStyle;
-import org.irods.jargon.vircoll.AbstractVirtualCollection;
+import org.irods.jargon.vircoll.VirtualCollection;
 
 /**
  * Basic definition of a virtual collection that is actually a collection from
@@ -13,7 +13,7 @@ import org.irods.jargon.vircoll.AbstractVirtualCollection;
  * @author Mike Conway - DICE
  * 
  */
-public class CollectionBasedVirtualCollection extends AbstractVirtualCollection {
+public class CollectionBasedVirtualCollection extends VirtualCollection {
 
 	public static final String DESCRIPTION_KEY_HOME = "virtual.collection.description.home";
 	public static final String DESCRIPTION_KEY_ROOT = "virtual.collection.description.root";
