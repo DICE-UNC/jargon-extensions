@@ -40,7 +40,7 @@ public abstract class AbstractVirtualCollection {
 	/**
 	 * Indicates the paging behavior of this collection
 	 */
-	private PagingStyle pagingStyle = PagingStyle.MIXED;
+	private PagingStyle pagingStyle = PagingStyle.CONTINUOUS;
 
 	/**
 	 * Unique name for this virtual collection, used when presenting the

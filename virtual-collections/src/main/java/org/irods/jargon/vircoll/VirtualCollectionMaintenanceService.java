@@ -58,7 +58,7 @@ public interface VirtualCollectionMaintenanceService {
 			throws FileNotFoundException, VirtualCollectionException;
 
 	public abstract ConfigurableVirtualCollection retrieveVirtualCollectionFromUserCollection(
-			final String userName, final String virtualCollectionName) throws FileNotFoundException,
-			VirtualCollectionException;
+			final String userName, final String virtualCollectionName)
+			throws FileNotFoundException, VirtualCollectionException;
 
 }

@@ -5,6 +5,7 @@ import junit.framework.Assert;
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.CollectionAndDataObjectListAndSearchAO;
+import org.irods.jargon.core.pub.CollectionPagerAO;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.core.query.CollectionAndDataObjectListingEntry;
 import org.irods.jargon.core.query.CollectionAndDataObjectListingEntry.ObjectType;
@@ -28,8 +29,8 @@ public class CollectionBasedVirtualCollectionTest {
 		CollectionBasedVirtualCollection virColl = new CollectionBasedVirtualCollection(
 				"blah", testPath);
 
-		CollectionAndDataObjectListAndSearchAO collectionAndDataObjectListAndSearchAO = Mockito
-				.mock(CollectionAndDataObjectListAndSearchAO.class);
+		CollectionPagerAO collectionPagerAO = Mockito
+				.mock(CollectionPagerAO.class);
 
 		PagingAwareCollectionListing listing = new PagingAwareCollectionListing();
 
@@ -52,15 +53,12 @@ public class CollectionBasedVirtualCollectionTest {
 
 		listing.getCollectionAndDataObjectListingEntries().add(entry);
 
-		Mockito.when(
-				collectionAndDataObjectListAndSearchAO
-						.listDataObjectsAndCollectionsUnderPathProducingPagingAwareCollectionListing(testPath))
+		Mockito.when(collectionPagerAO.retrieveFirstPageUnderParent(testPath))
 				.thenReturn(listing);
 
 		Mockito.when(
-				irodsAccessObjectFactory
-						.getCollectionAndDataObjectListAndSearchAO(irodsAccount))
-				.thenReturn(collectionAndDataObjectListAndSearchAO);
+				irodsAccessObjectFactory.getCollectionPagerAO(irodsAccount))
+				.thenReturn(collectionPagerAO);
 
 		CollectionBasedVirtualCollectionExecutor executor = new CollectionBasedVirtualCollectionExecutor(
 				virColl, irodsAccessObjectFactory, irodsAccount);
@@ -86,8 +84,8 @@ public class CollectionBasedVirtualCollectionTest {
 		CollectionBasedVirtualCollection virColl = new CollectionBasedVirtualCollection(
 				"home", testPath);
 
-		CollectionAndDataObjectListAndSearchAO collectionAndDataObjectListAndSearchAO = Mockito
-				.mock(CollectionAndDataObjectListAndSearchAO.class);
+		CollectionPagerAO collectionPagerAO = Mockito
+				.mock(CollectionPagerAO.class);
 
 		PagingAwareCollectionListing listing = new PagingAwareCollectionListing();
 
@@ -111,14 +109,12 @@ public class CollectionBasedVirtualCollectionTest {
 		listing.getCollectionAndDataObjectListingEntries().add(entry);
 
 		Mockito.when(
-				collectionAndDataObjectListAndSearchAO
-						.listDataObjectsAndCollectionsUnderPathProducingPagingAwareCollectionListing(subCollQuery))
+				collectionPagerAO.retrieveFirstPageUnderParent(subCollQuery))
 				.thenReturn(listing);
 
 		Mockito.when(
-				irodsAccessObjectFactory
-						.getCollectionAndDataObjectListAndSearchAO(irodsAccount))
-				.thenReturn(collectionAndDataObjectListAndSearchAO);
+				irodsAccessObjectFactory.getCollectionPagerAO(irodsAccount))
+				.thenReturn(collectionPagerAO);
 
 		CollectionBasedVirtualCollectionExecutor executor = new CollectionBasedVirtualCollectionExecutor(
 				virColl, irodsAccessObjectFactory, irodsAccount);
@@ -144,8 +140,8 @@ public class CollectionBasedVirtualCollectionTest {
 		CollectionBasedVirtualCollection virColl = new CollectionBasedVirtualCollection(
 				"home", testPath);
 
-		CollectionAndDataObjectListAndSearchAO collectionAndDataObjectListAndSearchAO = Mockito
-				.mock(CollectionAndDataObjectListAndSearchAO.class);
+		CollectionPagerAO collectionPagerAO = Mockito
+				.mock(CollectionPagerAO.class);
 
 		PagingAwareCollectionListing listing = new PagingAwareCollectionListing();
 
@@ -168,15 +164,12 @@ public class CollectionBasedVirtualCollectionTest {
 
 		listing.getCollectionAndDataObjectListingEntries().add(entry);
 
-		Mockito.when(
-				collectionAndDataObjectListAndSearchAO
-						.listDataObjectsAndCollectionsUnderPathProducingPagingAwareCollectionListing(testPath))
+		Mockito.when(collectionPagerAO.retrieveFirstPageUnderParent(testPath))
 				.thenReturn(listing);
 
 		Mockito.when(
-				irodsAccessObjectFactory
-						.getCollectionAndDataObjectListAndSearchAO(irodsAccount))
-				.thenReturn(collectionAndDataObjectListAndSearchAO);
+				irodsAccessObjectFactory.getCollectionPagerAO(irodsAccount))
+				.thenReturn(collectionPagerAO);
 
 		CollectionBasedVirtualCollectionExecutor executor = new CollectionBasedVirtualCollectionExecutor(
 				virColl, irodsAccessObjectFactory, irodsAccount);

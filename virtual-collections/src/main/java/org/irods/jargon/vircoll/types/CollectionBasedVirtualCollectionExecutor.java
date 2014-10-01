@@ -5,7 +5,7 @@ package org.irods.jargon.vircoll.types;
 
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.JargonException;
-import org.irods.jargon.core.pub.CollectionAndDataObjectListAndSearchAO;
+import org.irods.jargon.core.pub.CollectionPagerAO;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.core.query.PagingAwareCollectionListing;
 import org.irods.jargon.vircoll.AbstractVirtualCollectionExecutor;
@@ -62,11 +62,10 @@ public class CollectionBasedVirtualCollectionExecutor extends
 
 		log.info("collection parent:{}", getCollection().getRootPath());
 
-		CollectionAndDataObjectListAndSearchAO collectionAndDataObjectListAndSearchAO = getIrodsAccessObjectFactory()
-				.getCollectionAndDataObjectListAndSearchAO(getIrodsAccount());
-		return collectionAndDataObjectListAndSearchAO
-				.listDataObjectsAndCollectionsUnderPathProducingPagingAwareCollectionListing(getCollection()
-						.getRootPath());
+		CollectionPagerAO collectionPager = getIrodsAccessObjectFactory()
+				.getCollectionPagerAO(getIrodsAccount());
+		return collectionPager.retrieveFirstPageUnderParent(getCollection()
+				.getRootPath());
 	}
 
 	public String getCollectionParentAbsolutePath() {
@@ -103,10 +102,9 @@ public class CollectionBasedVirtualCollectionExecutor extends
 			myPath = path;
 		}
 
-		CollectionAndDataObjectListAndSearchAO collectionAndDataObjectListAndSearchAO = getIrodsAccessObjectFactory()
-				.getCollectionAndDataObjectListAndSearchAO(getIrodsAccount());
-		return collectionAndDataObjectListAndSearchAO
-				.listDataObjectsAndCollectionsUnderPathProducingPagingAwareCollectionListing(myPath);
+		CollectionPagerAO collectionPager = getIrodsAccessObjectFactory()
+				.getCollectionPagerAO(getIrodsAccount());
+		return collectionPager.retrieveFirstPageUnderParent(myPath);
 	}
 
 }
