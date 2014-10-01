@@ -8,9 +8,9 @@ import org.irods.jargon.vircoll.AbstractVirtualCollection;
 
 /**
  * Represents a collection of starred files and folders
- *
+ * 
  * @author Mike Conway - DICE
- *
+ * 
  */
 public class StarredFoldersVirtualCollection extends AbstractVirtualCollection {
 

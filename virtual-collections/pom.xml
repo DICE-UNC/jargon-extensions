@@ -13,7 +13,7 @@
 	<name>virtual-collections</name>
 
 	<dependencies>
-	<dependency>
+		<dependency>
 			<groupId>org.irods.jargon</groupId>
 			<artifactId>dot-irods-utilities</artifactId>
 			<version>${project.version}</version>
