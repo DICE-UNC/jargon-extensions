@@ -13,17 +13,18 @@ import org.irods.jargon.core.exception.JargonException;
 public interface VirtualCollectionFactory {
 
 	/**
-	 * Given some form of virtual collection, return the associated executor
+	 * Get the executor associated with this virtual collection
 	 * 
 	 * @param virtualCollection
-	 *            {@link VirtualCollection} subtype
-	 * @return associated {@link AbstractVirtualCollectionExecutor}
+	 *            {@link VirtualCollection} to be executed
+	 * @return {@link AbstractVirtualCollectionExecutor} subclass
 	 * @throws DataNotFoundException
+	 *             if the executor cannot be found
 	 * @throws JargonException
 	 */
 	@SuppressWarnings("rawtypes")
-	AbstractVirtualCollectionExecutor instanceExecutorBasedOnVirtualCollection(
-			final VirtualCollection virtualCollection)
-			throws DataNotFoundException, JargonException;
+	AbstractVirtualCollectionExecutor instanceExecutor(
+			VirtualCollection virtualCollection) throws DataNotFoundException,
+			JargonException;
 
 }

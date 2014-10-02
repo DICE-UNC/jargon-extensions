@@ -9,8 +9,8 @@ import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.core.pub.IRODSFileSystem;
 import org.irods.jargon.core.query.PagingAwareCollectionListing.PagingStyle;
 import org.irods.jargon.testutils.TestingPropertiesHelper;
+import org.irods.jargon.vircoll.VirtualCollection;
 import org.irods.jargon.vircoll.VirtualCollectionPersistenceService;
-import org.irods.jargon.vircoll.types.ConfigurableVirtualCollection;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -51,7 +51,7 @@ public class VirtualCollectionMaintenanceServiceImplTest {
 
 		String vcName = "retrieveVirtualCollectionFromFile";
 
-		ConfigurableVirtualCollection configurableVirtualCollection = new ConfigurableVirtualCollection();
+		VirtualCollection configurableVirtualCollection = new VirtualCollection();
 		configurableVirtualCollection.setDescription("description");
 		configurableVirtualCollection.setI18Description("i18ndescription");
 		configurableVirtualCollection.setI18icon("i18icon");
@@ -66,7 +66,7 @@ public class VirtualCollectionMaintenanceServiceImplTest {
 		virtualCollectionMaintenanceService
 				.addVirtualCollectionToUserCollection(configurableVirtualCollection);
 
-		ConfigurableVirtualCollection actual = virtualCollectionMaintenanceService
+		VirtualCollection actual = virtualCollectionMaintenanceService
 				.retrieveVirtualCollectionFromUserCollection(
 						irodsAccount.getUserName(), vcName);
 
@@ -76,7 +76,7 @@ public class VirtualCollectionMaintenanceServiceImplTest {
 
 	@Test
 	public void serializeVirtualCollectionToJson() throws Exception {
-		ConfigurableVirtualCollection configurableVirtualCollection = new ConfigurableVirtualCollection();
+		VirtualCollection configurableVirtualCollection = new VirtualCollection();
 		configurableVirtualCollection.setDescription("description");
 		configurableVirtualCollection.setI18Description("i18ndescription");
 		configurableVirtualCollection.setI18icon("i18icon");

@@ -40,6 +40,14 @@ public class VirtualCollectionFactoryImpl extends AbstractJargonService
 		super();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.irods.jargon.vircoll.VirtualCollectionFactory#instanceExecutor(org
+	 * .irods.jargon.vircoll.VirtualCollection)
+	 */
+	@Override
 	@SuppressWarnings("rawtypes")
 	public AbstractVirtualCollectionExecutor instanceExecutor(
 			VirtualCollection virtualCollection) throws DataNotFoundException,

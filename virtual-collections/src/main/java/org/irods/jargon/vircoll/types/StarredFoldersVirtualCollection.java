@@ -5,6 +5,7 @@ package org.irods.jargon.vircoll.types;
 
 import org.irods.jargon.core.query.PagingAwareCollectionListing.PagingStyle;
 import org.irods.jargon.vircoll.VirtualCollection;
+import org.irods.jargon.vircoll.impl.VirtualCollectionTypeEnum;
 
 /**
  * Represents a collection of starred files and folders
@@ -30,6 +31,7 @@ public class StarredFoldersVirtualCollection extends VirtualCollection {
 		setI18Description(DESCRIPTION_KEY);
 		setI18Name(NAME_KEY);
 		setPagingStyle(PagingStyle.CONTINUOUS);
+		this.setVirtualCollectionTypeEnum(VirtualCollectionTypeEnum.STARRED);
 
 	}
 }

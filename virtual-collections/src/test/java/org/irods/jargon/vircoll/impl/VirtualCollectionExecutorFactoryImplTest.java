@@ -27,7 +27,7 @@ public class VirtualCollectionExecutorFactoryImplTest {
 		CollectionBasedVirtualCollection collectionBasedVirtualCollection = new CollectionBasedVirtualCollection(
 				"blah", "blah");
 		CollectionBasedVirtualCollectionExecutor actual = (CollectionBasedVirtualCollectionExecutor) factory
-				.instanceExecutorBasedOnVirtualCollection(collectionBasedVirtualCollection);
+				.instanceExecutor(collectionBasedVirtualCollection);
 		Assert.assertNotNull(actual);
 
 	}
@@ -44,7 +44,7 @@ public class VirtualCollectionExecutorFactoryImplTest {
 				irodsAccessObjectFactory, irodsAccount);
 		StarredFoldersVirtualCollection virtualCollection = new StarredFoldersVirtualCollection();
 		StarredFoldersVirtualCollectionExecutor actual = (StarredFoldersVirtualCollectionExecutor) factory
-				.instanceExecutorBasedOnVirtualCollection(virtualCollection);
+				.instanceExecutor(virtualCollection);
 		Assert.assertNotNull(actual);
 
 	}

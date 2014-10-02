@@ -5,6 +5,7 @@ package org.irods.jargon.vircoll.types;
 
 import org.irods.jargon.core.query.PagingAwareCollectionListing.PagingStyle;
 import org.irods.jargon.vircoll.VirtualCollection;
+import org.irods.jargon.vircoll.impl.VirtualCollectionTypeEnum;
 
 /**
  * Basic definition of a virtual collection that is actually a collection from
@@ -46,6 +47,7 @@ public class CollectionBasedVirtualCollection extends VirtualCollection {
 		setDescription(DESCRIPTION);
 		setI18icon(DEFAULT_ICON_KEY);
 		setPagingStyle(PagingStyle.SPLIT_COLLECTIONS_AND_FILES);
+		this.setVirtualCollectionTypeEnum(VirtualCollectionTypeEnum.COLLECTION_BASED);
 
 	}
 
