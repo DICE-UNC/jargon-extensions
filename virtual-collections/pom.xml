@@ -11,7 +11,6 @@
 	<groupId>org.irods.jargon</groupId>
 	<artifactId>virtual-collections</artifactId>
 	<name>virtual-collections</name>
-
 	<dependencies>
 		<dependency>
 			<groupId>org.irods.jargon</groupId>
@@ -50,6 +49,12 @@
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>commons-httpclient</groupId>
+			<artifactId>commons-httpclient</artifactId>
+			<version>3.1</version>
+		</dependency>
+
 	</dependencies>
 	<description>Support for virtual collections, which represent alternative means of generating 'ils' listings based on any arbitrary query, rule, or procedure.</description>
 </project>

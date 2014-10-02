@@ -74,6 +74,16 @@ public class VirtualCollection {
 	 */
 	private String i18icon = DEFAULT_ICON_KEY;
 
+	/**
+	 * Generic body representing the query itself
+	 */
+	private String queryBody = "";
+
+	/**
+	 * Can this virtual collection be persisted in iRODS?
+	 */
+	private boolean canPersist = false;
+
 	public String getUniqueName() {
 		return uniqueName;
 	}
@@ -139,9 +149,14 @@ public class VirtualCollection {
 		this.virtualCollectionTypeEnum = virtualCollectionTypeEnum;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#toString()
+	 */
 	@Override
 	public String toString() {
-		final int maxLen = 4;
+		final int maxLen = 5;
 		StringBuilder builder = new StringBuilder();
 		builder.append("VirtualCollection [");
 		if (virtualCollectionTypeEnum != null) {
@@ -182,7 +197,15 @@ public class VirtualCollection {
 		if (i18icon != null) {
 			builder.append("i18icon=");
 			builder.append(i18icon);
+			builder.append(", ");
 		}
+		if (queryBody != null) {
+			builder.append("queryBody=");
+			builder.append(queryBody);
+			builder.append(", ");
+		}
+		builder.append("canPersist=");
+		builder.append(canPersist);
 		builder.append("]");
 		return builder.toString();
 	}
@@ -200,6 +223,36 @@ public class VirtualCollection {
 		}
 		builder.append("]");
 		return builder.toString();
+	}
+
+	/**
+	 * @return the queryBody
+	 */
+	public String getQueryBody() {
+		return queryBody;
+	}
+
+	/**
+	 * @param queryBody
+	 *            the queryBody to set
+	 */
+	public void setQueryBody(String queryBody) {
+		this.queryBody = queryBody;
+	}
+
+	/**
+	 * @return the canPersist
+	 */
+	public boolean isCanPersist() {
+		return canPersist;
+	}
+
+	/**
+	 * @param canPersist
+	 *            the canPersist to set
+	 */
+	public void setCanPersist(boolean canPersist) {
+		this.canPersist = canPersist;
 	}
 
 }
