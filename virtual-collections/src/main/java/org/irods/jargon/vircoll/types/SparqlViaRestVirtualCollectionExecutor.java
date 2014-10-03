@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.io.IOUtils;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.query.PagingAwareCollectionListing;
 import org.irods.jargon.vircoll.AbstractVirtualCollectionExecutor;
@@ -112,7 +111,6 @@ public class SparqlViaRestVirtualCollectionExecutor extends
 					"io exception parsing SPARQL result", e);
 		}
 
-		IOUtils.toString(in)
 		return null;
 
 	}

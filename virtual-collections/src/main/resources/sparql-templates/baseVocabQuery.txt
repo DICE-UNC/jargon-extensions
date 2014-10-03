@@ -1,0 +1,12 @@
+PREFIX irods:       <http://www.irods.org/ontologies/2013/2/iRODS.owl#> 
+PREFIX skos:    <http://www.w3.org/2004/02/skos/core#>
+SELECT ?x ?absPath  ?size ?created 
+WHERE { 
+
+?x  irods:correspondingConcept <${term}> .
+?x irods:absolutePath ?absPath .
+OPTIONAL { 
+?x irods:createDate ?created .
+?x irods:hasSizeInBytes ?size
+}
+}
