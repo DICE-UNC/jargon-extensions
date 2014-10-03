@@ -4,7 +4,7 @@ PREFIX owl: <http://www.w3.org/2002/07/owl#>
 SELECT ?x ?absPath ?size ?created ?type
 WHERE { 
 
-?x  irods:correspondingConcept <http://purl.org/astronomy/uat#T1754> .
+?x  irods:correspondingConcept <${term}> .
 ?x irods:absolutePath ?absPath .
 ?x owl:Class ?type .
 OPTIONAL { 
