@@ -7,6 +7,7 @@ import java.io.BufferedInputStream;
 import java.io.InputStream;
 
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.io.IOUtils;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.query.PagingAwareCollectionListing;
 import org.irods.jargon.vircoll.AbstractVirtualCollectionExecutor;
@@ -44,6 +45,7 @@ public class SparqlViaRestVirtualCollectionExecutor extends
 
 		InputStream in = new BufferedInputStream(post.getResponseBodyAsStream());
 
+		IOUtils.toString(in)
 		return null;
 
 	}
