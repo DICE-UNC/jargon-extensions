@@ -3,12 +3,17 @@
  */
 package org.irods.jargon.vircoll.types;
 
-import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.InputStreamReader;
 
-import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.JargonException;
+import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.core.query.PagingAwareCollectionListing;
 import org.irods.jargon.vircoll.AbstractVirtualCollectionExecutor;
 import org.irods.jargon.vircoll.GeneralParameterConstants;
@@ -43,29 +48,30 @@ public class SparqlViaRestVirtualCollectionExecutor extends
 		log.info("validating...");
 		validate();
 
-		PostMethod post = new PostMethod(this.getVirtualCollection()
-				.getParameters().get(GeneralParameterConstants.ACCESS_URL));
+		String accessUrl = this.getVirtualCollection().getParameters()
+				.get(GeneralParameterConstants.ACCESS_URL);
 
-		post.setRequestBody(this.getVirtualCollection().getQueryBody());
-		// execute method and handle any error responses.
-
-		InputStream in;
-		try {
-			in = new BufferedInputStream(post.getResponseBodyAsStream());
-		} catch (IOException e) {
-			log.error("io exception getting response body", e);
-			throw new VirtualCollectionException(
-					"io exception parsing SPARQL result", e);
-		}
-
-		JsonFactory factory = new JsonFactory();
+		log.info("accessURL:{}", accessUrl);
 
 		// streaming JSON see
 		// http://www.studytrails.com/java/json/java-jackson-json-streaming.jsp
 
 		// continue parsing the token till the end of input is reached
 		try {
-			JsonParser parser = factory.createParser(in);
+			DefaultHttpClient httpclient = new DefaultHttpClient();
+			HttpPost httpost = new HttpPost(accessUrl);
+
+			String requestBody = this.getVirtualCollection().getQueryBody();
+			log.info("requestBody:{}", requestBody);
+			httpost.setEntity(new StringEntity(requestBody));
+			// execute method and handle any error responses.
+
+			HttpResponse response = httpclient.execute(httpost);
+			BufferedReader rd = new BufferedReader(new InputStreamReader(
+					response.getEntity().getContent()));
+
+			JsonFactory factory = new JsonFactory();
+			JsonParser parser = factory.createParser(rd);
 
 			while (!parser.isClosed()) {
 				// get the token
@@ -110,13 +116,31 @@ public class SparqlViaRestVirtualCollectionExecutor extends
 			throw new VirtualCollectionException(
 					"io exception parsing SPARQL result", e);
 		}
-
-		return null;
+		return new PagingAwareCollectionListing();
 
 	}
 
 	private void validate() throws VirtualCollectionValidationException {
 		// TODO: add validation steps
+	}
+
+	/**
+	 * 
+	 */
+	SparqlViaRestVirtualCollectionExecutor() {
+		super();
+	}
+
+	/**
+	 * @param virtualCollection
+	 * @param irodsAccessObjectFactory
+	 * @param irodsAccount
+	 */
+	public SparqlViaRestVirtualCollectionExecutor(
+			SparqlViaRestVirtualCollection virtualCollection,
+			IRODSAccessObjectFactory irodsAccessObjectFactory,
+			IRODSAccount irodsAccount) {
+		super(virtualCollection, irodsAccessObjectFactory, irodsAccount);
 	}
 
 }
