@@ -6,6 +6,12 @@ package org.irods.jargon.vircoll.types;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -14,7 +20,12 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
+import org.irods.jargon.core.query.CollectionAndDataObjectListingEntry;
+import org.irods.jargon.core.query.CollectionAndDataObjectListingEntry.ObjectType;
 import org.irods.jargon.core.query.PagingAwareCollectionListing;
+import org.irods.jargon.core.query.PagingAwareCollectionListing.PagingStyle;
+import org.irods.jargon.core.utils.CollectionAndPath;
+import org.irods.jargon.core.utils.MiscIRODSUtils;
 import org.irods.jargon.vircoll.AbstractVirtualCollectionExecutor;
 import org.irods.jargon.vircoll.GeneralParameterConstants;
 import org.irods.jargon.vircoll.VirtualCollectionException;
@@ -51,6 +62,8 @@ public class SparqlViaRestVirtualCollectionExecutor extends
 		String accessUrl = this.getVirtualCollection().getParameters()
 				.get(GeneralParameterConstants.ACCESS_URL);
 
+		List<CollectionAndDataObjectListingEntry> entries = new ArrayList<CollectionAndDataObjectListingEntry>();
+
 		log.info("accessURL:{}", accessUrl);
 
 		// streaming JSON see
@@ -73,6 +86,14 @@ public class SparqlViaRestVirtualCollectionExecutor extends
 			JsonFactory factory = new JsonFactory();
 			JsonParser parser = factory.createParser(rd);
 
+			boolean atBindings = false;
+			CollectionAndDataObjectListingEntry entry = null;
+			CollectionAndPath collectionAndPath;
+			int count = 1;
+
+			DateFormat df = new SimpleDateFormat("EEE MMM dd kk:mm:ss z yyyy",
+					Locale.ENGLISH);
+
 			while (!parser.isClosed()) {
 				// get the token
 				JsonToken token;
@@ -83,30 +104,101 @@ public class SparqlViaRestVirtualCollectionExecutor extends
 				if (token == null)
 					break;
 
+				log.info("currentName:{}", parser.getCurrentName());
 				log.info("token:{}", token);
 
-				// we want to look for a field that says dataset
-				/*
-				 * if (JsonToken.FIELD_NAME.equals(token) &&
-				 * "dataset".equals(parser.getCurrentName())) { // we are
-				 * entering the datasets now. The first token should // be //
-				 * start of array token = parser.nextToken(); if
-				 * (!JsonToken.START_ARRAY.equals(token)) { // bail out break; }
-				 * // each element of the array is an album so the next token //
-				 * should be { token = parser.nextToken(); if
-				 * (!JsonToken.START_OBJECT.equals(token)) { break; } // we are
-				 * now looking for a field that says "album_title". // We //
-				 * continue looking till we find all such fields. This is //
-				 * probably not a best way to parse this json, but this will //
-				 * suffice for this example. while (true) { token =
-				 * parser.nextToken(); if (token == null) break; if
-				 * (JsonToken.FIELD_NAME.equals(token) && "album_title"
-				 * .equals(parser.getCurrentName())) { token =
-				 * parser.nextToken(); System.out.println(parser.getText()); }
-				 * 
-				 * }
-				 */
+				if (atBindings) {
+					// continue
+				} else if (parser.getText().equals("bindings")) {
+					atBindings = true;
+				} else {
+					continue;
+				}
 
+				// log.info("found bindings");
+
+				if (parser.getCurrentName() == null) {
+					continue;
+				}
+
+				if (parser.getCurrentName().equals("absPath")
+						&& token.toString().equals("START_OBJECT")) {
+					// see if previous rec
+					if (entry != null) {
+						entries.add(entry);
+						entry = null;
+					}
+
+					while (!parser.getCurrentName().equals("value")) {
+						token = parser.nextToken();
+						log.info("token:{}", token);
+						log.info("currentName:{}", parser.getCurrentName());
+					}
+
+					token = parser.nextToken();
+					// parser.getText();
+					// token = parser.nextToken();
+
+					entry = new CollectionAndDataObjectListingEntry();
+					entry.setCount(count++);
+					collectionAndPath = MiscIRODSUtils
+							.separateCollectionAndPathFromGivenAbsolutePath(parser
+									.getText());
+					entry.setParentPath(collectionAndPath.getCollectionParent());
+					entry.setPathOrName(collectionAndPath.getChildName());
+
+					// FIXME: hack for determining file, need to look at
+					// ontology
+					if (collectionAndPath.getChildName().indexOf('.') > -1) {
+						entry.setObjectType(ObjectType.DATA_OBJECT);
+					} else {
+						entry.setObjectType(ObjectType.COLLECTION);
+					}
+
+					continue;
+				}
+
+				if (parser.getCurrentName().equals("size")
+						&& token.toString().equals("START_OBJECT")) {
+					while (!parser.getCurrentName().equals("value")) {
+						token = parser.nextToken();
+						log.info("token:{}", token);
+						log.info("currentName:{}", parser.getCurrentName());
+					}
+
+					token = parser.nextToken();
+					log.info("token:{}", token);
+					log.info("currentName:{}", parser.getCurrentName());
+					log.info("currentValue:{}", parser.getText());
+					Long sizeAsLong = Long.parseLong(parser.getText());
+
+					entry.setDataSize(sizeAsLong);
+					continue;
+				}
+
+				if (parser.getCurrentName().equals("created")
+						&& token.toString().equals("START_OBJECT")) {
+					while (!parser.getCurrentName().equals("value")) {
+						token = parser.nextToken();
+						log.info("token:{}", token);
+						log.info("currentName:{}", parser.getCurrentName());
+					}
+
+					token = parser.nextToken();
+					try {
+						Date result = df.parse(parser.getText());
+						entry.setCreatedAt(result);
+					} catch (Exception e) {
+						// parse exception...ignore
+					}
+
+				}
+
+			}
+
+			log.info("last entry?");
+			if (entry != null) {
+				entries.add(entry);
 			}
 
 		} catch (JsonParseException e) {
@@ -116,7 +208,14 @@ public class SparqlViaRestVirtualCollectionExecutor extends
 			throw new VirtualCollectionException(
 					"io exception parsing SPARQL result", e);
 		}
-		return new PagingAwareCollectionListing();
+
+		PagingAwareCollectionListing listing = new PagingAwareCollectionListing();
+		listing.setCollectionAndDataObjectListingEntries(entries);
+		listing.setCollectionsComplete(true);
+		listing.setDataObjectsComplete(true);
+		listing.setPagingStyle(PagingStyle.NONE);
+		log.info("listing:{}", listing);
+		return listing;
 
 	}
 

@@ -26,6 +26,7 @@ public class SparqlViaRestVirtualCollectionExecutorTest {
 		SparqlViaRestVirtualCollection virtualCollection = new SparqlViaRestVirtualCollection();
 		virtualCollection.setUniqueName("/query/to/hive");
 		virtualCollection.setQueryBody(query);
+
 		virtualCollection
 				.getParameters()
 				.put(GeneralParameterConstants.ACCESS_URL,
