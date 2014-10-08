@@ -24,7 +24,7 @@ public class SparqlViaRestVirtualCollectionExecutorTest {
 				.getClasspathResourceFileAsString("/sparql-templates/baseVocabQuery.txt");
 
 		SparqlViaRestVirtualCollection virtualCollection = new SparqlViaRestVirtualCollection();
-		virtualCollection.setUniqueName("/query/to/hive");
+		virtualCollection.setUniqueName("SPARQL HIVE");
 		virtualCollection.setQueryBody(query);
 
 		virtualCollection

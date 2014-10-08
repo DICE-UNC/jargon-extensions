@@ -3,29 +3,27 @@
  */
 package org.irods.jargon.vircoll.impl;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.irods.jargon.core.connection.IRODSAccount;
+import org.irods.jargon.core.exception.JargonException;
+import org.irods.jargon.core.exception.JargonRuntimeException;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.core.service.AbstractJargonService;
+import org.irods.jargon.core.utils.LocalFileUtils;
 import org.irods.jargon.core.utils.MiscIRODSUtils;
-import org.irods.jargon.extensions.dotirods.DotIrodsService;
+import org.irods.jargon.vircoll.GeneralParameterConstants;
 import org.irods.jargon.vircoll.VirtualCollection;
-import org.irods.jargon.vircoll.AbstractVirtualCollectionSerializer;
 import org.irods.jargon.vircoll.VirtualCollectionDiscoveryService;
 import org.irods.jargon.vircoll.VirtualCollectionFactory;
 import org.irods.jargon.vircoll.VirtualCollectionMarshalingException;
 import org.irods.jargon.vircoll.types.CollectionBasedVirtualCollection;
+import org.irods.jargon.vircoll.types.SparqlViaRestVirtualCollection;
 import org.irods.jargon.vircoll.types.StarredFoldersVirtualCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -169,6 +167,30 @@ public class VirtualCollectionDiscoveryServiceImpl extends
 								.computeHomeDirectoryForIRODSAccount(getIrodsAccount())));
 		// add starred folders
 		virtualCollections.add(new StarredFoldersVirtualCollection());
+
+		/*
+		 * Demo code for DFC - this should actually be a serialized thing
+		 */
+		String query;
+		try {
+			query = LocalFileUtils
+					.getClasspathResourceFileAsString("/sparql-templates/baseVocabQuery.txt");
+		} catch (JargonException e) {
+			log.error("error creating virtual collection for sparql", e);
+			throw new JargonRuntimeException(
+					"cannot create virtual collection for sparql", e);
+		}
+
+		SparqlViaRestVirtualCollection virtualCollection = new SparqlViaRestVirtualCollection();
+		virtualCollection.setUniqueName("HIVE");
+		virtualCollection.setQueryBody(query);
+
+		virtualCollection
+				.getParameters()
+				.put(GeneralParameterConstants.ACCESS_URL,
+						"http://testdfc2.renci.org:8080/hive-query-rest-1.0-SNAPSHOT/sparql/");
+		virtualCollections.add(virtualCollection);
+
 		log.info("done...");
 		return virtualCollections;
 
