@@ -15,5 +15,6 @@ Version.java
 idrop-web/web-app/WEB-INF/classes/
 *.jar
 nb-configuration.xml
+*/testing.properties
 **/bin
 /idrop-web/target-eclipse/
