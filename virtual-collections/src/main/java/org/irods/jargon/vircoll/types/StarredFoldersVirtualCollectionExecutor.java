@@ -148,7 +148,7 @@ public class StarredFoldersVirtualCollectionExecutor extends
 					.separateCollectionAndPathFromGivenAbsolutePath(coll
 							.getDomainUniqueName());
 			entry.setParentPath(collAndPath.getCollectionParent());
-			entry.setDescription(collAndPath.getChildName());
+			entry.setPathOrName(collAndPath.getChildName());
 			entries.add(entry);
 		}
 
