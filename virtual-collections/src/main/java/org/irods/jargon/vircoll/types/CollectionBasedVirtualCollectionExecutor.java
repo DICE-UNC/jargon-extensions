@@ -102,7 +102,6 @@ public class CollectionBasedVirtualCollectionExecutor extends
 		} else {
 			myPath = path;
 		}
-
 		CollectionPagerAO collectionPager = getIrodsAccessObjectFactory()
 				.getCollectionPagerAO(getIrodsAccount());
 		return collectionPager.retrieveFirstPageUnderParent(myPath);
