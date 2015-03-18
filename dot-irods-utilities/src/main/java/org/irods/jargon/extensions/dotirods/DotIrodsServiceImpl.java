@@ -3,6 +3,11 @@
  */
 package org.irods.jargon.extensions.dotirods;
 
+import java.io.File;
+import java.io.FilenameFilter;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.FileNotFoundException;
 import org.irods.jargon.core.exception.JargonException;
@@ -221,7 +226,7 @@ public class DotIrodsServiceImpl extends AbstractJargonService implements
 	public DotIrodsCollection retrieveDotIrodsAtPath(
 			final String irodsAbsolutePath, final boolean homeDir)
 			throws FileNotFoundException, JargonException {
-		log.info("findUserHomeCollection()");
+		log.info("retrieveDotIrodsAtPath()");
 
 		if (irodsAbsolutePath == null || irodsAbsolutePath.isEmpty()) {
 			throw new IllegalArgumentException("null or empty irodsAbolutePath");
@@ -269,6 +274,318 @@ public class DotIrodsServiceImpl extends AbstractJargonService implements
 		dotIrodsFile.mkdirs();
 		log.info("created");
 
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.irods.jargon.extensions.dotirods.DotIrodsService#
+	 * dotIrodsCollectionPresentInCollection (java.lang.String)
+	 */
+	@Override
+	public boolean dotIrodsCollectionPresentInCollection(
+			final String irodsAbsolutePathToParent) throws JargonException {
+		log.info("dotIrodsCollectionPresentInCollection()");
+
+		if (irodsAbsolutePathToParent == null
+				|| irodsAbsolutePathToParent.isEmpty()) {
+			throw new IllegalArgumentException(
+					"null or empty irodsAbsolutePathToParent");
+		}
+
+		log.info("irodsAbsolutePath:{}", irodsAbsolutePathToParent);
+
+		Collection collection = collectionAO
+				.findByAbsolutePath(irodsAbsolutePathToParent);
+
+		log.info("{} exists", irodsAbsolutePathToParent);
+
+		boolean retVal = true;
+
+		try {
+			IRODSFile userHomeAsFile = this
+					.getIrodsAccessObjectFactory()
+					.getIRODSFileFactory(getIrodsAccount())
+					.instanceIRODSFile(
+							computeDotIrodsPathUnderParent(irodsAbsolutePathToParent));
+		} catch (JargonException je) {
+			log.info(
+					"JargonException thrown by instanceIRODSFile, {} does not exist",
+					computeDotIrodsPathUnderParent(irodsAbsolutePathToParent));
+			retVal = false;
+		}
+
+		return retVal;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.irods.jargon.extensions.dotirods.DotIrodsService#
+	 * listFilesInDotIrodsUserHome (java.lang.String)
+	 */
+	@Override
+	public File[] listFilesInDotIrodsUserHome(final String userName)
+			throws FileNotFoundException, JargonException {
+		log.info("listFilesInDotIrodsUserHome()");
+
+		if (userName == null || userName.isEmpty()) {
+			throw new IllegalArgumentException("null or empty userName");
+		}
+
+		DotIrodsCollection userHomeAsDotIrodsCollection = null;
+		IRODSFile userHomeAsFile = null;
+
+		log.info("supplied username: {}", userName);
+
+		userHomeAsDotIrodsCollection = findUserHomeCollection(userName);
+
+		log.info(".irods dir found at {}:",
+				userHomeAsDotIrodsCollection.getAbsolutePath());
+
+		userHomeAsFile = this
+				.getIrodsAccessObjectFactory()
+				.getIRODSFileFactory(getIrodsAccount())
+				.instanceIRODSFile(
+						userHomeAsDotIrodsCollection.getAbsolutePath());
+
+		return userHomeAsFile.listFiles();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.irods.jargon.extensions.dotirods.DotIrodsService#
+	 * listFilesOfTypeInDotIrodsUserHome (java.lang.String,
+	 * java.io.FilenameFilter)
+	 */
+	@Override
+	public File[] listFilesOfTypeInDotIrodsUserHome(final String userName,
+			FilenameFilter filter) throws FileNotFoundException,
+			JargonException {
+		log.info("listFilesOfTypeInDotIrodsUserHome()");
+
+		if (userName == null || userName.isEmpty()) {
+			throw new IllegalArgumentException("null or empty userName");
+		}
+
+		if (filter == null) {
+			throw new IllegalArgumentException("null filter");
+		}
+
+		DotIrodsCollection userHomeAsDotIrodsCollection = null;
+		IRODSFile userHomeAsFile = null;
+
+		log.info("supplied username: {}", userName);
+
+		userHomeAsDotIrodsCollection = this.findUserHomeCollection(userName);
+
+		log.info(".irods dir found at {}:",
+				userHomeAsDotIrodsCollection.getAbsolutePath());
+
+		userHomeAsFile = this
+				.getIrodsAccessObjectFactory()
+				.getIRODSFileFactory(getIrodsAccount())
+				.instanceIRODSFile(
+						userHomeAsDotIrodsCollection.getAbsolutePath());
+
+		return userHomeAsFile.listFiles(filter);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.irods.jargon.extensions.dotirods.DotIrodsService#
+	 * listFilesInDirectoryHierarchyDotIrods (java.lang.String, boolean)
+	 */
+	@Override
+	public File[] listFilesInDirectoryHierarchyDotIrods(
+			final String irodsAbsolutePath, boolean resolveConflicts)
+			throws FileNotFoundException, JargonException {
+		log.info("listFilesInDirectoryHierarchyDotIrods()");
+
+		if (irodsAbsolutePath == null || irodsAbsolutePath.isEmpty()) {
+			throw new IllegalArgumentException(
+					"null or empty irodsAbsolutePath");
+		}
+
+		log.info("irodsAbsolutePath:{}", irodsAbsolutePath);
+
+		Collection collection = collectionAO
+				.findByAbsolutePath(irodsAbsolutePath);
+
+		log.info("{} exists", irodsAbsolutePath);
+
+		IRODSFile parent = this.getIrodsAccessObjectFactory()
+				.getIRODSFileFactory(getIrodsAccount())
+				.instanceIRODSFile(collection.getAbsolutePath());
+		IRODSFile dotIrodsFile = null;
+		List<File> fileArrayList = new ArrayList<File>();
+
+		while (parent != null) {
+			if (this.dotIrodsCollectionPresentInCollection(parent
+					.getAbsolutePath())) {
+				String dotIrodsAbsPath = computeDotIrodsPathUnderParent(parent
+						.getAbsolutePath());
+
+				log.info(".irods collection exists: {}", dotIrodsAbsPath);
+
+				dotIrodsFile = this.getIrodsAccessObjectFactory()
+						.getIRODSFileFactory(getIrodsAccount())
+						.instanceIRODSFile(dotIrodsAbsPath);
+
+				for (File f : dotIrodsFile.listFiles()) {
+					if (resolveConflicts) {
+						// Check if there is already a file with the same name
+						// in the list
+						// Since we start with the leaf and work up, higher
+						// priority will be placed in the list first
+						boolean nameConflict = false;
+						for (File test : fileArrayList) {
+							if (f.getName() == test.getName()) {
+								log.info(
+										"Name collision with {},\n {} not added to file list",
+										test.getPath(), f.getPath());
+								nameConflict = true;
+								break;
+							}
+						}
+
+						if (!nameConflict) {
+							log.info("{} added to file list", f.getPath());
+							fileArrayList.add(f);
+						}
+					} else {
+						log.info("{} added to file list", f.getPath());
+						fileArrayList.add(f);
+					}
+				}
+			} else {
+				log.info("No .irods collection found in collection {}",
+						parent.getAbsolutePath());
+			}
+
+			log.info("End of loop, continuing with parent collection {}",
+					parent.getParent());
+			parent = (IRODSFile) parent.getParentFile();
+		}
+
+		return fileArrayList.toArray(new File[0]);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.irods.jargon.extensions.dotirods.DotIrodsService#
+	 * listFilesInDirectoryHierarchyDotIrods (java.lang.String)
+	 */
+	@Override
+	public File[] listFilesInDirectoryHierarchyDotIrods(
+			final String irodsAbsolutePath) throws FileNotFoundException,
+			JargonException {
+		return listFilesInDirectoryHierarchyDotIrods(irodsAbsolutePath, true);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.irods.jargon.extensions.dotirods.DotIrodsService#
+	 * listFilesOfTypeInDirectoryHierarchyDotIrods (java.lang.String,
+	 * java.io.FilenameFilter, boolean)
+	 */
+	@Override
+	public File[] listFilesOfTypeInDirectoryHierarchyDotIrods(
+			final String irodsAbsolutePath, FilenameFilter filter,
+			boolean resolveConflicts) throws FileNotFoundException,
+			JargonException {
+		log.info("listFilesOfTypeInDirectoryHierarchyDotIrods()");
+
+		if (irodsAbsolutePath == null || irodsAbsolutePath.isEmpty()) {
+			throw new IllegalArgumentException(
+					"null or empty irodsAbsolutePath");
+		}
+		
+		if (filter == null) {
+			throw new IllegalArgumentException("null filter");
+		}
+
+		log.info("irodsAbsolutePath:{}", irodsAbsolutePath);
+
+		Collection collection = collectionAO
+				.findByAbsolutePath(irodsAbsolutePath);
+
+		log.info("{} exists", irodsAbsolutePath);
+
+		IRODSFile parent = this.getIrodsAccessObjectFactory()
+				.getIRODSFileFactory(getIrodsAccount())
+				.instanceIRODSFile(collection.getAbsolutePath());
+		IRODSFile dotIrodsFile = null;
+		List<File> fileArrayList = new ArrayList<File>();
+
+		while (parent != null) {
+			if (this.dotIrodsCollectionPresentInCollection(parent
+					.getAbsolutePath())) {
+				String dotIrodsAbsPath = computeDotIrodsPathUnderParent(parent
+						.getAbsolutePath());
+
+				log.info(".irods collection exists: {}", dotIrodsAbsPath);
+
+				dotIrodsFile = this.getIrodsAccessObjectFactory()
+						.getIRODSFileFactory(getIrodsAccount())
+						.instanceIRODSFile(dotIrodsAbsPath);
+
+				for (File f : dotIrodsFile.listFiles(filter)) {
+					if (resolveConflicts) {
+						// Check if there is already a file with the same name
+						// in the list
+						// Since we start with the leaf and work up, higher
+						// priority will be placed in the list first
+						boolean nameConflict = false;
+						for (File test : fileArrayList) {
+							if (f.getName() == test.getName()) {
+								log.info(
+										"Name collision with {},\n {} not added to file list",
+										test.getPath(), f.getPath());
+								nameConflict = true;
+								break;
+							}
+						}
+
+						if (!nameConflict) {
+							log.info("{} added to file list", f.getPath());
+							fileArrayList.add(f);
+						}
+					} else {
+						log.info("{} added to file list", f.getPath());
+						fileArrayList.add(f);
+					}
+				}
+			} else {
+				log.info("No .irods collection found in collection {}",
+						parent.getAbsolutePath());
+			}
+
+			log.info("End of loop, continuing with parent collection {}",
+					parent.getParent());
+			parent = (IRODSFile) parent.getParentFile();
+		}
+
+		return fileArrayList.toArray(new File[0]);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.irods.jargon.extensions.dotirods.DotIrodsService#
+	 * listFilesOfTypeInDirectoryHierarchyDotIrods (java.lang.String,
+	 * java.io.FilenameFilter)
+	 */
+	@Override
+	public File[] listFilesOfTypeInDirectoryHierarchyDotIrods(
+			final String irodsAbsolutePath, FilenameFilter filter)
+			throws FileNotFoundException, JargonException {
+		return listFilesOfTypeInDirectoryHierarchyDotIrods(irodsAbsolutePath,
+				filter, true);
 	}
 
 }
