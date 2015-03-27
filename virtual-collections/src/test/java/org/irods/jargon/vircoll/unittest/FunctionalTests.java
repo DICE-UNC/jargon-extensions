@@ -1,6 +1,5 @@
 package org.irods.jargon.vircoll.unittest;
 
-import org.irods.jargon.vircoll.types.SparqlViaRestVirtualCollectionExecutorTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
@@ -13,7 +12,7 @@ import org.junit.runners.Suite.SuiteClasses;
  *
  */
 @RunWith(Suite.class)
-@SuiteClasses({ SparqlViaRestVirtualCollectionExecutorTest.class })
+@SuiteClasses({})
 public class FunctionalTests {
 
 }

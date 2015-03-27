@@ -88,7 +88,7 @@ public class VirtualCollectionMaintenanceServiceImplTest {
 		IRODSAccessObjectFactory irodsAccessObjectFactory = Mockito
 				.mock(IRODSAccessObjectFactory.class);
 		IRODSAccount irodsAccount = TestingPropertiesHelper
-				.buildDummyIrodsAccount();
+				.buildBogusIrodsAccount();
 
 		VirtualCollectionPersistenceService virtualCollectionMaintenanceService = new VirtualCollectionPersistenceServiceImpl(
 				irodsAccessObjectFactory, irodsAccount);

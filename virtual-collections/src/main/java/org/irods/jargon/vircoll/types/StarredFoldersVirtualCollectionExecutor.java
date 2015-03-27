@@ -178,17 +178,25 @@ public class StarredFoldersVirtualCollectionExecutor extends
 			final List<CollectionAndDataObjectListingEntry> entries) {
 		if (entries.isEmpty()) {
 			log.info("no child collections");
-			pagingAwareCollectionListing.setCollectionsComplete(true);
-			pagingAwareCollectionListing.setCount(0);
-			pagingAwareCollectionListing.setOffset(0);
+			pagingAwareCollectionListing
+					.getPagingAwareCollectionListingDescriptor()
+					.setCollectionsComplete(true);
+			pagingAwareCollectionListing
+					.getPagingAwareCollectionListingDescriptor().setCount(0);
+			pagingAwareCollectionListing
+					.getPagingAwareCollectionListingDescriptor().setOffset(0);
 		} else {
 			log.info("adding child collections");
-			pagingAwareCollectionListing.setCollectionsComplete(entries.get(
-					entries.size() - 1).isLastResult());
-			pagingAwareCollectionListing.setCount(entries.get(
-					entries.size() - 1).getCount());
-			pagingAwareCollectionListing.setTotalRecords(entries.get(0)
-					.getTotalRecords());
+			pagingAwareCollectionListing
+					.getPagingAwareCollectionListingDescriptor()
+					.setCollectionsComplete(
+							entries.get(entries.size() - 1).isLastResult());
+			pagingAwareCollectionListing
+					.getPagingAwareCollectionListingDescriptor().setCount(
+							entries.get(entries.size() - 1).getCount());
+			pagingAwareCollectionListing
+					.getPagingAwareCollectionListingDescriptor()
+					.setTotalRecords(entries.get(0).getTotalRecords());
 			pagingAwareCollectionListing
 					.getCollectionAndDataObjectListingEntries().addAll(entries);
 		}
@@ -214,17 +222,29 @@ public class StarredFoldersVirtualCollectionExecutor extends
 			final List<CollectionAndDataObjectListingEntry> entries) {
 		if (entries.isEmpty()) {
 			log.info("no child data objects");
-			pagingAwareCollectionListing.setDataObjectsComplete(true);
-			pagingAwareCollectionListing.setDataObjectsCount(0);
-			pagingAwareCollectionListing.setDataObjectsOffset(0);
+			pagingAwareCollectionListing
+					.getPagingAwareCollectionListingDescriptor()
+					.setDataObjectsComplete(true);
+			pagingAwareCollectionListing
+					.getPagingAwareCollectionListingDescriptor()
+					.setDataObjectsCount(0);
+			pagingAwareCollectionListing
+					.getPagingAwareCollectionListingDescriptor()
+					.setDataObjectsOffset(0);
 		} else {
 			log.info("adding child data objects");
-			pagingAwareCollectionListing.setDataObjectsComplete(entries.get(
-					entries.size() - 1).isLastResult());
-			pagingAwareCollectionListing.setDataObjectsCount(entries.get(
-					entries.size() - 1).getCount());
-			pagingAwareCollectionListing.setDataObjectsTotalRecords(entries
-					.get(0).getTotalRecords());
+			pagingAwareCollectionListing
+					.getPagingAwareCollectionListingDescriptor()
+					.setDataObjectsComplete(
+							entries.get(entries.size() - 1).isLastResult());
+			pagingAwareCollectionListing
+					.getPagingAwareCollectionListingDescriptor()
+					.setDataObjectsCount(
+							entries.get(entries.size() - 1).getCount());
+			pagingAwareCollectionListing
+					.getPagingAwareCollectionListingDescriptor()
+					.setDataObjectsTotalRecords(
+							entries.get(0).getTotalRecords());
 			pagingAwareCollectionListing
 					.getCollectionAndDataObjectListingEntries().addAll(entries);
 		}
@@ -241,11 +261,15 @@ public class StarredFoldersVirtualCollectionExecutor extends
 	private PagingAwareCollectionListing buildInitialPagingAwareCollectionListing()
 			throws JargonException {
 		PagingAwareCollectionListing pagingAwareCollectionListing = new PagingAwareCollectionListing();
-		pagingAwareCollectionListing.setPageSizeUtilized(this
-				.getIrodsAccessObjectFactory().getJargonProperties()
-				.getMaxFilesAndDirsQueryMax());
-		pagingAwareCollectionListing.setPagingStyle(this.getVirtualCollection()
-				.getPagingStyle());
+		pagingAwareCollectionListing
+				.getPagingAwareCollectionListingDescriptor()
+				.setPageSizeUtilized(
+						this.getIrodsAccessObjectFactory()
+								.getJargonProperties()
+								.getMaxFilesAndDirsQueryMax());
+		pagingAwareCollectionListing
+				.getPagingAwareCollectionListingDescriptor().setPagingStyle(
+						this.getVirtualCollection().getPagingStyle());
 		return pagingAwareCollectionListing;
 	}
 

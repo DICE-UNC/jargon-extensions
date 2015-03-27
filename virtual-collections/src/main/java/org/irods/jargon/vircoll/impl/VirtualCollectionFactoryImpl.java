@@ -15,8 +15,6 @@ import org.irods.jargon.vircoll.VirtualCollection;
 import org.irods.jargon.vircoll.VirtualCollectionFactory;
 import org.irods.jargon.vircoll.types.CollectionBasedVirtualCollection;
 import org.irods.jargon.vircoll.types.CollectionBasedVirtualCollectionExecutor;
-import org.irods.jargon.vircoll.types.SparqlViaRestVirtualCollection;
-import org.irods.jargon.vircoll.types.SparqlViaRestVirtualCollectionExecutor;
 import org.irods.jargon.vircoll.types.StarredFoldersVirtualCollection;
 import org.irods.jargon.vircoll.types.StarredFoldersVirtualCollectionExecutor;
 import org.slf4j.Logger;
@@ -70,11 +68,6 @@ public class VirtualCollectionFactoryImpl extends AbstractJargonService
 			return new CollectionBasedVirtualCollectionExecutor(
 					(CollectionBasedVirtualCollection) virtualCollection,
 					getIrodsAccessObjectFactory(), getIrodsAccount());
-		case SPARQL:
-			SparqlViaRestVirtualCollectionExecutor executor = new SparqlViaRestVirtualCollectionExecutor(
-					(SparqlViaRestVirtualCollection) virtualCollection,
-					getIrodsAccessObjectFactory(), getIrodsAccount());
-			return executor;
 		case STARRED:
 			IRODSStarringService irodsStarringService = new IRODSStarringServiceImpl(
 					getIrodsAccessObjectFactory(), getIrodsAccount());

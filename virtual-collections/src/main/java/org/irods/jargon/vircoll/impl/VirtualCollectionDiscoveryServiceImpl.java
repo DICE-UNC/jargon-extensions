@@ -13,13 +13,11 @@ import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.core.service.AbstractJargonService;
 import org.irods.jargon.core.utils.LocalFileUtils;
 import org.irods.jargon.core.utils.MiscIRODSUtils;
-import org.irods.jargon.vircoll.GeneralParameterConstants;
 import org.irods.jargon.vircoll.VirtualCollection;
 import org.irods.jargon.vircoll.VirtualCollectionDiscoveryService;
 import org.irods.jargon.vircoll.VirtualCollectionFactory;
 import org.irods.jargon.vircoll.VirtualCollectionMarshalingException;
 import org.irods.jargon.vircoll.types.CollectionBasedVirtualCollection;
-import org.irods.jargon.vircoll.types.SparqlViaRestVirtualCollection;
 import org.irods.jargon.vircoll.types.StarredFoldersVirtualCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -180,16 +178,6 @@ public class VirtualCollectionDiscoveryServiceImpl extends
 			throw new JargonRuntimeException(
 					"cannot create virtual collection for sparql", e);
 		}
-
-		SparqlViaRestVirtualCollection virtualCollection = new SparqlViaRestVirtualCollection();
-		virtualCollection.setUniqueName("HIVE");
-		virtualCollection.setQueryBody(query);
-
-		virtualCollection
-				.getParameters()
-				.put(GeneralParameterConstants.ACCESS_URL,
-						"http://testdfc2.renci.org:8080/hive-query-rest-1.0-SNAPSHOT/sparql/");
-		virtualCollections.add(virtualCollection);
 
 		log.info("done...");
 		return virtualCollections;
