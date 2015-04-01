@@ -261,5 +261,4 @@ public interface DotIrodsService {
 	public abstract File[] listFilesOfTypeInDirectoryHierarchyDotIrods(
 			final String irodsAbsolutePath, FilenameFilter filter)
 			throws FileNotFoundException, JargonException;
-
 }

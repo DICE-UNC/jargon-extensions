@@ -3,6 +3,7 @@ package org.irods.jargon.metadatatemplate;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,8 +16,8 @@ import org.irods.jargon.metadatatemplatesif.MetadataTemplate;
 import org.irods.jargon.metadatatemplatesif.MetadataTemplateFileFilter;
 import org.irods.jargon.metadatatemplatesif.TemplateParserSingleton;
 import org.irods.jargon.core.connection.IRODSAccount;
-import org.irods.jargon.core.exception.FileNotFoundException;
 import org.irods.jargon.core.exception.JargonException;
+import org.irods.jargon.core.pub.DataObjectAO;
 import org.irods.jargon.core.pub.DataTransferOperations;
 import org.irods.jargon.core.pub.IRODSFileSystem;
 import org.irods.jargon.core.pub.domain.AvuData;
@@ -26,10 +27,14 @@ import org.irods.jargon.core.pub.io.IRODSFileFactoryImpl;
 import org.irods.jargon.core.pub.io.IRODSFileImpl;
 import org.irods.jargon.core.pub.io.IRODSFileInputStream;
 import org.irods.jargon.core.pub.io.IRODSFileWriter;
+import org.irods.jargon.core.query.AVUQueryElement;
+import org.irods.jargon.core.query.AVUQueryOperatorEnum;
 import org.irods.jargon.core.query.IRODSGenQueryBuilder;
+import org.irods.jargon.core.query.JargonQueryException;
 import org.irods.jargon.core.query.MetaDataAndDomainData;
 import org.irods.jargon.core.query.QueryConditionOperators;
 import org.irods.jargon.core.query.RodsGenQueryEnum;
+import org.irods.jargon.core.utils.LocalFileUtils;
 import org.irods.jargon.extensions.dotirods.DotIrodsCollection;
 import org.irods.jargon.extensions.dotirods.DotIrodsService;
 import org.irods.jargon.extensions.dotirods.DotIrodsServiceImpl;
@@ -66,6 +71,10 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 	@Override
 	public List<MetadataTemplate> listPublicTemplates() {
 		// TODO Auto-generated method stub
+		List<MetadataTemplate> tempList = new ArrayList<MetadataTemplate>();
+		for (String dir : this.getPublicTemplateLocations()) {
+			
+		}
 		return null;
 	}
 
@@ -95,12 +104,6 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 		return templateList;
 	}
 
-	public int howManyTemplatesInUserHome(String userName) throws IOException {
-		return listTemplatesInUserHome(userName).size();
-	}
-
-	// This is probably the correct way to implement listTemplatesInUserHome (or
-	// all others)
 	public List<MetadataTemplate> listTemplatesInUserHome(String userName)
 			throws IOException {
 		List<MetadataTemplate> templateList = null;
@@ -110,14 +113,16 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 			templateFiles = dotIrodsService.listFilesOfTypeInDotIrodsUserHome(
 					userName, new MetadataTemplateFileFilter());
 		} catch (JargonException je) {
-			log.info("JargonException when listing files in directory");
+			log.error("JargonException when listing files in directory");
+			je.printStackTrace();
 			return templateList;
 		}
 
 		try {
 			templateList = processFilesToMetadataTemplates(templateFiles);
 		} catch (JargonException je) {
-			log.info("JargonException when processing metadata template files");
+			log.error("JargonException when processing metadata template files");
+			je.printStackTrace();
 			return templateList;
 		}
 
@@ -162,8 +167,9 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 				test = dotIrodsService
 						.dotIrodsCollectionPresentInCollection(location);
 			} catch (JargonException je) {
-				log.info("JargonException when checking for .irods collection");
-				log.info("Template NOT SAVED");
+				log.error("JargonException when checking for .irods collection");
+				log.error("Template NOT SAVED");
+				je.printStackTrace();
 				return;
 			}
 
@@ -174,90 +180,23 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 	}
 
 	@Override
-	public void deleteTemplateByName(String uniqueName) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void deleteTemplateByUUID(UUID uuid) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public MetadataTemplate findTemplateByName(String name) {
+	public MetadataTemplate findTemplateByName(String name)
+			throws FileNotFoundException, IOException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public MetadataTemplate findTemplateByFqName(String fqName) {
+	public MetadataTemplate findTemplateByFqName(String fqName)
+			throws FileNotFoundException, IOException {
 		// TODO Auto-generated method stub
 		return null;
-	}
-
-	@Override
-	public MetadataTemplate findTemplateByUUID(UUID uuid) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	private MetadataTemplate processFileToMetadataTemplate(File inFile)
-			throws JargonException, IOException {
-		log.info("processFileToMetadataTemplate()");
-
-		IRODSFileInputStream fis = null;
-		byte[] b = null;
-
-		fis = irodsFileFactory
-				.instanceIRODSFileInputStream((IRODSFileImpl) inFile);
-
-		// If a template does not have a UUID assigned on opening, generate a
-		// new one and apply it.
-		//
-		// By checking here, we already know that the File must exist due to
-		// .instanceIRODSFileInputStream()
-		//
-		// By convention, a metadata template file must have a metadata
-		// attribute TemplateUUID, where the value is the UUID as a string.
-		IRODSGenQueryBuilder uuidQuery = new IRODSGenQueryBuilder(true,true,null);
-		uuidQuery.addConditionAsGenQueryField(RodsGenQueryEnum.COL_META_DATA_ATTR_NAME, 
-				QueryConditionOperators.EQUAL, "TemplateUUID");
-		
-		List<MetaDataAndDomainData> metadataList = irodsFileSystem
-				.getIRODSAccessObjectFactory().getDataObjectAO(irodsAccount)
-				.findMetadataValuesForDataObject((IRODSFileImpl) inFile);
-		
-		List<MetaDataAndDomainData> metadataList = irodsFileSystem
-				.getIRODSAccessObjectFactory().getDataObjectAO(irodsAccount).find
-				
-				
-		b = new byte[fis.available()];
-
-		log.info("Size of byte array: {}", b.length);
-
-		fis.read(b);
-
-		String decoded = new String(b, "UTF-8");
-
-		log.info("Decoded string rep of byte array:\n{}", decoded);
-
-		return parser.createMetadataTemplateFromJSON(decoded);
-	}
-
-	private List<MetadataTemplate> processFilesToMetadataTemplates(
-			File[] inFileArray) throws JargonException, IOException {
-		log.info("processFilesToMetadataTemplates()");
-		List<MetadataTemplate> returnList = new ArrayList<MetadataTemplate>();
-		for (File f : inFileArray)
-			returnList.add(processFileToMetadataTemplate(f).deepCopy());
-
-		return returnList;
 	}
 
 	/**
 	 * Populate metadata template from a list of AVUs
+	 * 
+	 * XXX Are unaffiliated AVUs and orphan AVUs properly two separate lists?
 	 * 
 	 * @param inTemplate
 	 *            {@link MetadataMergeResult}
@@ -279,6 +218,17 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 		List<MetaDataAndDomainData> orphans = new ArrayList<MetaDataAndDomainData>();
 		boolean matched = false;
 
+		// Have bag of AVUs
+		// Iterate over bag
+		// Map of templates
+
+		// Create map
+		// List all required templates and put in map
+		// Iterate over AVUs
+		// Match with existing template in map
+		// OR Add template to match
+		// OR Add to "unmatched" template
+
 		for (MetaDataAndDomainData avu : avuList) {
 			matched = false;
 
@@ -296,6 +246,156 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 		}
 
 		return new MetadataMergeResult(template, orphans);
+	}
+
+	@Override
+	public void renameTemplateByFqName(String FqName) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void updateTemplateByFqName(String FqName) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void deleteTemplateByFqName(String FqName) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public String getFqNameForUUID(UUID uuid) {
+		log.info("getFqNameForUUID");
+
+		List<AVUQueryElement> queryElements = new ArrayList<AVUQueryElement>();
+		List<MetaDataAndDomainData> queryResult = null;
+
+		try {
+			queryElements.add(AVUQueryElement.instanceForValueQuery(
+					AVUQueryElement.AVUQueryPart.VALUE,
+					AVUQueryOperatorEnum.EQUAL, uuid.toString()));
+
+			queryResult = irodsFileSystem.getIRODSAccessObjectFactory()
+					.getDataObjectAO(irodsAccount)
+					.findMetadataValuesByMetadataQuery(queryElements);
+		} catch (JargonQueryException jqe) {
+			log.error("AvuQuery for UUID failed!");
+			jqe.printStackTrace();
+			return null;
+		} catch (JargonException je) {
+			log.error("JargonException in getFqNameForUUID");
+			je.printStackTrace();
+			return null;
+		}
+
+		if (queryResult.isEmpty()) {
+			log.error("No match for specified UUID!");
+			return null;
+		}
+
+		if (queryResult.size() > 1) {
+			log.error(
+					"{} matches for specified UUID! This should be impossible!",
+					queryResult.size());
+		}
+
+		return queryResult.get(0).getDomainObjectUniqueName();
+	}
+
+	private MetadataTemplate processFileToMetadataTemplate(File inFile)
+			throws JargonException, IOException {
+		log.info("processFileToMetadataTemplate()");
+
+		IRODSFileInputStream fis = null;
+		byte[] b = null;
+
+		fis = irodsFileFactory
+				.instanceIRODSFileInputStream((IRODSFileImpl) inFile);
+
+		// If a template does not have a UUID assigned on opening, generate a
+		// new one and apply it.
+		//
+		// By checking here, we already know that the File must exist due to
+		// .instanceIRODSFileInputStream()
+		//
+		// By convention, a metadata template file must have an associated AVU
+		// s.t.
+		// Attribute = Template Name, Value = UUID, and unit = iRODS:MDTemplate
+		List<AVUQueryElement> queryElements = new ArrayList<AVUQueryElement>();
+		List<MetaDataAndDomainData> queryResult = null;
+
+		log.info("AvuQuery to see if file has UUID already");
+
+		try {
+			queryElements.add(AVUQueryElement.instanceForValueQuery(
+					AVUQueryElement.AVUQueryPart.UNITS,
+					AVUQueryOperatorEnum.EQUAL,
+					JargonMetadataTemplateConstants.MD_TEMPLATE_UNIT));
+
+			queryResult = irodsFileSystem
+					.getIRODSAccessObjectFactory()
+					.getDataObjectAO(irodsAccount)
+					.findMetadataValuesForDataObjectUsingAVUQuery(
+							queryElements, inFile.getAbsolutePath());
+		} catch (JargonQueryException e) {
+			log.error("AvuQuery for UUID failed!");
+			e.printStackTrace();
+			throw new JargonException(e);
+		}
+
+		if (queryResult.isEmpty()) {
+			log.info("MDTemplate AVU not found. Generating new one...");
+			addMdTemplateAVUToFile(
+					LocalFileUtils.getFileNameUpToExtension(inFile.getName()),
+					inFile.getAbsolutePath());
+		} else {
+			log.info("MDTemplate AVU present. continuing...");
+		}
+
+		b = new byte[fis.available()];
+
+		log.info("Size of file in bytes: {}", b.length);
+
+		fis.read(b);
+
+		String decoded = new String(b, "UTF-8");
+
+		log.info("Decoded string rep of byte array:\n{}", decoded);
+
+		return parser.createMetadataTemplateFromJSON(decoded);
+	}
+
+	private List<MetadataTemplate> processFilesToMetadataTemplates(
+			File[] inFileArray) throws JargonException, IOException {
+		log.info("processFilesToMetadataTemplates()");
+		List<MetadataTemplate> returnList = new ArrayList<MetadataTemplate>();
+		for (File f : inFileArray)
+			returnList.add(processFileToMetadataTemplate(f).deepCopy());
+
+		return returnList;
+	}
+
+	private void addMdTemplateAVUToFile(String name, String path)
+			throws JargonException {
+		log.info("addMdTemplateAVUToFile, name = {}", name);
+		UUID uuid = UUID.randomUUID();
+		AvuData avuData = AvuData.instance(name, uuid.toString(),
+				JargonMetadataTemplateConstants.MD_TEMPLATE_UNIT);
+		irodsFileSystem.getIRODSAccessObjectFactory()
+				.getDataObjectAO(irodsAccount).addAVUMetadata(path, avuData);
+	}
+	
+	private void addMdElementAVUToFile(String name, String path)
+			throws JargonException {
+		log.info("addMdElementAVUToFile, name = {}", name);
+		UUID uuid = UUID.randomUUID();
+		AvuData avuData = AvuData.instance(name, uuid.toString(),
+				JargonMetadataTemplateConstants.MD_ELEMENT_UNIT);
+		irodsFileSystem.getIRODSAccessObjectFactory()
+				.getDataObjectAO(irodsAccount).addAVUMetadata(path, avuData);
 	}
 
 	// public static String computePublicDirectory(final IRODSAccount
