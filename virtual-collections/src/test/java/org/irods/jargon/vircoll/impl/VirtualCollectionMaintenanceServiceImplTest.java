@@ -54,7 +54,7 @@ public class VirtualCollectionMaintenanceServiceImplTest {
 		configurableVirtualCollection.setI18Description("i18ndescription");
 		configurableVirtualCollection.setI18icon("i18icon");
 		configurableVirtualCollection.setI18Name("i18name");
-		configurableVirtualCollection.setPagingStyle(PagingStyle.MIXED);
+		configurableVirtualCollection.setPagingStyle(PagingStyle.CONTINUOUS);
 		configurableVirtualCollection.setUniqueName(vcName);
 		configurableVirtualCollection.getParameters().put("test", "hello");
 
@@ -79,14 +79,14 @@ public class VirtualCollectionMaintenanceServiceImplTest {
 		configurableVirtualCollection.setI18Description("i18ndescription");
 		configurableVirtualCollection.setI18icon("i18icon");
 		configurableVirtualCollection.setI18Name("i18name");
-		configurableVirtualCollection.setPagingStyle(PagingStyle.MIXED);
+		configurableVirtualCollection.setPagingStyle(PagingStyle.CONTINUOUS);
 		configurableVirtualCollection.setUniqueName("sparql1");
 		configurableVirtualCollection.getParameters().put("test", "hello");
 
 		IRODSAccessObjectFactory irodsAccessObjectFactory = Mockito
 				.mock(IRODSAccessObjectFactory.class);
 		IRODSAccount irodsAccount = TestingPropertiesHelper
-				.buildDummyIrodsAccount();
+				.buildBogusIrodsAccount();
 
 		VirtualCollectionMaintenanceService virtualCollectionMaintenanceService = new VirtualCollectionMaintenanceServiceImpl(
 				irodsAccessObjectFactory, irodsAccount);
