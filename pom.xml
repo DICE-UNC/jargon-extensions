@@ -4,13 +4,14 @@
 	<groupId>org.irods.jargon</groupId>
 	<artifactId>jargon-extensions</artifactId>
 	<packaging>pom</packaging>
-	<version>4.0.2.2-SNAPSHOT</version>
+	<version>4.0.3.1-SNAPSHOT</version>
 	<name>jargon-extensions</name>
 	<description>Jargon Extensions - higher level general services built on top of jargon core to support indexing and general interface supporting abstractions</description>
 	<url>https://github.com/DICE-UNC/jargon-extensions</url>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<jargon.version>3.3.6-SNAPSHOT</jargon.version>
+		<jargon.version>4.0.3.1-SNAPSHOT</jargon.version>
+		<java.version>1.7</java.version>
 	</properties>
 	<issueManagement>
 		<system>GitHub</system>
@@ -267,9 +268,9 @@
 				<version>2.1</version>
 				<configuration>
 					<fork>true</fork>
-					<compilerVersion>1.6</compilerVersion>
-					<source>1.6</source>
-					<target>1.6</target>
+					<compilerVersion>${java.version}</compilerVersion>
+					<source>${java.version}</source>
+					<target>${java.version}</target>
 					<compilerArgument>-Xlint:-unchecked</compilerArgument>
 				</configuration>
 			</plugin>
