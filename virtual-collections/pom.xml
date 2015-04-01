@@ -6,9 +6,8 @@
 	<parent>
 		<artifactId>jargon-extensions</artifactId>
 		<groupId>org.irods.jargon</groupId>
-		<version>4.0.3-SNAPSHOT</version>
+		<version>4.0.3.1-SNAPSHOT</version>
 	</parent>
-	<groupId>org.irods.jargon</groupId>
 	<artifactId>virtual-collections</artifactId>
 	<name>virtual-collections</name>
 
@@ -29,11 +28,15 @@
 		<dependency>
 			<groupId>org.irods.jargon</groupId>
 			<artifactId>jargon-user-tagging</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.irods.jargon</groupId>
 			<artifactId>jargon-user-profile</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.irods.jargon</groupId>
+			<artifactId>jargon-extensions-if</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
