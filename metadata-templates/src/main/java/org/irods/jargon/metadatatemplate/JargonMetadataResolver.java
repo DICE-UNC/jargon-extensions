@@ -1,10 +1,8 @@
 package org.irods.jargon.metadatatemplate;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.FileNotFoundException;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -17,7 +15,6 @@ import org.irods.jargon.metadatatemplatesif.MetadataTemplateFileFilter;
 import org.irods.jargon.metadatatemplatesif.TemplateParserSingleton;
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.JargonException;
-import org.irods.jargon.core.pub.DataObjectAO;
 import org.irods.jargon.core.pub.DataTransferOperations;
 import org.irods.jargon.core.pub.IRODSFileSystem;
 import org.irods.jargon.core.pub.domain.AvuData;
@@ -26,16 +23,11 @@ import org.irods.jargon.core.pub.io.IRODSFileFactory;
 import org.irods.jargon.core.pub.io.IRODSFileFactoryImpl;
 import org.irods.jargon.core.pub.io.IRODSFileImpl;
 import org.irods.jargon.core.pub.io.IRODSFileInputStream;
-import org.irods.jargon.core.pub.io.IRODSFileWriter;
 import org.irods.jargon.core.query.AVUQueryElement;
 import org.irods.jargon.core.query.AVUQueryOperatorEnum;
-import org.irods.jargon.core.query.IRODSGenQueryBuilder;
 import org.irods.jargon.core.query.JargonQueryException;
 import org.irods.jargon.core.query.MetaDataAndDomainData;
-import org.irods.jargon.core.query.QueryConditionOperators;
-import org.irods.jargon.core.query.RodsGenQueryEnum;
 import org.irods.jargon.core.utils.LocalFileUtils;
-import org.irods.jargon.extensions.dotirods.DotIrodsCollection;
 import org.irods.jargon.extensions.dotirods.DotIrodsService;
 import org.irods.jargon.extensions.dotirods.DotIrodsServiceImpl;
 import org.slf4j.Logger;
@@ -52,6 +44,15 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 	private DataTransferOperations dto;
 	private DotIrodsService dotIrodsService;
 
+	/**
+	 * Constructor for a JargonMetadataResolver. JargonMetadataResolver must be
+	 * initialized with an irodsAccount that has rodsadmin privileges on the
+	 * relevant server.
+	 * 
+	 * @param irodsAdminAccount
+	 *            {@link irodsAccount} that has rodsadmin privileges
+	 * @throws JargonException
+	 */
 	public JargonMetadataResolver(IRODSAccount irodsAdminAccount)
 			throws JargonException {
 		irodsAccount = irodsAdminAccount;
@@ -68,16 +69,42 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 		// XXX Need to close the session
 	}
 
+	/**
+	 * Return a list of MetadataTemplates for all "publicly available" metadata
+	 * template files.</p>
+	 * <p>
+	 * Looks for public templates in the locations stored in the
+	 * <code>publicTemplateLocations</code> variable. This variable must be
+	 * initialized by the client by calling
+	 * <code>setPublicTemplateLocations</code>.
+	 * 
+	 * @return List of {@link MetadataTemplate}
+	 */
 	@Override
 	public List<MetadataTemplate> listPublicTemplates() {
-		// TODO Auto-generated method stub
 		List<MetadataTemplate> tempList = new ArrayList<MetadataTemplate>();
 		for (String dir : this.getPublicTemplateLocations()) {
-			
+			// TODO Auto-generated method stub
 		}
 		return null;
 	}
 
+	/**
+	 * Return a list of MetadataTemplates found in the iRODS hierarchy of which
+	 * the given path is the lowermost leaf.</p>
+	 * <p>
+	 * This list will only contain one MetadataTemplate for each template name.
+	 * In the event that the hierarchy has multiple templates with the same
+	 * name, the template nearest to the given directory will be returned. (That
+	 * is, if the directory's parent and grandparent both contain a metadata
+	 * template "specialMetadata", the template that is returned will be the one
+	 * specified in the parent directory, and the template specified in the
+	 * grandparent directory will not appear in the list.)
+	 * 
+	 * @param absolutePath
+	 *            {@link String} containing a fully-qualified iRODS path
+	 * @return List of {@link MetadataTemplate}
+	 */
 	@Override
 	public List<MetadataTemplate> listTemplatesInIrodsHierarchyAbovePath(
 			String absolutePath) throws IOException {
@@ -104,7 +131,15 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 		return templateList;
 	}
 
-	public List<MetadataTemplate> listTemplatesInUserHome(String userName)
+	/**
+	 * Returns a List of MetadataTemplates found in the home directory of a
+	 * given user.
+	 * 
+	 * @param userName
+	 * @return
+	 * @throws IOException
+	 */
+	private List<MetadataTemplate> listTemplatesInUserHome(String userName)
 			throws IOException {
 		List<MetadataTemplate> templateList = null;
 		File[] templateFiles = {};
@@ -179,13 +214,34 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 
 	}
 
+	/**
+	 * Return a MetadataTemplate given its name.</p>
+	 * <p>
+	 * If there are multiple templates for a given name, only one will be
+	 * returned. The resolution scheme is first in activeDir, then nearest in
+	 * the iRODS hierarchy above activeDir, then finally in the public template
+	 * directories. In practice, this will first call
+	 * <code>listTemplatesInIrodsHierarchyAbovePath</code>, and if no match is
+	 * found in that list, <code>listPublicTemplates</code>.
+	 * 
+	 * @param name
+	 * 			{@link String} containing the template name to be searched for
+	 * @param activeDir
+	 * 			{@link String} containing the active iRODS path
+	 */
 	@Override
-	public MetadataTemplate findTemplateByName(String name)
+	public MetadataTemplate findTemplateByName(String name, String activeDir)
 			throws FileNotFoundException, IOException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
+	/**
+	 * Return a MetadataTemplate given the fully-qualified path tot the template file.
+	 * 
+	 * @param fqName
+	 * 			{@link String} containing the iRODS path to a metadata template file.
+	 */
 	@Override
 	public MetadataTemplate findTemplateByFqName(String fqName)
 			throws FileNotFoundException, IOException {
@@ -248,24 +304,93 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 		return new MetadataMergeResult(template, orphans);
 	}
 
+	/**
+	 * Rename a metadata template file.
+	 * 
+	 * @param fqName
+	 *            {@link String}
+	 * @param newFqName
+	 *            {@link String}
+	 */
 	@Override
-	public void renameTemplateByFqName(String FqName) {
+	public void renameTemplateByFqName(String fqName, String newFqName) {
+		IRODSFile inFile = null;
+
+		try {
+			inFile = irodsFileFactory.instanceIRODSFile(fqName);
+		} catch (JargonException e) {
+			log.error("JargonException when trying to create IRODSFile");
+			log.error("File not renamed");
+			e.printStackTrace();
+			// TODO throw new IOException();
+		}
+
+		IRODSFile irodsRenameFile = null;
+
+		try {
+			irodsRenameFile = irodsFileFactory.instanceIRODSFile(newFqName);
+		} catch (JargonException e) {
+			// TODO Auto-generated catch block
+			log.error("JargonException when trying to create IRODSFile");
+			log.error("File not renamed");
+			e.printStackTrace();
+		}
+
+		inFile.renameTo(irodsRenameFile);
+		// TODO Check boolean
+	}
+
+	/**
+	 * Save over a metadata template file given its fully-qualified iRODS
+	 * path.</p>
+	 * <p>
+	 * This function contains a check to see if the UUID of the given file
+	 * matches the UUID of the new template to be saved. If not, the update
+	 * fails.
+	 * 
+	 * @param fqName
+	 *            {@link String}
+	 * @param mdTemplate
+	 *            {@link MetadataTemplate}
+	 */
+	@Override
+	public void updateTemplateByFqName(String fqName,
+			MetadataTemplate mdTemplate) {
 		// TODO Auto-generated method stub
 
 	}
 
+	/**
+	 * Delete a metadata template give its fully-qualified iRODS path.
+	 * 
+	 * @param fqName
+	 *            {@link String}
+	 */
 	@Override
-	public void updateTemplateByFqName(String FqName) {
+	public void deleteTemplateByFqName(String fqName) {
 		// TODO Auto-generated method stub
+		IRODSFile inFile = null;
 
+		try {
+			inFile = irodsFileFactory.instanceIRODSFile(fqName);
+		} catch (JargonException e) {
+			log.error("JargonException when trying to create IRODSFile");
+			log.error("File not renamed");
+			e.printStackTrace();
+			// TODO throw new IOException();
+		}
+
+		inFile.delete();
+		// TODO Check boolean
 	}
 
-	@Override
-	public void deleteTemplateByFqName(String FqName) {
-		// TODO Auto-generated method stub
-
-	}
-
+	/**
+	 * Return the fully-qualified path to a metadata template file given a UUID.
+	 * 
+	 * @param uuid
+	 *            {@link UUID}
+	 * @return String
+	 */
 	@Override
 	public String getFqNameForUUID(UUID uuid) {
 		log.info("getFqNameForUUID");
@@ -300,11 +425,27 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 			log.error(
 					"{} matches for specified UUID! This should be impossible!",
 					queryResult.size());
+			log.info("Returning the fully-qualified name for only the first matched file.");
 		}
 
 		return queryResult.get(0).getDomainObjectUniqueName();
 	}
 
+	/**
+	 * Parse a File object to a MetadataTemplate object by passing the contents
+	 * of the file to
+	 * <code>TemplateParserSingleton.createMetadataTemplateFromJSON()</p>
+	 * <p>
+	 * If the file does not already have a UUID associated with it, this
+	 * function will generate one and add an AVU containing it to the file as a
+	 * side effect.</p
+	 * 
+	 * @param inFile
+	 *            {@link File}
+	 * @return a <code>MetadataTemplate</code>
+	 * @throws JargonException
+	 * @throws IOException
+	 */
 	private MetadataTemplate processFileToMetadataTemplate(File inFile)
 			throws JargonException, IOException {
 		log.info("processFileToMetadataTemplate()");
@@ -368,6 +509,18 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 		return parser.createMetadataTemplateFromJSON(decoded);
 	}
 
+	/**
+	 * Parse an array of File objects to a list of MetadataTemplate objects.
+	 * Calls <code>processFileToMetadataTemplate</code> iteratively for each
+	 * <code>File</code>.
+	 * 
+	 * @param inFileArray
+	 *            an array of File objects
+	 * @return returnList, an ArrayList of metadataTemplates, in the same order
+	 *         they appeared in inFileArray
+	 * @throws JargonException
+	 * @throws IOException
+	 */
 	private List<MetadataTemplate> processFilesToMetadataTemplates(
 			File[] inFileArray) throws JargonException, IOException {
 		log.info("processFilesToMetadataTemplates()");
@@ -378,6 +531,19 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 		return returnList;
 	}
 
+	/**
+	 * Adds an AVU to a metadata template file denoting the template itself. The
+	 * AVU is of the format:
+	 * <ul>
+	 * <li>Attribute: Name of template</li>
+	 * <li>Value: UUID associated with template</li>
+	 * <li>Unit: iRODS:mdTemplate</li>
+	 * </ul>
+	 * 
+	 * @param name
+	 * @param path
+	 * @throws JargonException
+	 */
 	private void addMdTemplateAVUToFile(String name, String path)
 			throws JargonException {
 		log.info("addMdTemplateAVUToFile, name = {}", name);
@@ -387,7 +553,20 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 		irodsFileSystem.getIRODSAccessObjectFactory()
 				.getDataObjectAO(irodsAccount).addAVUMetadata(path, avuData);
 	}
-	
+
+	/**
+	 * Adds an AVU to a metadata template file denoting an element that appears
+	 * in that template. The AVU is of the format:
+	 * <ul>
+	 * <li>Attribute: Name of element</li>
+	 * <li>Value: UUID associated with element</li>
+	 * <li>Unit: iRODS:mdElement</li>
+	 * </ul>
+	 * 
+	 * @param name
+	 * @param path
+	 * @throws JargonException
+	 */
 	private void addMdElementAVUToFile(String name, String path)
 			throws JargonException {
 		log.info("addMdElementAVUToFile, name = {}", name);
