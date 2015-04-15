@@ -1,25 +1,17 @@
 package org.irods.jargon.metadatatemplate;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import org.irods.jargon.metadatatemplatesif.AbstractMetadataResolver;
-import org.irods.jargon.metadatatemplatesif.FormBasedMetadataTemplate;
-import org.irods.jargon.metadatatemplatesif.MetadataElement;
-import org.irods.jargon.metadatatemplatesif.MetadataTemplate;
-import org.irods.jargon.metadatatemplatesif.MetadataTemplateFileFilter;
-import org.irods.jargon.metadatatemplatesif.TemplateParserSingleton;
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.JargonException;
-import org.irods.jargon.core.pub.DataTransferOperations;
-import org.irods.jargon.core.pub.IRODSFileSystem;
+import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.core.pub.domain.AvuData;
 import org.irods.jargon.core.pub.io.IRODSFile;
-import org.irods.jargon.core.pub.io.IRODSFileFactory;
 import org.irods.jargon.core.pub.io.IRODSFileFactoryImpl;
 import org.irods.jargon.core.pub.io.IRODSFileImpl;
 import org.irods.jargon.core.pub.io.IRODSFileInputStream;
@@ -30,6 +22,12 @@ import org.irods.jargon.core.query.MetaDataAndDomainData;
 import org.irods.jargon.core.utils.LocalFileUtils;
 import org.irods.jargon.extensions.dotirods.DotIrodsService;
 import org.irods.jargon.extensions.dotirods.DotIrodsServiceImpl;
+import org.irods.jargon.metadatatemplatesif.AbstractMetadataResolver;
+import org.irods.jargon.metadatatemplatesif.FormBasedMetadataTemplate;
+import org.irods.jargon.metadatatemplatesif.MetadataElement;
+import org.irods.jargon.metadatatemplatesif.MetadataTemplate;
+import org.irods.jargon.metadatatemplatesif.MetadataTemplateFileFilter;
+import org.irods.jargon.metadatatemplatesif.TemplateParserSingleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,35 +36,28 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 
 	TemplateParserSingleton parser = TemplateParserSingleton.PARSER;
 
-	private IRODSFileSystem irodsFileSystem;
-	private IRODSFileFactory irodsFileFactory;
-	private IRODSAccount irodsAccount;
-	private DataTransferOperations dto;
-	private DotIrodsService dotIrodsService;
+	private final IRODSAccount irodsAccount;
+	private final DotIrodsService dotIrodsService;
+	private final IRODSAccessObjectFactory irodsAccessObjectFactory;
 
 	/**
 	 * Constructor for a JargonMetadataResolver. JargonMetadataResolver must be
-	 * initialized with an irodsAccount that has rodsadmin privileges on the
-	 * relevant server.
+	 * initialized with an irodsAccount on the relevant server.
 	 * 
-	 * @param irodsAdminAccount
-	 *            {@link irodsAccount} that has rodsadmin privileges
+	 * @param irodsAccount
+	 *            {@link IRODSAccount}
+	 * @param irodsAccessObjectFactory
+	 *            {@link IRODSAccessObjectFactory}
 	 * @throws JargonException
 	 */
-	public JargonMetadataResolver(IRODSAccount irodsAdminAccount)
+	public JargonMetadataResolver(IRODSAccount irodsAccount,
+			IRODSAccessObjectFactory irodsAccessObjectFactory)
 			throws JargonException {
-		irodsAccount = irodsAdminAccount;
-		irodsFileSystem = IRODSFileSystem.instance();
 
-		irodsFileFactory = irodsFileSystem.getIRODSFileFactory(irodsAccount);
-
-		dotIrodsService = new DotIrodsServiceImpl(
-				irodsFileSystem.getIRODSAccessObjectFactory(), irodsAccount);
-
-		dto = irodsFileSystem.getIRODSAccessObjectFactory()
-				.getDataTransferOperations(irodsAccount);
-
-		// XXX Need to close the session
+		this.irodsAccount = irodsAccount;
+		this.irodsAccessObjectFactory = irodsAccessObjectFactory;
+		dotIrodsService = new DotIrodsServiceImpl(irodsAccessObjectFactory,
+				irodsAccount);
 	}
 
 	/**
@@ -137,28 +128,21 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 	 * 
 	 * @param userName
 	 * @return
+	 * @throws JargonException
 	 * @throws IOException
 	 */
 	private List<MetadataTemplate> listTemplatesInUserHome(String userName)
-			throws IOException {
+			throws JargonException {
 		List<MetadataTemplate> templateList = null;
 		File[] templateFiles = {};
 
 		try {
 			templateFiles = dotIrodsService.listFilesOfTypeInDotIrodsUserHome(
 					userName, new MetadataTemplateFileFilter());
-		} catch (JargonException je) {
-			log.error("JargonException when listing files in directory");
-			je.printStackTrace();
-			return templateList;
-		}
-
-		try {
 			templateList = processFilesToMetadataTemplates(templateFiles);
-		} catch (JargonException je) {
+		} catch (JargonException | IOException je) {
 			log.error("JargonException when processing metadata template files");
-			je.printStackTrace();
-			return templateList;
+			throw new JargonException("unable to listFiles in user home", je);
 		}
 
 		return templateList;
@@ -225,9 +209,9 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 	 * found in that list, <code>listPublicTemplates</code>.
 	 * 
 	 * @param name
-	 * 			{@link String} containing the template name to be searched for
+	 *            {@link String} containing the template name to be searched for
 	 * @param activeDir
-	 * 			{@link String} containing the active iRODS path
+	 *            {@link String} containing the active iRODS path
 	 */
 	@Override
 	public MetadataTemplate findTemplateByName(String name, String activeDir)
@@ -237,10 +221,12 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 	}
 
 	/**
-	 * Return a MetadataTemplate given the fully-qualified path tot the template file.
+	 * Return a MetadataTemplate given the fully-qualified path tot the template
+	 * file.
 	 * 
 	 * @param fqName
-	 * 			{@link String} containing the iRODS path to a metadata template file.
+	 *            {@link String} containing the iRODS path to a metadata
+	 *            template file.
 	 */
 	@Override
 	public MetadataTemplate findTemplateByFqName(String fqName)
@@ -317,7 +303,8 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 		IRODSFile inFile = null;
 
 		try {
-			inFile = irodsFileFactory.instanceIRODSFile(fqName);
+			inFile = irodsAccessObjectFactory.getIRODSFileFactory(irodsAccount)
+					.instanceIRODSFile(fqName);
 		} catch (JargonException e) {
 			log.error("JargonException when trying to create IRODSFile");
 			log.error("File not renamed");
@@ -328,7 +315,8 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 		IRODSFile irodsRenameFile = null;
 
 		try {
-			irodsRenameFile = irodsFileFactory.instanceIRODSFile(newFqName);
+			irodsRenameFile = irodsAccessObjectFactory.getIRODSFileFactory(
+					irodsAccount).instanceIRODSFile(newFqName);
 		} catch (JargonException e) {
 			// TODO Auto-generated catch block
 			log.error("JargonException when trying to create IRODSFile");
@@ -372,7 +360,8 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 		IRODSFile inFile = null;
 
 		try {
-			inFile = irodsFileFactory.instanceIRODSFile(fqName);
+			inFile = irodsAccessObjectFactory.getIRODSFileFactory(irodsAccount)
+					.instanceIRODSFile(fqName);
 		} catch (JargonException e) {
 			log.error("JargonException when trying to create IRODSFile");
 			log.error("File not renamed");
@@ -403,7 +392,7 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 					AVUQueryElement.AVUQueryPart.VALUE,
 					AVUQueryOperatorEnum.EQUAL, uuid.toString()));
 
-			queryResult = irodsFileSystem.getIRODSAccessObjectFactory()
+			queryResult = irodsAccessObjectFactory
 					.getDataObjectAO(irodsAccount)
 					.findMetadataValuesByMetadataQuery(queryElements);
 		} catch (JargonQueryException jqe) {
@@ -453,7 +442,7 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 		IRODSFileInputStream fis = null;
 		byte[] b = null;
 
-		fis = irodsFileFactory
+		fis = irodsAccessObjectFactory.getIRODSFileFactory(irodsAccount)
 				.instanceIRODSFileInputStream((IRODSFileImpl) inFile);
 
 		// If a template does not have a UUID assigned on opening, generate a
@@ -476,8 +465,7 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 					AVUQueryOperatorEnum.EQUAL,
 					JargonMetadataTemplateConstants.MD_TEMPLATE_UNIT));
 
-			queryResult = irodsFileSystem
-					.getIRODSAccessObjectFactory()
+			queryResult = irodsAccessObjectFactory
 					.getDataObjectAO(irodsAccount)
 					.findMetadataValuesForDataObjectUsingAVUQuery(
 							queryElements, inFile.getAbsolutePath());
@@ -550,8 +538,8 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 		UUID uuid = UUID.randomUUID();
 		AvuData avuData = AvuData.instance(name, uuid.toString(),
 				JargonMetadataTemplateConstants.MD_TEMPLATE_UNIT);
-		irodsFileSystem.getIRODSAccessObjectFactory()
-				.getDataObjectAO(irodsAccount).addAVUMetadata(path, avuData);
+		irodsAccessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(
+				path, avuData);
 	}
 
 	/**
@@ -573,8 +561,8 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 		UUID uuid = UUID.randomUUID();
 		AvuData avuData = AvuData.instance(name, uuid.toString(),
 				JargonMetadataTemplateConstants.MD_ELEMENT_UNIT);
-		irodsFileSystem.getIRODSAccessObjectFactory()
-				.getDataObjectAO(irodsAccount).addAVUMetadata(path, avuData);
+		irodsAccessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(
+				path, avuData);
 	}
 
 	// public static String computePublicDirectory(final IRODSAccount
