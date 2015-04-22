@@ -7,7 +7,7 @@
 target
 *.log
 *.war
-testing.properties
+**/testing.properties
 Servers
 .DS_Store
 Thumbs.db
