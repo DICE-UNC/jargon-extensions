@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.irods.jargon.core.query.MetaDataAndDomainData;
-import org.irods.jargon.metadatatemplatesif.FormBasedMetadataTemplate;
-import org.irods.jargon.metadatatemplatesif.MetadataTemplate;
+import org.irods.jargon.metadatatemplate.FormBasedMetadataTemplate;
+import org.irods.jargon.metadatatemplate.MetadataTemplate;
 
 public class MetadataMergeResult {
 	private MetadataTemplate template = new FormBasedMetadataTemplate();

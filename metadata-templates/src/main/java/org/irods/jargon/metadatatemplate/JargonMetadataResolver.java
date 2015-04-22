@@ -22,12 +22,12 @@ import org.irods.jargon.core.query.MetaDataAndDomainData;
 import org.irods.jargon.core.utils.LocalFileUtils;
 import org.irods.jargon.extensions.dotirods.DotIrodsService;
 import org.irods.jargon.extensions.dotirods.DotIrodsServiceImpl;
-import org.irods.jargon.metadatatemplatesif.AbstractMetadataResolver;
-import org.irods.jargon.metadatatemplatesif.FormBasedMetadataTemplate;
-import org.irods.jargon.metadatatemplatesif.MetadataElement;
-import org.irods.jargon.metadatatemplatesif.MetadataTemplate;
-import org.irods.jargon.metadatatemplatesif.MetadataTemplateFileFilter;
-import org.irods.jargon.metadatatemplatesif.TemplateParserSingleton;
+import org.irods.jargon.metadatatemplate.AbstractMetadataResolver;
+import org.irods.jargon.metadatatemplate.FormBasedMetadataTemplate;
+import org.irods.jargon.metadatatemplate.MetadataElement;
+import org.irods.jargon.metadatatemplate.MetadataTemplate;
+import org.irods.jargon.metadatatemplate.MetadataTemplateFileFilter;
+import org.irods.jargon.metadatatemplate.TemplateParserSingleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

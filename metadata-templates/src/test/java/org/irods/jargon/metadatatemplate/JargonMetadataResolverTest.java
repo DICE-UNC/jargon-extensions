@@ -1,10 +1,16 @@
 package org.irods.jargon.metadatatemplate;
 
-import static org.junit.Assert.fail;
-
+import java.io.File;
 import java.util.Properties;
 
+import junit.framework.Assert;
+
+import org.irods.jargon.core.connection.IRODSAccount;
+import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.core.pub.IRODSFileSystem;
+import org.irods.jargon.core.pub.io.IRODSFile;
+import org.irods.jargon.extensions.dotirods.DotIrodsService;
+import org.irods.jargon.extensions.dotirods.DotIrodsServiceImpl;
 import org.irods.jargon.testutils.TestingPropertiesHelper;
 import org.junit.After;
 import org.junit.BeforeClass;
@@ -36,103 +42,47 @@ public class JargonMetadataResolverTest {
 	}
 
 	@Test
-	public void testListTemplatesInIrodsHierarchyAbovePath() {
-		fail("Not yet implemented");
-	}
+	public void testSaveMetadataTemplateAsJsonNoDotIrodsSpecifiedDir()
+			throws Exception {
 
-	@Test
-	public void testListPublicTemplates() {
-		fail("Not yet implemented");
-	}
+		String testDirName = "testSaveMetadataTemplateAsJsonNoDotIrodsSpecifiedDir";
 
-	@Test
-	public void testFindTemplateByName() {
-		fail("Not yet implemented");
-	}
+		String targetIrodsCollection = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
+								+ testDirName);
 
-	@Test
-	public void testFindTemplateByFqName() {
-		fail("Not yet implemented");
-	}
+		IRODSAccount irodsAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
 
-	@Test
-	public void testSaveTemplateAsJSON() {
-		fail("Not yet implemented");
-	}
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
+				.getIRODSAccessObjectFactory();
+		IRODSFile targetCollectionAsFile = accessObjectFactory
+				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
+						targetIrodsCollection);
+		targetCollectionAsFile.mkdirs();
+		FormBasedMetadataTemplate template = new FormBasedMetadataTemplate();
+		template.setAuthor("me");
+		template.setDescription("descr");
+		template.setName(testDirName);
+		template.setRequired(true);
+		template.setSource(SourceEnum.USER);
+		template.setVersion("0.0.1");
 
-	@Test
-	public void testRenameTemplateByFqName() {
-		fail("Not yet implemented");
-	}
+		JargonMetadataResolver resolver = new JargonMetadataResolver(
+				irodsAccount, accessObjectFactory);
 
-	@Test
-	public void testUpdateTemplateByFqName() {
-		fail("Not yet implemented");
-	}
+		resolver.saveTemplateAsJSON(template, targetIrodsCollection);
 
-	@Test
-	public void testDeleteTemplateByFqName() {
-		fail("Not yet implemented");
-	}
+		DotIrodsService dotIrodsService = new DotIrodsServiceImpl(
+				accessObjectFactory, irodsAccount);
+		File[] metadataTemplateFiles = dotIrodsService
+				.listFilesOfTypeInDirectoryHierarchyDotIrods(
+						targetIrodsCollection,
+						new MetadataTemplateFileFilter(), true);
 
-	@Test
-	public void testGetFqNameForUUID() {
-		fail("Not yet implemented");
-	}
+		Assert.assertFalse("no metadata template stored",
+				metadataTemplateFiles.length == 0);
 
-	@Test
-	public void testJargonMetadataResolver() {
-		fail("Not yet implemented");
 	}
-
-	@Test
-	public void testPopulateFormBasedMetadataTemplateWithAVUs() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	public void testAbstractMetadataResolver() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	public void testGetPublicTemplateLocations() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	public void testSetPublicTemplateLocations() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	public void testListAllTemplates() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	public void testListAllRequiredTemplates() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	public void testFindTemplateByUUID() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	public void testRenameTemplateByUUID() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	public void testUpdateTemplateByUUID() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	public void testDeleteTemplateByUUID() {
-		fail("Not yet implemented");
-	}
-
 }
