@@ -15,7 +15,7 @@ public class MetadataTemplateFileFilter implements FilenameFilter {
 
 	@Override
 	public boolean accept(File file, String fileName) {
-		if (fileName.endsWith(MetadataTemplateConstants.METADATA_TEMPLATE_EXT)) {
+		if (fileName.endsWith(MetadataTemplateConstants.TEMPLATE_FILE_EXT)) {
 			return true;
 		}
 		else {	

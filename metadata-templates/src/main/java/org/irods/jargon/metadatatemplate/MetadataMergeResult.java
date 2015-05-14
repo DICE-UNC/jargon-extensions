@@ -4,27 +4,34 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.irods.jargon.core.query.MetaDataAndDomainData;
-import org.irods.jargon.metadatatemplate.FormBasedMetadataTemplate;
 import org.irods.jargon.metadatatemplate.MetadataTemplate;
 
 public class MetadataMergeResult {
-	private MetadataTemplate template = new FormBasedMetadataTemplate();
+	private List<MetadataTemplate> templates = new ArrayList<MetadataTemplate>();
 	private List<MetaDataAndDomainData> unmatchedAvus = new ArrayList<MetaDataAndDomainData>();
-	
-	public MetadataMergeResult(MetadataTemplate inTemplate, List<MetaDataAndDomainData> inAvus) {
-		setTemplate(inTemplate);
+
+	public MetadataMergeResult(List<MetadataTemplate> inTemplates,
+			List<MetaDataAndDomainData> inAvus) {
+		setTemplates(inTemplates);
 		setUnmatchedAvus(inAvus);
 	}
-	
-	public MetadataTemplate getTemplate() {
-		return template;
+
+	public List<MetadataTemplate> getTemplates() {
+		return templates;
 	}
-	public void setTemplate(MetadataTemplate template) {
-		this.template = template.deepCopy();
+
+	public void setTemplates(List<MetadataTemplate> templateList) {
+		this.templates = new ArrayList<MetadataTemplate>();
+
+		for (MetadataTemplate mt : templateList) {
+			this.templates.add(mt.deepCopy());
+		}
 	}
+
 	public List<MetaDataAndDomainData> getUnmatchedAvus() {
 		return unmatchedAvus;
 	}
+
 	public void setUnmatchedAvus(List<MetaDataAndDomainData> unmatchedAvus) {
 		for (MetaDataAndDomainData avu : unmatchedAvus) {
 			this.unmatchedAvus.add(avu);
