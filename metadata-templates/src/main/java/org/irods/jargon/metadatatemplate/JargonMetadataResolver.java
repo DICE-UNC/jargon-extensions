@@ -125,9 +125,9 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 	 * @return List of {@link MetadataTemplate}
 	 */
 	@Override
-	public List<MetadataTemplate> listTemplatesInIrodsHierarchyAbovePath(
+	public List<MetadataTemplate> listTemplatesInDirectoryHierarchyAbovePath(
 			String absolutePath) throws IOException {
-		log.info("listTemplatesInIrodsHierarchyAbovePath");
+		log.info("listTemplatesInDirectoryHierarchyAbovePath");
 		List<MetadataTemplate> templateList = null;
 		File[] templateFiles = {};
 
@@ -955,7 +955,10 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 
 		returnTemplate = parser.createMetadataTemplateFromJSON(decoded);
 
-		// Decorate with data stored in AVUs, not in file text
+		// Decorate with data stored in iRODS db, not in file text
+		
+		// fqName
+		returnTemplate.setFqName(inFile.getAbsolutePath());
 
 		// UUID
 		returnTemplate.setUuid(UUID
