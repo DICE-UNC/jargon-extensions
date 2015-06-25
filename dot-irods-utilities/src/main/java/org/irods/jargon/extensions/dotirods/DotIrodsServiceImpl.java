@@ -295,6 +295,7 @@ public class DotIrodsServiceImpl extends AbstractJargonService implements
 
 		log.info("irodsAbsolutePath:{}", irodsAbsolutePathToParent);
 
+		@SuppressWarnings("unused")
 		Collection collection = collectionAO
 				.findByAbsolutePath(irodsAbsolutePathToParent);
 
@@ -303,6 +304,7 @@ public class DotIrodsServiceImpl extends AbstractJargonService implements
 		boolean retVal = true;
 
 		try {
+			@SuppressWarnings("unused")
 			IRODSFile userHomeAsFile = this
 					.getIrodsAccessObjectFactory()
 					.getIRODSFileFactory(getIrodsAccount())
