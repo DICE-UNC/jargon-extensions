@@ -13,9 +13,8 @@ import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.core.service.AbstractJargonService;
 import org.irods.jargon.core.utils.LocalFileUtils;
 import org.irods.jargon.core.utils.MiscIRODSUtils;
-import org.irods.jargon.vircoll.VirtualCollection;
+import org.irods.jargon.vircoll.AbstractVirtualCollection;
 import org.irods.jargon.vircoll.VirtualCollectionDiscoveryService;
-import org.irods.jargon.vircoll.VirtualCollectionFactory;
 import org.irods.jargon.vircoll.VirtualCollectionMarshalingException;
 import org.irods.jargon.vircoll.types.CollectionBasedVirtualCollection;
 import org.irods.jargon.vircoll.types.StarredFoldersVirtualCollection;
@@ -38,10 +37,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class VirtualCollectionDiscoveryServiceImpl extends
 		AbstractJargonService implements VirtualCollectionDiscoveryService {
 
-	/**
-	 * Settable factory for virtual collections
-	 */
-	private VirtualCollectionFactory virtualCollectionFactory;
 	private final ObjectMapper mapper = new ObjectMapper();
 
 	private static Logger log = LoggerFactory
@@ -73,7 +68,7 @@ public class VirtualCollectionDiscoveryServiceImpl extends
 	 * @throws VirtualCollectionMarshalingException
 	 */
 	public String stringRepresentationFromVirtualCollection(
-			final VirtualCollection abstractVirtualCollection)
+			final AbstractVirtualCollection abstractVirtualCollection)
 			throws VirtualCollectionMarshalingException {
 		log.info("stringRepresentationFromVirtualCollection()");
 
@@ -106,7 +101,7 @@ public class VirtualCollectionDiscoveryServiceImpl extends
 	 * @return {@link VirtualCollection}
 	 * @throws VirtualCollectionMarshalingException
 	 */
-	public VirtualCollection virtualCollectionFromStringRepresentation(
+	public AbstractVirtualCollection virtualCollectionFromStringRepresentation(
 			final String stringRepresentation)
 			throws VirtualCollectionMarshalingException {
 
@@ -150,10 +145,10 @@ public class VirtualCollectionDiscoveryServiceImpl extends
 	 * listDefaultUserCollections()
 	 */
 	@Override
-	public List<VirtualCollection> listDefaultUserCollections() {
+	public List<AbstractVirtualCollection> listDefaultUserCollections() {
 		log.info("listDefaultUserCollections()");
 
-		List<VirtualCollection> virtualCollections = new ArrayList<VirtualCollection>();
+		List<AbstractVirtualCollection> virtualCollections = new ArrayList<AbstractVirtualCollection>();
 		// add root
 		virtualCollections
 				.add(new CollectionBasedVirtualCollection("root", "/"));
@@ -182,15 +177,6 @@ public class VirtualCollectionDiscoveryServiceImpl extends
 		log.info("done...");
 		return virtualCollections;
 
-	}
-
-	public VirtualCollectionFactory getVirtualCollectionFactory() {
-		return virtualCollectionFactory;
-	}
-
-	public void setVirtualCollectionFactory(
-			VirtualCollectionFactory virtualCollectionFactory) {
-		this.virtualCollectionFactory = virtualCollectionFactory;
 	}
 
 }
