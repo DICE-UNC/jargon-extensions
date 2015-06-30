@@ -10,6 +10,7 @@ import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.core.query.CollectionAndDataObjectListingEntry;
 import org.irods.jargon.core.query.CollectionAndDataObjectListingEntry.ObjectType;
 import org.irods.jargon.core.query.PagingAwareCollectionListing;
+import org.irods.jargon.testutils.TestingPropertiesHelper;
 import org.irods.jargon.vircoll.types.CollectionBasedVirtualCollection;
 import org.irods.jargon.vircoll.types.CollectionBasedVirtualCollectionExecutor;
 import org.junit.Test;
@@ -22,7 +23,8 @@ public class CollectionBasedVirtualCollectionTest {
 		String testPath = "/a/collection/here";
 		String subColl = "subcoll";
 		String dataName = "data.txt";
-		IRODSAccount irodsAccount = Mockito.mock(IRODSAccount.class);
+		IRODSAccount irodsAccount = TestingPropertiesHelper
+				.buildBogusIrodsAccount();
 		IRODSAccessObjectFactory irodsAccessObjectFactory = Mockito
 				.mock(IRODSAccessObjectFactory.class);
 
@@ -77,7 +79,8 @@ public class CollectionBasedVirtualCollectionTest {
 		String subColl = "subcoll";
 		String subCollQuery = testPath + "/" + subColl;
 		String dataName = "data.txt";
-		IRODSAccount irodsAccount = Mockito.mock(IRODSAccount.class);
+		IRODSAccount irodsAccount = TestingPropertiesHelper
+				.buildBogusIrodsAccount();
 		IRODSAccessObjectFactory irodsAccessObjectFactory = Mockito
 				.mock(IRODSAccessObjectFactory.class);
 
@@ -133,7 +136,8 @@ public class CollectionBasedVirtualCollectionTest {
 		String testPath = "/a/collection/here";
 		String subColl = "subcoll";
 		String dataName = "data.txt";
-		IRODSAccount irodsAccount = Mockito.mock(IRODSAccount.class);
+		IRODSAccount irodsAccount = TestingPropertiesHelper
+				.buildBogusIrodsAccount();
 		IRODSAccessObjectFactory irodsAccessObjectFactory = Mockito
 				.mock(IRODSAccessObjectFactory.class);
 
@@ -188,7 +192,8 @@ public class CollectionBasedVirtualCollectionTest {
 		String subColl = "subcoll";
 		String subCollQuery = "/blahdeblah/helllo/" + subColl;
 		String dataName = "data.txt";
-		IRODSAccount irodsAccount = Mockito.mock(IRODSAccount.class);
+		IRODSAccount irodsAccount = TestingPropertiesHelper
+				.buildBogusIrodsAccount();
 		IRODSAccessObjectFactory irodsAccessObjectFactory = Mockito
 				.mock(IRODSAccessObjectFactory.class);
 
