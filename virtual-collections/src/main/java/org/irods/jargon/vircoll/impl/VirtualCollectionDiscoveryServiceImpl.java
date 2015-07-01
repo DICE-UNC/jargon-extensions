@@ -7,11 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.irods.jargon.core.connection.IRODSAccount;
-import org.irods.jargon.core.exception.JargonException;
-import org.irods.jargon.core.exception.JargonRuntimeException;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.core.service.AbstractJargonService;
-import org.irods.jargon.core.utils.LocalFileUtils;
 import org.irods.jargon.core.utils.MiscIRODSUtils;
 import org.irods.jargon.vircoll.AbstractVirtualCollection;
 import org.irods.jargon.vircoll.VirtualCollectionDiscoveryService;
@@ -160,19 +157,6 @@ public class VirtualCollectionDiscoveryServiceImpl extends
 								.computeHomeDirectoryForIRODSAccount(getIrodsAccount())));
 		// add starred folders
 		virtualCollections.add(new StarredFoldersVirtualCollection());
-
-		/*
-		 * Demo code for DFC - this should actually be a serialized thing
-		 */
-		String query;
-		try {
-			query = LocalFileUtils
-					.getClasspathResourceFileAsString("/sparql-templates/baseVocabQuery.txt");
-		} catch (JargonException e) {
-			log.error("error creating virtual collection for sparql", e);
-			throw new JargonRuntimeException(
-					"cannot create virtual collection for sparql", e);
-		}
 
 		log.info("done...");
 		return virtualCollections;

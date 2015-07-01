@@ -8,10 +8,14 @@ import org.irods.jargon.core.exception.DataNotFoundException;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.core.service.AbstractJargonService;
+import org.irods.jargon.usertagging.starring.IRODSStarringService;
+import org.irods.jargon.usertagging.starring.IRODSStarringServiceImpl;
 import org.irods.jargon.vircoll.AbstractVirtualCollection;
 import org.irods.jargon.vircoll.AbstractVirtualCollectionExecutor;
 import org.irods.jargon.vircoll.VirtualCollectionExecutorFactory;
+import org.irods.jargon.vircoll.types.CollectionBasedVirtualCollection;
 import org.irods.jargon.vircoll.types.CollectionBasedVirtualCollectionExecutor;
+import org.irods.jargon.vircoll.types.StarredFoldersVirtualCollection;
 import org.irods.jargon.vircoll.types.StarredFoldersVirtualCollectionExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,23 +51,38 @@ public class VirtualCollectionFactoryImpl extends AbstractJargonService
 	}
 
 	@Override
-	public StarredFoldersVirtualCollectionExecutor instanceStarredFolderVirtualCollection() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public CollectionBasedVirtualCollectionExecutor instanceCollectionBasedVirtualCollectionExecutor(
-			String uniqueName, String parentPath) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public AbstractVirtualCollectionExecutor instanceExecutorBasedOnVirtualCollection(
 			AbstractVirtualCollection virtualCollection)
 			throws DataNotFoundException, JargonException {
-		// TODO Auto-generated method stub
-		return null;
+		log.info("instanceExecutor()");
+
+		if (virtualCollection == null) {
+			throw new IllegalArgumentException(
+					"null or empty virtualCollection");
+		}
+
+		log.info("virtualCollection:{}", virtualCollection);
+
+		log.info("finding executor for vc...");
+
+		if (virtualCollection.getType().equals(
+				CollectionBasedVirtualCollection.MY_TYPE)) {
+
+			return new CollectionBasedVirtualCollectionExecutor(
+					(CollectionBasedVirtualCollection) virtualCollection,
+					getIrodsAccessObjectFactory(), getIrodsAccount());
+		} else if (virtualCollection.getType().equals(
+				StarredFoldersVirtualCollection.MY_TYPE)) {
+			// TODO: refactor into executor code
+			IRODSStarringService irodsStarringService = new IRODSStarringServiceImpl(
+					getIrodsAccessObjectFactory(), getIrodsAccount());
+			return new StarredFoldersVirtualCollectionExecutor(
+					(StarredFoldersVirtualCollection) virtualCollection,
+					getIrodsAccessObjectFactory(), getIrodsAccount(),
+					irodsStarringService);
+		} else {
+			throw new UnsupportedOperationException(
+					"cannot support collection type yet");
+		}
 	}
 }
