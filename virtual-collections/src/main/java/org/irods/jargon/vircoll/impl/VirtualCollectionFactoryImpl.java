@@ -85,4 +85,14 @@ public class VirtualCollectionFactoryImpl extends AbstractJargonService
 					"cannot support collection type yet");
 		}
 	}
+
+	@SuppressWarnings("rawtypes")
+	@Override
+	public AbstractVirtualCollectionExecutor instanceCollectionBasedVirtualCollectionExecutorAtRoot()
+			throws JargonException {
+		log.info("instanceCollectionBasedVirtualCollectionExecutorAtRoot()");
+		AbstractVirtualCollection virColl = new CollectionBasedVirtualCollection(
+				"root", "/");
+		return instanceExecutorBasedOnVirtualCollection(virColl);
+	}
 }
