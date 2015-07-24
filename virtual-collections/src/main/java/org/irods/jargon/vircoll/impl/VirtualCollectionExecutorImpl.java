@@ -94,17 +94,34 @@ public abstract class VirtualCollectionExecutorImpl<T extends AbstractVirtualCol
 		log.info("path:{}", path);
 		log.info("offset:{}", offset);
 
-		if (getCollection().isPathHintable()) {
+		if (path.isEmpty()) {
+			// no path provided, so just do the query all
+			return queryAll(offset);
+		} else if (getCollection().isPathHintable()) {
+			// i have a path hint, do I accept them? This will be up to the
+			// subclass. Path hintable classes need to specify handling for a
+			// path
 			log.error("pathHintable collection has not overridden the queryAll method that takes a path hint");
 			throw new UnsupportedOperationException(
 					"a pathHintable virtual collection has not overridden the queryAll method that takes a path hint");
 		}
 
 		log.info("dropping down to normal iRODS ls query as the virtual collection is not path hintable");
+		return deferToCollectionBasedPathQuery(path, offset);
+
+	}
+
+	/**
+	 * @param path
+	 * @param offset
+	 * @return
+	 * @throws JargonException
+	 */
+	private PagingAwareCollectionListing deferToCollectionBasedPathQuery(
+			String path, int offset) throws JargonException {
 		AbstractVirtualCollectionExecutor<?> exec = this.virtualCollectionExecutorFactory
 				.instanceCollectionBasedVirtualCollectionExecutorAtRoot();
 		return exec.queryAll(path, offset);
-
 	}
 
 }
