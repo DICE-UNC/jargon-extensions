@@ -106,6 +106,7 @@ public class StarredFoldersVirtualCollectionExecutor extends
 			entry.setLastResult(coll.isLastResult());
 			entry.setObjectType(ObjectType.COLLECTION);
 			entry.setCreatedAt(coll.getCreatedAt());
+			entry.setModifiedAt(coll.getModifiedAt());
 			CollectionAndPath collAndPath = MiscIRODSUtils
 					.separateCollectionAndPathFromGivenAbsolutePath(coll
 							.getDomainUniqueName());
@@ -137,6 +138,7 @@ public class StarredFoldersVirtualCollectionExecutor extends
 			entry.setDataSize(coll.getDataSize());
 			entry.setLastResult(coll.isLastResult());
 			entry.setCreatedAt(coll.getCreatedAt());
+			entry.setModifiedAt(coll.getModifiedAt());
 			entry.setObjectType(ObjectType.DATA_OBJECT);
 			CollectionAndPath collAndPath = MiscIRODSUtils
 					.separateCollectionAndPathFromGivenAbsolutePath(coll
