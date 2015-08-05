@@ -152,7 +152,7 @@ public class VirtualCollectionDiscoveryServiceImpl extends
 		// add user dir
 		virtualCollections
 				.add(new CollectionBasedVirtualCollection(
-						"home",
+						"My Home",
 						MiscIRODSUtils
 								.computeHomeDirectoryForIRODSAccount(getIrodsAccount())));
 		// add starred folders
