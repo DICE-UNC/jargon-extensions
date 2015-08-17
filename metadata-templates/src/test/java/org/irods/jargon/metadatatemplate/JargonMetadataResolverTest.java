@@ -33,17 +33,21 @@ public class JargonMetadataResolverTest {
 	private static IRODSFileSystem irodsFileSystem;
 	// "/Users/rskarbez/Documents/metadataTemplates/jargon-extensions/metadata-templates/src/test/resources/templates/test1.mdtemplate",
 
-	private static final String TEMPLATE_FILE_NAME1 = "test1.mdtemplate";
-	private static final String TEMPLATE_FILE_NAME2 = "test2.mdtemplate";
-	private static final String TEMPLATE_FILE_NAME3 = "test3.mdtemplate";
+	private String PRIMARY_RESOURCE_NAME = testingProperties
+			.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY);
+
+	private static final String TEMPLATE_FILE_NAME1 = "src/test/resources/templates/test1.mdtemplate";
+	private static final String TEMPLATE_FILE_NAME2 = "src/test/resources/templates/test2.mdtemplate";
+	private static final String TEMPLATE_FILE_NAME3 = "src/test/resources/templates/test3.mdtemplate";
 	/*
-	private static final String TEMPLATE_FILE_PATH1 = "/templates/test1.mdtemplate";
-	private static final String TEMPLATE_FILE_PATH2 = "/templates/test2.mdtemplate";
-	private static final String TEMPLATE_FILE_PATH3 = "/templates/test3.mdtemplate";
-	*/
+	 * private static final String TEMPLATE_FILE_PATH1 =
+	 * "/templates/test1.mdtemplate"; private static final String
+	 * TEMPLATE_FILE_PATH2 = "/templates/test2.mdtemplate"; private static final
+	 * String TEMPLATE_FILE_PATH3 = "/templates/test3.mdtemplate";
+	 */
 	private static final String TEMPLATE_FILE_PATH1 = "/Users/rskarbez/Documents/metadataTemplates/jargon-extensions/metadata-templates/src/test/resources/templates/test1.mdtemplate";
 	private static final String TEMPLATE_FILE_PATH2 = "/Users/rskarbez/Documents/metadataTemplates/jargon-extensions/metadata-templates/src/test/resources/templates/test2.mdtemplate";
-	private static final String TEMPLATE_FILE_PATH3 = "/Users/rskarbez/Documents/metadataTemplates/jargon-extensions/metadata-templates/src/test/resources/templates/test1.mdtemplate";
+	private static final String TEMPLATE_FILE_PATH3 = "/Users/rskarbez/Documents/metadataTemplates/jargon-extensions/metadata-templates/src/test/resources/templates/test3.mdtemplate";
 	public static final String IRODS_TEST_SUBDIR_PATH = "JargonMetadataResolverTest";
 	private static org.irods.jargon.testutils.IRODSTestSetupUtilities irodsTestSetupUtilities = null;
 
@@ -144,14 +148,11 @@ public class JargonMetadataResolverTest {
 						irodsAccount);
 
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				targetIrodsCollection1,
-				TestingPropertiesHelper.IRODS_RESOURCE_KEY, null, null);
+				targetIrodsCollection1, PRIMARY_RESOURCE_NAME, null, null);
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2,
-				targetIrodsCollection2,
-				TestingPropertiesHelper.IRODS_RESOURCE_KEY, null, null);
+				targetIrodsCollection2, PRIMARY_RESOURCE_NAME, null, null);
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME3,
-				targetIrodsCollection2,
-				TestingPropertiesHelper.IRODS_RESOURCE_KEY, null, null);
+				targetIrodsCollection2, PRIMARY_RESOURCE_NAME, null, null);
 
 		List<MetadataTemplate> metadataTemplates = new ArrayList<MetadataTemplate>();
 
@@ -202,11 +203,11 @@ public class JargonMetadataResolverTest {
 						irodsAccount);
 
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				targetIrodsCollection1, "", null, null);
+				targetIrodsCollection1, PRIMARY_RESOURCE_NAME, null, null);
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				targetIrodsCollection2, "", null, null);
+				targetIrodsCollection2, PRIMARY_RESOURCE_NAME, null, null);
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2,
-				targetIrodsCollection2, "", null, null);
+				targetIrodsCollection2, PRIMARY_RESOURCE_NAME, null, null);
 
 		String firstTemplateFqName = targetIrodsCollection1
 				+ TEMPLATE_FILE_NAME1;
@@ -279,11 +280,11 @@ public class JargonMetadataResolverTest {
 						irodsAccount);
 
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				mdTemplatePath3, "", null, null);
+				mdTemplatePath3, PRIMARY_RESOURCE_NAME, null, null);
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2,
-				mdTemplatePath2, "", null, null);
+				mdTemplatePath2, PRIMARY_RESOURCE_NAME, null, null);
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME3,
-				mdTemplatePath1, "", null, null);
+				mdTemplatePath1, PRIMARY_RESOURCE_NAME, null, null);
 
 		List<MetadataTemplate> metadataTemplates = new ArrayList<MetadataTemplate>();
 
@@ -348,11 +349,11 @@ public class JargonMetadataResolverTest {
 						irodsAccount);
 
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				mdTemplatePath3, "", null, null);
+				mdTemplatePath3, PRIMARY_RESOURCE_NAME, null, null);
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2,
-				mdTemplatePath2, "", null, null);
+				mdTemplatePath2, PRIMARY_RESOURCE_NAME, null, null);
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				mdTemplatePath1, "", null, null);
+				mdTemplatePath1, PRIMARY_RESOURCE_NAME, null, null);
 
 		List<MetadataTemplate> metadataTemplates = new ArrayList<MetadataTemplate>();
 
@@ -417,11 +418,11 @@ public class JargonMetadataResolverTest {
 						irodsAccount);
 
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				mdTemplatePath2, "", null, null);
+				mdTemplatePath2, PRIMARY_RESOURCE_NAME, null, null);
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2,
-				mdTemplatePath1, "", null, null);
+				mdTemplatePath1, PRIMARY_RESOURCE_NAME, null, null);
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME3,
-				targetIrodsCollection3, "", null, null);
+				targetIrodsCollection3, PRIMARY_RESOURCE_NAME, null, null);
 
 		List<MetadataTemplate> metadataTemplates = new ArrayList<MetadataTemplate>();
 
@@ -483,11 +484,11 @@ public class JargonMetadataResolverTest {
 						irodsAccount);
 
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				mdTemplatePath2, "", null, null);
+				mdTemplatePath2, PRIMARY_RESOURCE_NAME, null, null);
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2,
-				mdTemplatePath1, "", null, null);
+				mdTemplatePath1, PRIMARY_RESOURCE_NAME, null, null);
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2,
-				targetIrodsCollection3, "", null, null);
+				targetIrodsCollection3, PRIMARY_RESOURCE_NAME, null, null);
 
 		String firstTemplateFqName = mdTemplatePath1 + TEMPLATE_FILE_NAME2;
 
@@ -554,11 +555,11 @@ public class JargonMetadataResolverTest {
 						irodsAccount);
 
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				mdTemplatePath2, "", null, null);
+				mdTemplatePath2, PRIMARY_RESOURCE_NAME, null, null);
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2,
-				mdTemplatePath1, "", null, null);
+				mdTemplatePath1, PRIMARY_RESOURCE_NAME, null, null);
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME3,
-				targetIrodsCollection3, "", null, null);
+				targetIrodsCollection3, PRIMARY_RESOURCE_NAME, null, null);
 
 		String templateFqName = mdTemplatePath2 + '/' + TEMPLATE_FILE_NAME1;
 
@@ -625,11 +626,11 @@ public class JargonMetadataResolverTest {
 						irodsAccount);
 
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				mdTemplatePath2, "", null, null);
+				mdTemplatePath2, PRIMARY_RESOURCE_NAME, null, null);
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2,
-				mdTemplatePath1, "", null, null);
+				mdTemplatePath1, PRIMARY_RESOURCE_NAME, null, null);
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				targetIrodsCollection3, "", null, null);
+				targetIrodsCollection3, PRIMARY_RESOURCE_NAME, null, null);
 
 		String templateFqName = mdTemplatePath2 + '/' + TEMPLATE_FILE_NAME1;
 
@@ -696,11 +697,11 @@ public class JargonMetadataResolverTest {
 						irodsAccount);
 
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				mdTemplatePath2, "", null, null);
+				mdTemplatePath2, PRIMARY_RESOURCE_NAME, null, null);
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2,
-				mdTemplatePath1, "", null, null);
+				mdTemplatePath1, PRIMARY_RESOURCE_NAME, null, null);
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME3,
-				targetIrodsCollection3, "", null, null);
+				targetIrodsCollection3, PRIMARY_RESOURCE_NAME, null, null);
 
 		MetadataTemplate metadataTemplate = new FormBasedMetadataTemplate();
 
@@ -773,11 +774,11 @@ public class JargonMetadataResolverTest {
 						irodsAccount);
 
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				mdTemplatePath3, "", null, null);
+				mdTemplatePath3, PRIMARY_RESOURCE_NAME, null, null);
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2,
-				mdTemplatePath2, "", null, null);
+				mdTemplatePath2, PRIMARY_RESOURCE_NAME, null, null);
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME3,
-				mdTemplatePath1, "", null, null);
+				mdTemplatePath1, PRIMARY_RESOURCE_NAME, null, null);
 
 		String templateFqName = mdTemplatePath3 + '/' + TEMPLATE_FILE_NAME1;
 
@@ -852,11 +853,11 @@ public class JargonMetadataResolverTest {
 						irodsAccount);
 
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				mdTemplatePath3, "", null, null);
+				mdTemplatePath3, PRIMARY_RESOURCE_NAME, null, null);
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2,
-				mdTemplatePath2, "", null, null);
+				mdTemplatePath2, PRIMARY_RESOURCE_NAME, null, null);
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME3,
-				mdTemplatePath1, "", null, null);
+				mdTemplatePath1, PRIMARY_RESOURCE_NAME, null, null);
 
 		MetadataTemplate metadataTemplate = new FormBasedMetadataTemplate();
 
@@ -912,11 +913,11 @@ public class JargonMetadataResolverTest {
 						irodsAccount);
 
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				targetIrodsCollection1, "", null, null);
+				targetIrodsCollection1, PRIMARY_RESOURCE_NAME, null, null);
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2,
-				targetIrodsCollection2, "", null, null);
+				targetIrodsCollection2, PRIMARY_RESOURCE_NAME, null, null);
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME3,
-				targetIrodsCollection2, "", null, null);
+				targetIrodsCollection2, PRIMARY_RESOURCE_NAME, null, null);
 
 		String templateFqName = targetIrodsCollection1 + '/'
 				+ TEMPLATE_FILE_NAME1;
@@ -982,11 +983,11 @@ public class JargonMetadataResolverTest {
 						irodsAccount);
 
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				targetIrodsCollection1, "", null, null);
+				targetIrodsCollection1, PRIMARY_RESOURCE_NAME, null, null);
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2,
-				targetIrodsCollection2, "", null, null);
+				targetIrodsCollection2, PRIMARY_RESOURCE_NAME, null, null);
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME3,
-				targetIrodsCollection2, "", null, null);
+				targetIrodsCollection2, PRIMARY_RESOURCE_NAME, null, null);
 
 		MetadataTemplate metadataTemplate = new FormBasedMetadataTemplate();
 
@@ -1040,7 +1041,7 @@ public class JargonMetadataResolverTest {
 						irodsAccount);
 
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				mdTemplatePath1, "", null, null);
+				mdTemplatePath1, PRIMARY_RESOURCE_NAME, null, null);
 
 		String templateFqName = mdTemplatePath1 + '/' + TEMPLATE_FILE_NAME1;
 
@@ -1088,7 +1089,7 @@ public class JargonMetadataResolverTest {
 						irodsAccount);
 
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				mdTemplatePath1, "", null, null);
+				mdTemplatePath1, PRIMARY_RESOURCE_NAME, null, null);
 
 		String badTemplateFqName = mdTemplatePath1 + "/notReallyATemplateFile";
 
@@ -1130,7 +1131,7 @@ public class JargonMetadataResolverTest {
 						irodsAccount);
 
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				targetIrodsCollection1, "", null, null);
+				targetIrodsCollection1, PRIMARY_RESOURCE_NAME, null, null);
 
 		String mdTemplateFqName = targetIrodsCollection1 + '/'
 				+ TEMPLATE_FILE_NAME1;
@@ -1176,7 +1177,7 @@ public class JargonMetadataResolverTest {
 						irodsAccount);
 
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				targetIrodsCollection1, "", null, null);
+				targetIrodsCollection1, PRIMARY_RESOURCE_NAME, null, null);
 
 		String mdTemplateFqName = targetIrodsCollection1 + '/'
 				+ TEMPLATE_FILE_NAME1;
@@ -1248,7 +1249,7 @@ public class JargonMetadataResolverTest {
 						irodsAccount);
 
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				mdTemplatePath1, "", null, null);
+				mdTemplatePath1, PRIMARY_RESOURCE_NAME, null, null);
 
 		String templateFqName = mdTemplatePath1 + '/' + TEMPLATE_FILE_NAME1;
 
@@ -1316,7 +1317,7 @@ public class JargonMetadataResolverTest {
 						irodsAccount);
 
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				mdTemplatePath1, "", null, null);
+				mdTemplatePath1, PRIMARY_RESOURCE_NAME, null, null);
 
 		String templateFqName = mdTemplatePath1 + '/' + TEMPLATE_FILE_NAME1;
 
@@ -1388,7 +1389,7 @@ public class JargonMetadataResolverTest {
 						irodsAccount);
 
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				mdTemplatePath1, "", null, null);
+				mdTemplatePath1, PRIMARY_RESOURCE_NAME, null, null);
 
 		String templateFqName = mdTemplatePath1 + '/' + TEMPLATE_FILE_NAME1;
 
@@ -1446,17 +1447,11 @@ public class JargonMetadataResolverTest {
 				.getIRODSAccessObjectFactory().getDataTransferOperations(
 						irodsAccount);
 
-		/*
-		 * dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-		 * targetIrodsCollection1, "", null, null);
-		 */
-
 		String mdTemplateFqName = targetIrodsCollection1 + '/'
 				+ TEMPLATE_FILE_NAME1;
 
-		dataTransferOperations.putOperation(TEMPLATE_FILE_PATH1,
-				mdTemplateFqName, (String) testingPropertiesHelper.getTestProperties().get(TestingPropertiesHelper.IRODS_RESOURCE_KEY),
-				null, null);
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
+				mdTemplateFqName, PRIMARY_RESOURCE_NAME, null, null);
 
 		String newFqName = targetIrodsCollection2
 				+ "/newTemplateName.mdTemplate";
@@ -1522,7 +1517,7 @@ public class JargonMetadataResolverTest {
 						irodsAccount);
 
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				targetIrodsCollection1, "", null, null);
+				targetIrodsCollection1, PRIMARY_RESOURCE_NAME, null, null);
 
 		String mdTemplateFqName = targetIrodsCollection1 + '/'
 				+ TEMPLATE_FILE_NAME1;
@@ -1592,7 +1587,7 @@ public class JargonMetadataResolverTest {
 						irodsAccount);
 
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				targetIrodsCollection1, "", null, null);
+				targetIrodsCollection1, PRIMARY_RESOURCE_NAME, null, null);
 
 		String mdTemplateFqName1 = targetIrodsCollection1 + '/'
 				+ TEMPLATE_FILE_NAME1;
@@ -1677,7 +1672,7 @@ public class JargonMetadataResolverTest {
 						irodsAccount);
 
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				targetIrodsCollection1, "", null, null);
+				targetIrodsCollection1, PRIMARY_RESOURCE_NAME, null, null);
 
 		String mdTemplateFqName1 = targetIrodsCollection1 + '/'
 				+ TEMPLATE_FILE_NAME1;
@@ -1773,9 +1768,9 @@ public class JargonMetadataResolverTest {
 						irodsAccount);
 
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				targetIrodsCollection1, "", null, null);
+				targetIrodsCollection1, PRIMARY_RESOURCE_NAME, null, null);
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2,
-				targetIrodsCollection3, "", null, null);
+				targetIrodsCollection3, PRIMARY_RESOURCE_NAME, null, null);
 
 		String mdTemplateFqName1 = targetIrodsCollection1 + '/'
 				+ TEMPLATE_FILE_NAME1;
@@ -1856,7 +1851,7 @@ public class JargonMetadataResolverTest {
 						irodsAccount);
 
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				targetIrodsCollection1, "", null, null);
+				targetIrodsCollection1, PRIMARY_RESOURCE_NAME, null, null);
 
 		String mdTemplateFqName = targetIrodsCollection1 + '/'
 				+ TEMPLATE_FILE_NAME1;
