@@ -38,7 +38,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class JargonMetadataResolver extends AbstractMetadataResolver {
-	static private Logger log = LoggerFactory.getLogger(IRODSFileFactoryImpl.class);
+	static private Logger log = LoggerFactory
+			.getLogger(IRODSFileFactoryImpl.class);
 
 	static private TemplateParserSingleton parser = TemplateParserSingleton.PARSER;
 
@@ -95,7 +96,21 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 
 		for (String dir : this.getPublicTemplateLocations()) {
 			try {
-				tempList.addAll(listTemplatesInCollection(dir));
+				for (MetadataTemplate newMT : listTemplatesInCollection(dir)) {
+					boolean isDuplicate = false;
+
+					for (MetadataTemplate existingMT : tempList) {
+						if (newMT.getName().compareTo(existingMT.getName()) == 0) {
+							// Another template of the same name has already
+							// been found
+							isDuplicate = true;
+							break;
+						}
+					}
+
+					if (!isDuplicate)
+						tempList.add(newMT);
+				}
 			} catch (JargonException je) {
 				log.error("JargonException when processing templates in {}",
 						dir, je);
@@ -133,7 +148,9 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 
 		try {
 			templateFiles = dotIrodsService
-					.listFilesOfTypeInDirectoryHierarchyDotIrods(absolutePath,
+					.listFilesOfTypeInDirectoryHierarchyDotIrodsSubDir(
+							absolutePath,
+							DotIrodsConstants.METADATA_TEMPLATES_SUBDIR,
 							new MetadataTemplateFileFilter());
 		} catch (JargonException je) {
 			log.error("JargonException when listing files in directory", je);
@@ -234,7 +251,9 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 
 		try {
 			templateFilesInHierarchy = dotIrodsService
-					.listFilesOfTypeInDirectoryHierarchyDotIrods(activeDir,
+					.listFilesOfTypeInDirectoryHierarchyDotIrodsSubDir(
+							activeDir,
+							DotIrodsConstants.METADATA_TEMPLATES_SUBDIR,
 							new MetadataTemplateFileFilter());
 		} catch (JargonException je) {
 			log.error("JargonException when listing files in directory", je);
@@ -355,8 +374,7 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 					.getAbsoluteFile());
 		} catch (JargonException je) {
 			log.error("JargonException in processFileToMetadataTemplate", je);
-			throw new MetadataTemplateProcessingException(
-					"Error in processFileToMetadataTemplate for " + fqName);
+			returnTemplate = null;
 		}
 
 		return returnTemplate;
@@ -369,7 +387,8 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 	 *            {@link UUID}
 	 * @return String
 	 * 
-	 * XXX Should this make sure a template is in an "appropriate" location?
+	 *         XXX Should this make sure a template is in an "appropriate"
+	 *         location?
 	 */
 	@Override
 	public String getFqNameForUUID(UUID uuid) {
@@ -508,8 +527,8 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 	 *            {@link String}
 	 * @param newFqName
 	 *            {@link String}
-	 *            
-	 * XXX Change name property in template as well?
+	 * 
+	 *            XXX Change name property in template as well?
 	 * 
 	 */
 	@Override
@@ -526,8 +545,25 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 
 		IRODSFile inFile = this.getPathAsIrodsFile(fqName);
 		IRODSFile irodsRenameFile = this.getPathAsIrodsFile(newFqName);
+		
+		if (!inFile.exists()) {
+			log.info("{} does not exist, rename failed", inFile);
+			return false;
+		}
+		
+		if (!irodsRenameFile.canWrite() && !irodsRenameFile.getParentFile().isDirectory()) {
+			log.info("{} cannot be written to, rename failed", irodsRenameFile);
+			return false;
+		}
 
-		boolean retVal = inFile.renameTo(irodsRenameFile);
+		boolean retVal = false;
+		
+		try {
+			retVal = inFile.renameTo(irodsRenameFile);
+		} catch (Exception e) {
+			log.info("Exception in IRODSFile.renameTo with parameter {}", irodsRenameFile);
+			return false;
+		}
 
 		if (retVal) {
 			// Rename was successful, but need to add or replace mdTemplate: AVU
@@ -602,25 +638,24 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 			throw new IllegalArgumentException("fqName is null or empty");
 		}
 
-		if (!fqName.endsWith(MetadataTemplateConstants.JSON_FILE_EXT)
-				|| !fqName
-						.endsWith(MetadataTemplateConstants.TEMPLATE_FILE_EXT)) {
-			throw new IllegalArgumentException(
-					"fqName does not represent a metadata template file, update not attempted");
-		}
-
 		if (metadataTemplate == null) {
 			throw new IllegalArgumentException(
 					"metadataTemplate is null or empty");
+		}
+		
+		if (!fqName.endsWith(MetadataTemplateConstants.TEMPLATE_FILE_EXT)
+				&& !fqName
+						.endsWith(MetadataTemplateConstants.JSON_FILE_EXT)) {
+			log.info("fqName does not represent a metadata template file, update not attempted");
+			return false;
 		}
 
 		IRODSFile inFile = this.getPathAsIrodsFile(fqName);
 
 		if (inFile == null) {
-			log.error("{} could not be retrieved as IRODSFile; update failed",
+			log.info("{} could not be retrieved as IRODSFile; update failed",
 					fqName);
-			throw new IllegalArgumentException(
-					"fqName could not be retrieved as IRODSFile");
+			return false;
 		}
 
 		List<MetaDataAndDomainData> queryResult = null;
@@ -683,9 +718,9 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 			throw new IllegalArgumentException("fqName is null or empty");
 		}
 
-		if (!fqName.endsWith(MetadataTemplateConstants.JSON_FILE_EXT)
-				|| !fqName
-						.endsWith(MetadataTemplateConstants.TEMPLATE_FILE_EXT)) {
+		if (!fqName.endsWith(MetadataTemplateConstants.TEMPLATE_FILE_EXT)
+				&& !fqName
+						.endsWith(MetadataTemplateConstants.JSON_FILE_EXT)) {
 			throw new IllegalArgumentException(
 					"fqName does not represent a metadata template file, delete not attempted");
 		}
@@ -858,8 +893,8 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 	 * @throws JargonException
 	 * @throws IOException
 	 */
-	List<MetadataTemplate> processFilesToMetadataTemplates(
-			File[] inFileArray) throws JargonException, IOException,
+	List<MetadataTemplate> processFilesToMetadataTemplates(File[] inFileArray)
+			throws JargonException, IOException,
 			MetadataTemplateProcessingException,
 			MetadataTemplateParsingException {
 		log.info("processFilesToMetadataTemplates()");
@@ -877,8 +912,8 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 			if (templateNames.contains(fileNameWithoutExtension))
 				break;
 
-			returnList.add(processFileToMetadataTemplate(f).deepCopy());
-			templateNames.add(returnList.get(returnList.size()).getName());
+			returnList.add(processFileToMetadataTemplate(f));
+			templateNames.add(returnList.get(returnList.size() - 1).getName());
 		}
 
 		return returnList;
@@ -961,7 +996,7 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 		returnTemplate = parser.createMetadataTemplateFromJSON(decoded);
 
 		// Decorate with data stored in iRODS db, not in file text
-		
+
 		// fqName
 		returnTemplate.setFqName(inFile.getAbsolutePath());
 
@@ -976,7 +1011,7 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 		returnTemplate.getCreated().setTime(objStat.getCreatedAt().getTime());
 		returnTemplate.getModified().setTime(objStat.getModifiedAt().getTime());
 
-		return parser.createMetadataTemplateFromJSON(decoded);
+		return returnTemplate;
 	}
 
 	/**
@@ -1042,8 +1077,7 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 	 * @param path
 	 * @throws JargonException
 	 */
-	void addMdElementAVUToFile(String name, String path)
-			throws JargonException {
+	void addMdElementAVUToFile(String name, String path) throws JargonException {
 		log.info("addMdElementAVUToFile, name = {}", name);
 		UUID uuid = UUID.randomUUID();
 		AvuData avuData = AvuData.instance(name, uuid.toString(),
@@ -1076,24 +1110,24 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 			// metadataTemplates collection beneath it.
 			log.info("{} is a .irods collection", irodsAbsolutePathToParent);
 
-			if (this.isMetadataTemplatesCollectionPresentInCollection(irodsAbsolutePathToParent)) {
+			if (this.isMetadataTemplatesCollectionPresentUnderDotIrodsCollection(irodsAbsolutePathToParent)) {
 				log.info("{} contains a metadataTemplates collection",
 						irodsAbsolutePathToParent);
 				irodsAbsolutePathToCollection = this
-						.computeMetadataTemplatesPathUnderParent(irodsAbsolutePathToParent);
+						.computeMetadataTemplatesPathUnderDotIrods(irodsAbsolutePathToParent);
 			} else {
 				log.info(
 						"{} does not contain a metadataTemplates collection, attempting to create",
 						irodsAbsolutePathToParent);
 
-				if (this.createMetadataTemplatesCollectionUnderParent(irodsAbsolutePathToParent)) {
+				if (this.createMetadataTemplatesCollectionUnderDotIrods(irodsAbsolutePathToParent)) {
 					log.info("metadataTemplates collection created");
 					irodsAbsolutePathToCollection = this
-							.computeMetadataTemplatesPathUnderParent(irodsAbsolutePathToParent);
+							.computeMetadataTemplatesPathUnderDotIrods(irodsAbsolutePathToParent);
 				} else {
 					log.error("Error, collection not created");
 					throw new JargonException(
-							"Error in createMetadataTemplatesCollectionUnderParent");
+							"Error in createMetadataTemplatesCollectionUnderDotIrods");
 				}
 			}
 		} else {
@@ -1129,14 +1163,14 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 			log.info(".irods created: {}", dotIrodsDir);
 
 			// Create metadataTemplates subcollection
-			if (this.createMetadataTemplatesCollectionUnderParent(dotIrodsDir)) {
+			if (this.createMetadataTemplatesCollectionUnderDotIrods(dotIrodsDir)) {
 				log.info("metadataTemplates collection created");
 				irodsAbsolutePathToCollection = this
-						.computeMetadataTemplatesPathUnderParent(dotIrodsDir);
+						.computeMetadataTemplatesPathUnderDotIrods(dotIrodsDir);
 			} else {
 				log.error("Error, collection not created");
 				throw new JargonException(
-						"Error in createMetadataTemplatesCollectionUnderParent");
+						"Error in createMetadataTemplatesCollectionUnderDotIrods");
 			}
 		}
 
@@ -1148,7 +1182,7 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 
 	boolean createMetadataTemplatesCollectionUnderParent(
 			final String irodsAbsolutePathToParent) throws JargonException {
-		log.info("createDotIrodsUnderParent()");
+		log.info("createMetadataTemplatesCollectionUnderParent()");
 
 		if (irodsAbsolutePathToParent == null
 				|| irodsAbsolutePathToParent.isEmpty()) {
@@ -1158,11 +1192,12 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 
 		log.info("irodsAbsolutePathToParent: {}", irodsAbsolutePathToParent);
 
-		String dotIrodsPath = this
+		String metadataTemplatesPath = this
 				.computeMetadataTemplatesPathUnderParent(irodsAbsolutePathToParent);
-		log.info("dotIrodsPath computed to be:{}", dotIrodsPath);
+		log.info("metadataTemplatesPath computed to be:{}",
+				metadataTemplatesPath);
 
-		IRODSFile dotIrodsFile = this.getPathAsIrodsFile(dotIrodsPath);
+		IRODSFile dotIrodsFile = this.getPathAsIrodsFile(metadataTemplatesPath);
 		if (dotIrodsFile == null) {
 			// A JargonException was caught in getPathAsIrodsFile
 			throw new JargonException(
@@ -1173,8 +1208,36 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 		return dotIrodsFile.mkdirs();
 	}
 
-	String computeDotIrodsPathUnderParent(
-			final String irodsAbsolutePathToParent) {
+	boolean createMetadataTemplatesCollectionUnderDotIrods(
+			final String irodsAbsolutePathToDotIrods) throws JargonException {
+		log.info("createMetadataTemplatesCollectionUnderDotIrods()");
+
+		if (irodsAbsolutePathToDotIrods == null
+				|| irodsAbsolutePathToDotIrods.isEmpty()) {
+			throw new IllegalArgumentException(
+					"null or empty irodsAbsolutePathToDotIrods");
+		}
+
+		log.info("irodsAbsolutePathToDotIrods: {}", irodsAbsolutePathToDotIrods);
+
+		String metadataTemplatesPath = this
+				.computeMetadataTemplatesPathUnderDotIrods(irodsAbsolutePathToDotIrods);
+		log.info("metadataTemplatesPath computed to be:{}",
+				metadataTemplatesPath);
+
+		IRODSFile metadataTemplatesFile = this
+				.getPathAsIrodsFile(metadataTemplatesPath);
+		if (metadataTemplatesFile == null) {
+			// A JargonException was caught in getPathAsIrodsFile
+			throw new JargonException(
+					"JargonException thrown by instanceIRODSFile in getPathAsIrodsFile");
+		}
+		log.info("created");
+
+		return metadataTemplatesFile.mkdirs();
+	}
+
+	String computeDotIrodsPathUnderParent(final String irodsAbsolutePathToParent) {
 		log.info("computeDotIrodsPathUnderParent");
 
 		if (irodsAbsolutePathToParent == null
@@ -1205,9 +1268,25 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 		return sb.toString();
 	}
 
-	boolean isMetadataTemplatesCollectionPresentInCollection(
+	String computeMetadataTemplatesPathUnderDotIrods(
+			final String irodsAbsolutePathToDotIrods) {
+		log.info("computeMetadataTemplatesPathUnderDotIrods");
+
+		if (irodsAbsolutePathToDotIrods == null
+				|| irodsAbsolutePathToDotIrods.isEmpty()) {
+			throw new IllegalArgumentException(
+					"irodsAbsolutePathToDotIrods is null or empty");
+		}
+		StringBuilder sb = new StringBuilder();
+		sb.append(irodsAbsolutePathToDotIrods);
+		sb.append("/");
+		sb.append(DotIrodsConstants.METADATA_TEMPLATES_SUBDIR);
+		return sb.toString();
+	}
+
+	boolean isMetadataTemplatesCollectionPresentUnderParentCollection(
 			String irodsAbsolutePath) {
-		log.info("isMetadataTemplatesCollectionPresentInCollection()");
+		log.info("isMetadataTemplatesCollectionPresentUnderParentCollection()");
 
 		if (irodsAbsolutePath == null || irodsAbsolutePath.isEmpty()) {
 			throw new IllegalArgumentException(
@@ -1223,8 +1302,7 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 		} catch (JargonException je) {
 			log.info(
 					"JargonException thrown by findByAbsolutePath, {} does not exist or {} does not have sufficient permissions",
-					computeDotIrodsPathUnderParent(irodsAbsolutePath),
-					irodsAccount);
+					irodsAbsolutePath, irodsAccount);
 			return false;
 		}
 
@@ -1237,8 +1315,40 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 		return (metadataTemplatesCollectionAsFile != null);
 	}
 
-	boolean isDotIrodsCollectionPresentInCollection(
-			String irodsAbsolutePath) {
+	boolean isMetadataTemplatesCollectionPresentUnderDotIrodsCollection(
+			String irodsAbsolutePathToDotIrods) {
+		log.info("isMetadataTemplatesCollectionPresentUnderParentCollection()");
+
+		if (irodsAbsolutePathToDotIrods == null
+				|| irodsAbsolutePathToDotIrods.isEmpty()) {
+			throw new IllegalArgumentException(
+					"null or empty irodsAbsolutePathToDotIrods");
+		}
+
+		log.info("irodsAbsolutePathToDotIrods:{}", irodsAbsolutePathToDotIrods);
+
+		try {
+			@SuppressWarnings("unused")
+			Collection collection = irodsAccessObjectFactory.getCollectionAO(
+					irodsAccount).findByAbsolutePath(
+					irodsAbsolutePathToDotIrods);
+		} catch (JargonException je) {
+			log.info(
+					"JargonException thrown by findByAbsolutePath, {} does not exist or {} does not have sufficient permissions",
+					irodsAbsolutePathToDotIrods, irodsAccount);
+			return false;
+		}
+
+		log.info("{} exists", irodsAbsolutePathToDotIrods);
+
+		IRODSFile metadataTemplatesCollectionAsFile = this
+				.getPathAsIrodsFile(this
+						.computeMetadataTemplatesPathUnderDotIrods(irodsAbsolutePathToDotIrods));
+
+		return (metadataTemplatesCollectionAsFile != null);
+	}
+
+	boolean isDotIrodsCollectionPresentInCollection(String irodsAbsolutePath) {
 		log.info("isDotIrodsCollectionPresentInCollection()");
 
 		if (irodsAbsolutePath == null || irodsAbsolutePath.isEmpty()) {
@@ -1363,7 +1473,7 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 		} catch (JargonException je) {
 			log.error(
 					"JargonException thrown by instanceIRODSFile, {} does not exist",
-					computeDotIrodsPathUnderParent(irodsAbsolutePath), je);
+					irodsAbsolutePath, je);
 			retFile = null;
 		}
 
@@ -1415,7 +1525,7 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 
 		return queryResult;
 	}
-	
+
 	List<MetaDataAndDomainData> queryElementAVUForFile(
 			String irodsAbsolutePathToFile) throws JargonQueryException,
 			JargonException {
@@ -1441,7 +1551,7 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 		if (lastSlash == -1) {
 			localFileName = inFileName;
 		} else {
-			localFileName = inFileName.substring(lastSlash);
+			localFileName = inFileName.substring(lastSlash+1);
 		}
 		return LocalFileUtils.getFileNameUpToExtension(localFileName);
 	}

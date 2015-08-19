@@ -120,8 +120,7 @@ public interface DotIrodsService {
 	 * @throws JargonException
 	 */
 	public abstract boolean dotIrodsCollectionPresentInCollection(
-			final String irodsAbsolutePathToParent)
-			throws JargonException;
+			final String irodsAbsolutePathToParent) throws JargonException;
 
 	/**
 	 * Lists all files in the user home .irods collection
@@ -261,4 +260,68 @@ public interface DotIrodsService {
 	public abstract File[] listFilesOfTypeInDirectoryHierarchyDotIrods(
 			final String irodsAbsolutePath, FilenameFilter filter)
 			throws FileNotFoundException, JargonException;
+
+	/**
+	 * Lists all* files (filtered by type) in the specified subdirectories of
+	 * .irods collections found in the hierarchy of parent folders above the
+	 * specified folder.
+	 * 
+	 * * The <code>resolveConflicts</code> flag determines whether multiple
+	 * files with the same name are allowed. If <code>true</code>, when multiple
+	 * files have the same name, only the file closest in the directory
+	 * hierarchy to the specified folder is included in the list.
+	 * 
+	 * @param irodsAbsolutePath
+	 *            <code>String</code> with the absolute path to an IRODS
+	 *            collection
+	 * @param subDir
+	 *            <code>String</code> with the subdirectory (relative to the
+	 *            .irods directory, no / needed)
+	 * @param filter
+	 *            <code>FilenameFilter</code> a subclass of type FileFilter that
+	 *            returns TRUE if a given file should be considered a match
+	 * @param resolveConflicts
+	 *            <code>boolean</code> True if only one File should be returned
+	 *            for any given filename (conflicts resolved as above), False if
+	 *            all files should be returned
+	 * @return Array of File objects {@link IRODSFileImpl} found in the
+	 *         directory hierarchy's .irods collections
+	 * @throws FileNotFoundException
+	 *             if the specified directory does not exist
+	 * @throws JargonException
+	 */
+	public abstract File[] listFilesOfTypeInDirectoryHierarchyDotIrodsSubDir(
+			final String irodsAbsolutePath, final String subDir,
+			FilenameFilter filter, boolean resolveConflicts)
+			throws FileNotFoundException, JargonException;
+
+	/**
+	 * Lists all* files (filtered by type) in all .irods collections found in
+	 * the hierarchy of parent folders above the specified folder.
+	 * 
+	 * * If multiple files have the same name, only the file closest in the
+	 * directory hierarchy to the specified folder is included in the list. This
+	 * function is a convenience for the "default" behavior of the function;
+	 * that is, the function body should likely be
+	 * <code>return listFilesOfTypeInDirectoryHierarchyDotIrods(irodsAbsolutePath, filter, true);</code>
+	 * 
+	 * @param irodsAbsolutePath
+	 *            <code>String</code> with the absolute path to an IRODS
+	 *            collection
+	 @param subDir
+	 *            <code>String</code> with the subdirectory (relative to the
+	 *            .irods directory, no / needed)
+	 * @param filter
+	 *            <code>FilenameFilter</code> a subclass of type FileFilter that
+	 *            returns TRUE if a given file should be considered a match
+	 * @return Array of File objects {@link IRODSFileImpl} found in the
+	 *         directory hierarchy's .irods collections
+	 * @throws FileNotFoundException
+	 *             if the specified directory does not exist
+	 * @throws JargonException
+	 */
+	public abstract File[] listFilesOfTypeInDirectoryHierarchyDotIrodsSubDir(
+			final String irodsAbsolutePath, final String subDir,
+			FilenameFilter filter) throws FileNotFoundException,
+			JargonException;
 }

@@ -1,7 +1,5 @@
 package org.irods.jargon.metadatatemplate;
 
-import java.io.File;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -16,11 +14,7 @@ import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.core.pub.IRODSFileSystem;
 import org.irods.jargon.core.pub.domain.AvuData;
 import org.irods.jargon.core.pub.io.IRODSFile;
-import org.irods.jargon.core.pub.io.IRODSFileFactory;
-import org.irods.jargon.core.pub.io.IRODSFileWriter;
 import org.irods.jargon.core.query.MetaDataAndDomainData;
-import org.irods.jargon.extensions.dotirods.DotIrodsService;
-import org.irods.jargon.extensions.dotirods.DotIrodsServiceImpl;
 import org.irods.jargon.testutils.TestingPropertiesHelper;
 import org.junit.After;
 import org.junit.BeforeClass;
@@ -31,23 +25,15 @@ public class JargonMetadataResolverTest {
 	private static Properties testingProperties = new Properties();
 	private static TestingPropertiesHelper testingPropertiesHelper = new TestingPropertiesHelper();
 	private static IRODSFileSystem irodsFileSystem;
-	// "/Users/rskarbez/Documents/metadataTemplates/jargon-extensions/metadata-templates/src/test/resources/templates/test1.mdtemplate",
-
-	private String PRIMARY_RESOURCE_NAME = testingProperties
-			.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY);
 
 	private static final String TEMPLATE_FILE_NAME1 = "src/test/resources/templates/test1.mdtemplate";
 	private static final String TEMPLATE_FILE_NAME2 = "src/test/resources/templates/test2.mdtemplate";
 	private static final String TEMPLATE_FILE_NAME3 = "src/test/resources/templates/test3.mdtemplate";
-	/*
-	 * private static final String TEMPLATE_FILE_PATH1 =
-	 * "/templates/test1.mdtemplate"; private static final String
-	 * TEMPLATE_FILE_PATH2 = "/templates/test2.mdtemplate"; private static final
-	 * String TEMPLATE_FILE_PATH3 = "/templates/test3.mdtemplate";
-	 */
-	private static final String TEMPLATE_FILE_PATH1 = "/Users/rskarbez/Documents/metadataTemplates/jargon-extensions/metadata-templates/src/test/resources/templates/test1.mdtemplate";
-	private static final String TEMPLATE_FILE_PATH2 = "/Users/rskarbez/Documents/metadataTemplates/jargon-extensions/metadata-templates/src/test/resources/templates/test2.mdtemplate";
-	private static final String TEMPLATE_FILE_PATH3 = "/Users/rskarbez/Documents/metadataTemplates/jargon-extensions/metadata-templates/src/test/resources/templates/test3.mdtemplate";
+
+	private static final String TEMPLATE_NOPATH1 = "test1.mdtemplate";
+	private static final String TEMPLATE_NOPATH2 = "test2.mdtemplate";
+	private static final String TEMPLATE_NOPATH3 = "test3.mdtemplate";
+
 	public static final String IRODS_TEST_SUBDIR_PATH = "JargonMetadataResolverTest";
 	private static org.irods.jargon.testutils.IRODSTestSetupUtilities irodsTestSetupUtilities = null;
 
@@ -100,16 +86,17 @@ public class JargonMetadataResolverTest {
 				irodsAccount, accessObjectFactory);
 
 		resolver.saveFormBasedTemplateAsJSON(template, targetIrodsCollection);
-
+/*
 		DotIrodsService dotIrodsService = new DotIrodsServiceImpl(
 				accessObjectFactory, irodsAccount);
 		File[] metadataTemplateFiles = dotIrodsService
 				.listFilesOfTypeInDirectoryHierarchyDotIrods(
 						targetIrodsCollection,
 						new MetadataTemplateFileFilter(), true);
-
-		Assert.assertFalse("no metadata template stored",
-				metadataTemplateFiles.length == 0);
+*/
+		List<MetadataTemplate> metadataTemplates = resolver.listAllTemplates(targetIrodsCollection);
+		Assert.assertTrue("no metadata template stored",
+				metadataTemplates.size() != 0);
 
 	}
 
@@ -148,11 +135,14 @@ public class JargonMetadataResolverTest {
 						irodsAccount);
 
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				targetIrodsCollection1, PRIMARY_RESOURCE_NAME, null, null);
+				targetIrodsCollection1,
+				irodsAccount.getDefaultStorageResource(), null, null);
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2,
-				targetIrodsCollection2, PRIMARY_RESOURCE_NAME, null, null);
+				targetIrodsCollection2,
+				irodsAccount.getDefaultStorageResource(), null, null);
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME3,
-				targetIrodsCollection2, PRIMARY_RESOURCE_NAME, null, null);
+				targetIrodsCollection2,
+				irodsAccount.getDefaultStorageResource(), null, null);
 
 		List<MetadataTemplate> metadataTemplates = new ArrayList<MetadataTemplate>();
 
@@ -164,7 +154,7 @@ public class JargonMetadataResolverTest {
 
 		metadataTemplates = resolver.listPublicTemplates();
 
-		Assert.assertFalse("wrong list returned from listPublicTemplates",
+		Assert.assertTrue("wrong list returned from listPublicTemplates",
 				metadataTemplates.size() == 3);
 	}
 
@@ -203,14 +193,17 @@ public class JargonMetadataResolverTest {
 						irodsAccount);
 
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				targetIrodsCollection1, PRIMARY_RESOURCE_NAME, null, null);
+				targetIrodsCollection1,
+				irodsAccount.getDefaultStorageResource(), null, null);
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				targetIrodsCollection2, PRIMARY_RESOURCE_NAME, null, null);
+				targetIrodsCollection2,
+				irodsAccount.getDefaultStorageResource(), null, null);
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2,
-				targetIrodsCollection2, PRIMARY_RESOURCE_NAME, null, null);
+				targetIrodsCollection2,
+				irodsAccount.getDefaultStorageResource(), null, null);
 
-		String firstTemplateFqName = targetIrodsCollection1
-				+ TEMPLATE_FILE_NAME1;
+		String firstTemplateFqName = targetIrodsCollection1 + '/'
+				+ TEMPLATE_NOPATH1;
 
 		List<MetadataTemplate> metadataTemplates = new ArrayList<MetadataTemplate>();
 
@@ -222,7 +215,7 @@ public class JargonMetadataResolverTest {
 
 		metadataTemplates = resolver.listPublicTemplates();
 
-		Assert.assertFalse("wrong list returned from listPublicTemplates",
+		Assert.assertTrue("wrong list returned from listPublicTemplates",
 				metadataTemplates.size() == 2);
 		Assert.assertTrue("first appearance of template name not kept",
 				metadataTemplates.get(0).getFqName()
@@ -233,8 +226,8 @@ public class JargonMetadataResolverTest {
 	public void listTemplatesInDirectoryHierarchyAbovePathNoDuplicates()
 			throws Exception {
 		String testDirName1 = "listPublicTemplatesNoDuplicatesDir";
-		String testDirName2 = "listPublicTemplatesNoDuplicatesSubDir";
-		String testDirName3 = "listPublicTemplatesNoDuplicatesStartDir";
+		String testDirName2 = "SubDir";
+		String testDirName3 = "StartDir";
 
 		String targetIrodsCollection1 = testingPropertiesHelper
 				.buildIRODSCollectionAbsolutePathFromTestProperties(
@@ -269,29 +262,32 @@ public class JargonMetadataResolverTest {
 				irodsAccount, accessObjectFactory);
 
 		String mdTemplatePath1 = resolver
-				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection1);
+				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection3);
 		String mdTemplatePath2 = resolver
 				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection2);
 		String mdTemplatePath3 = resolver
-				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection3);
+				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection1);
 
 		DataTransferOperations dataTransferOperations = irodsFileSystem
 				.getIRODSAccessObjectFactory().getDataTransferOperations(
 						irodsAccount);
 
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				mdTemplatePath3, PRIMARY_RESOURCE_NAME, null, null);
+				mdTemplatePath1, irodsAccount.getDefaultStorageResource(),
+				null, null);
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2,
-				mdTemplatePath2, PRIMARY_RESOURCE_NAME, null, null);
+				mdTemplatePath2, irodsAccount.getDefaultStorageResource(),
+				null, null);
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME3,
-				mdTemplatePath1, PRIMARY_RESOURCE_NAME, null, null);
+				mdTemplatePath3, irodsAccount.getDefaultStorageResource(),
+				null, null);
 
 		List<MetadataTemplate> metadataTemplates = new ArrayList<MetadataTemplate>();
 
 		metadataTemplates = resolver
 				.listTemplatesInDirectoryHierarchyAbovePath(targetIrodsCollection3);
 
-		Assert.assertFalse(
+		Assert.assertTrue(
 				"wrong list returned from listTemplatesInDirectoryHierarchyAbovePath",
 				metadataTemplates.size() == 3);
 	}
@@ -300,8 +296,8 @@ public class JargonMetadataResolverTest {
 	public void listTemplatesInDirectoryHierarchyAbovePathDuplicates()
 			throws Exception {
 		String testDirName1 = "listPublicTemplatesDuplicatesDir";
-		String testDirName2 = "listPublicTemplatesDuplicatesSubDir";
-		String testDirName3 = "listPublicTemplatesDuplicatesStartDir";
+		String testDirName2 = "SubDir";
+		String testDirName3 = "StartDir";
 
 		String targetIrodsCollection1 = testingPropertiesHelper
 				.buildIRODSCollectionAbsolutePathFromTestProperties(
@@ -336,31 +332,34 @@ public class JargonMetadataResolverTest {
 				irodsAccount, accessObjectFactory);
 
 		String mdTemplatePath1 = resolver
-				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection1);
+				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection3);
 		String mdTemplatePath2 = resolver
 				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection2);
 		String mdTemplatePath3 = resolver
-				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection3);
+				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection1);
 
-		String firstTemplateFqName = mdTemplatePath3 + TEMPLATE_FILE_NAME1;
+		String firstTemplateFqName = mdTemplatePath1 + '/' + TEMPLATE_NOPATH1;
 
 		DataTransferOperations dataTransferOperations = irodsFileSystem
 				.getIRODSAccessObjectFactory().getDataTransferOperations(
 						irodsAccount);
 
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				mdTemplatePath3, PRIMARY_RESOURCE_NAME, null, null);
+				mdTemplatePath1, irodsAccount.getDefaultStorageResource(),
+				null, null);
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2,
-				mdTemplatePath2, PRIMARY_RESOURCE_NAME, null, null);
+				mdTemplatePath2, irodsAccount.getDefaultStorageResource(),
+				null, null);
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				mdTemplatePath1, PRIMARY_RESOURCE_NAME, null, null);
+				mdTemplatePath3, irodsAccount.getDefaultStorageResource(),
+				null, null);
 
 		List<MetadataTemplate> metadataTemplates = new ArrayList<MetadataTemplate>();
 
 		metadataTemplates = resolver
 				.listTemplatesInDirectoryHierarchyAbovePath(targetIrodsCollection3);
 
-		Assert.assertFalse(
+		Assert.assertTrue(
 				"wrong list returned from listTemplatesInDirectoryHierarchyAbovePath",
 				metadataTemplates.size() == 2);
 		Assert.assertTrue("first appearance of template name not kept",
@@ -371,7 +370,7 @@ public class JargonMetadataResolverTest {
 	@Test
 	public void listAllTemplatesNoDuplicates() throws Exception {
 		String testDirName1 = "listAllTemplatesNoDuplicatesDir1";
-		String testDirName2 = "listAllTemplatesNoDuplicatesSubDir";
+		String testDirName2 = "SubDir";
 		String testDirName3 = "listAllTemplatesNoDuplicatesDir2";
 
 		String targetIrodsCollection1 = testingPropertiesHelper
@@ -418,11 +417,14 @@ public class JargonMetadataResolverTest {
 						irodsAccount);
 
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				mdTemplatePath2, PRIMARY_RESOURCE_NAME, null, null);
+				mdTemplatePath2, irodsAccount.getDefaultStorageResource(),
+				null, null);
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2,
-				mdTemplatePath1, PRIMARY_RESOURCE_NAME, null, null);
+				mdTemplatePath1, irodsAccount.getDefaultStorageResource(),
+				null, null);
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME3,
-				targetIrodsCollection3, PRIMARY_RESOURCE_NAME, null, null);
+				targetIrodsCollection3,
+				irodsAccount.getDefaultStorageResource(), null, null);
 
 		List<MetadataTemplate> metadataTemplates = new ArrayList<MetadataTemplate>();
 
@@ -430,14 +432,14 @@ public class JargonMetadataResolverTest {
 				.asList(targetIrodsCollection3));
 		metadataTemplates = resolver.listAllTemplates(targetIrodsCollection2);
 
-		Assert.assertFalse("wrong list returned from listAllTemplates",
+		Assert.assertTrue("wrong list returned from listAllTemplates",
 				metadataTemplates.size() == 3);
 	}
 
 	@Test
 	public void listAllTemplatesDuplicates() throws Exception {
 		String testDirName1 = "listAllTemplatesDuplicatesDir1";
-		String testDirName2 = "listAllTemplatesDuplicatesSubDir";
+		String testDirName2 = "SubDir";
 		String testDirName3 = "listAllTemplatesDuplicatesDir2";
 
 		String targetIrodsCollection1 = testingPropertiesHelper
@@ -484,13 +486,16 @@ public class JargonMetadataResolverTest {
 						irodsAccount);
 
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				mdTemplatePath2, PRIMARY_RESOURCE_NAME, null, null);
+				mdTemplatePath2, irodsAccount.getDefaultStorageResource(),
+				null, null);
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2,
-				mdTemplatePath1, PRIMARY_RESOURCE_NAME, null, null);
+				mdTemplatePath1, irodsAccount.getDefaultStorageResource(),
+				null, null);
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2,
-				targetIrodsCollection3, PRIMARY_RESOURCE_NAME, null, null);
+				targetIrodsCollection3,
+				irodsAccount.getDefaultStorageResource(), null, null);
 
-		String firstTemplateFqName = mdTemplatePath1 + TEMPLATE_FILE_NAME2;
+		String firstTemplateFqName = mdTemplatePath1 + '/' + TEMPLATE_NOPATH2;
 
 		List<MetadataTemplate> metadataTemplates = new ArrayList<MetadataTemplate>();
 
@@ -498,17 +503,17 @@ public class JargonMetadataResolverTest {
 				.asList(targetIrodsCollection3));
 		metadataTemplates = resolver.listAllTemplates(targetIrodsCollection2);
 
-		Assert.assertFalse("wrong list returned from listAllTemplates",
+		Assert.assertTrue("wrong list returned from listAllTemplates",
 				metadataTemplates.size() == 2);
 		Assert.assertTrue("first appearance of template name not kept",
-				metadataTemplates.get(0).getFqName()
+				metadataTemplates.get(1).getFqName()
 						.equals(firstTemplateFqName));
 	}
 
 	@Test
 	public void findTemplateByNameSingleMatch() throws Exception {
 		String testDirName1 = "findTemplateByNameSingleMatchDir1";
-		String testDirName2 = "findTemplateByNameSingleMatchSubDir";
+		String testDirName2 = "SubDir";
 		String testDirName3 = "findTemplateByNameSingleMatchDir2";
 
 		String targetIrodsCollection1 = testingPropertiesHelper
@@ -555,20 +560,23 @@ public class JargonMetadataResolverTest {
 						irodsAccount);
 
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				mdTemplatePath2, PRIMARY_RESOURCE_NAME, null, null);
+				mdTemplatePath2, irodsAccount.getDefaultStorageResource(),
+				null, null);
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2,
-				mdTemplatePath1, PRIMARY_RESOURCE_NAME, null, null);
+				mdTemplatePath1, irodsAccount.getDefaultStorageResource(),
+				null, null);
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME3,
-				targetIrodsCollection3, PRIMARY_RESOURCE_NAME, null, null);
+				targetIrodsCollection3,
+				irodsAccount.getDefaultStorageResource(), null, null);
 
-		String templateFqName = mdTemplatePath2 + '/' + TEMPLATE_FILE_NAME1;
+		String templateFqName = mdTemplatePath2 + '/' + TEMPLATE_NOPATH1;
 
 		MetadataTemplate metadataTemplate = new FormBasedMetadataTemplate();
 
 		resolver.setPublicTemplateLocations(Arrays
 				.asList(targetIrodsCollection3));
-		metadataTemplate = resolver
-				.findTemplateByName("test1", mdTemplatePath2);
+		metadataTemplate = resolver.findTemplateByName("test1",
+				targetIrodsCollection2);
 
 		Assert.assertNotNull("no template returned from findTemplateByName",
 				metadataTemplate);
@@ -579,7 +587,7 @@ public class JargonMetadataResolverTest {
 	@Test
 	public void findTemplateByNameDuplicateMatch() throws Exception {
 		String testDirName1 = "findTemplateByNameDuplicateMatchDir1";
-		String testDirName2 = "findTemplateByNameDuplicateMatchSubDir";
+		String testDirName2 = "SubDir";
 		String testDirName3 = "findTemplateByNameDuplicateMatchDir2";
 
 		String targetIrodsCollection1 = testingPropertiesHelper
@@ -626,13 +634,16 @@ public class JargonMetadataResolverTest {
 						irodsAccount);
 
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				mdTemplatePath2, PRIMARY_RESOURCE_NAME, null, null);
+				mdTemplatePath2, irodsAccount.getDefaultStorageResource(),
+				null, null);
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2,
-				mdTemplatePath1, PRIMARY_RESOURCE_NAME, null, null);
+				mdTemplatePath1, irodsAccount.getDefaultStorageResource(),
+				null, null);
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				targetIrodsCollection3, PRIMARY_RESOURCE_NAME, null, null);
+				targetIrodsCollection3,
+				irodsAccount.getDefaultStorageResource(), null, null);
 
-		String templateFqName = mdTemplatePath2 + '/' + TEMPLATE_FILE_NAME1;
+		String templateFqName = mdTemplatePath2 + '/' + TEMPLATE_NOPATH1;
 
 		MetadataTemplate metadataTemplate = new FormBasedMetadataTemplate();
 
@@ -650,7 +661,7 @@ public class JargonMetadataResolverTest {
 	@Test
 	public void findTemplateByNameNoMatch() throws Exception {
 		String testDirName1 = "findTemplateByNameNoMatchDir1";
-		String testDirName2 = "findTemplateByNameNoMatchSubDir";
+		String testDirName2 = "SubDir";
 		String testDirName3 = "findTemplateByNameNoMatchDir2";
 
 		String targetIrodsCollection1 = testingPropertiesHelper
@@ -697,11 +708,14 @@ public class JargonMetadataResolverTest {
 						irodsAccount);
 
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				mdTemplatePath2, PRIMARY_RESOURCE_NAME, null, null);
+				mdTemplatePath2, irodsAccount.getDefaultStorageResource(),
+				null, null);
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2,
-				mdTemplatePath1, PRIMARY_RESOURCE_NAME, null, null);
+				mdTemplatePath1, irodsAccount.getDefaultStorageResource(),
+				null, null);
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME3,
-				targetIrodsCollection3, PRIMARY_RESOURCE_NAME, null, null);
+				targetIrodsCollection3,
+				irodsAccount.getDefaultStorageResource(), null, null);
 
 		MetadataTemplate metadataTemplate = new FormBasedMetadataTemplate();
 
@@ -727,8 +741,8 @@ public class JargonMetadataResolverTest {
 		// matches appropriately
 
 		String testDirName1 = "findTemplateByNameInDirectoryHierarchyFilePresentDir";
-		String testDirName2 = "findTemplateByNameInDirectoryHierarchyFilePresentSubDir";
-		String testDirName3 = "findTemplateByNameInDirectoryHierarchyFilePresentStartDir";
+		String testDirName2 = "SubDir";
+		String testDirName3 = "StartDir";
 
 		String targetIrodsCollection1 = testingPropertiesHelper
 				.buildIRODSCollectionAbsolutePathFromTestProperties(
@@ -774,13 +788,16 @@ public class JargonMetadataResolverTest {
 						irodsAccount);
 
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				mdTemplatePath3, PRIMARY_RESOURCE_NAME, null, null);
+				mdTemplatePath3, irodsAccount.getDefaultStorageResource(),
+				null, null);
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2,
-				mdTemplatePath2, PRIMARY_RESOURCE_NAME, null, null);
+				mdTemplatePath2, irodsAccount.getDefaultStorageResource(),
+				null, null);
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME3,
-				mdTemplatePath1, PRIMARY_RESOURCE_NAME, null, null);
+				mdTemplatePath1, irodsAccount.getDefaultStorageResource(),
+				null, null);
 
-		String templateFqName = mdTemplatePath3 + '/' + TEMPLATE_FILE_NAME1;
+		String templateFqName = mdTemplatePath3 + '/' + TEMPLATE_NOPATH1;
 
 		MetadataTemplate metadataTemplate = new FormBasedMetadataTemplate();
 
@@ -806,8 +823,8 @@ public class JargonMetadataResolverTest {
 		// Assert that the returned template is null
 
 		String testDirName1 = "findTemplateByNameInDirectoryHierarchyFileAbsentDir";
-		String testDirName2 = "findTemplateByNameInDirectoryHierarchyFileAbsentSubDir";
-		String testDirName3 = "findTemplateByNameInDirectoryHierarchyFileAbsentStartDir";
+		String testDirName2 = "SubDir";
+		String testDirName3 = "StartDir";
 
 		String targetIrodsCollection1 = testingPropertiesHelper
 				.buildIRODSCollectionAbsolutePathFromTestProperties(
@@ -853,11 +870,14 @@ public class JargonMetadataResolverTest {
 						irodsAccount);
 
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				mdTemplatePath3, PRIMARY_RESOURCE_NAME, null, null);
+				mdTemplatePath3, irodsAccount.getDefaultStorageResource(),
+				null, null);
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2,
-				mdTemplatePath2, PRIMARY_RESOURCE_NAME, null, null);
+				mdTemplatePath2, irodsAccount.getDefaultStorageResource(),
+				null, null);
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME3,
-				mdTemplatePath1, PRIMARY_RESOURCE_NAME, null, null);
+				mdTemplatePath1, irodsAccount.getDefaultStorageResource(),
+				null, null);
 
 		MetadataTemplate metadataTemplate = new FormBasedMetadataTemplate();
 
@@ -913,14 +933,16 @@ public class JargonMetadataResolverTest {
 						irodsAccount);
 
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				targetIrodsCollection1, PRIMARY_RESOURCE_NAME, null, null);
+				targetIrodsCollection1,
+				irodsAccount.getDefaultStorageResource(), null, null);
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2,
-				targetIrodsCollection2, PRIMARY_RESOURCE_NAME, null, null);
+				targetIrodsCollection2,
+				irodsAccount.getDefaultStorageResource(), null, null);
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME3,
-				targetIrodsCollection2, PRIMARY_RESOURCE_NAME, null, null);
+				targetIrodsCollection2,
+				irodsAccount.getDefaultStorageResource(), null, null);
 
-		String templateFqName = targetIrodsCollection1 + '/'
-				+ TEMPLATE_FILE_NAME1;
+		String templateFqName = targetIrodsCollection1 + '/' + TEMPLATE_NOPATH1;
 
 		MetadataTemplate metadataTemplate = new FormBasedMetadataTemplate();
 
@@ -930,7 +952,8 @@ public class JargonMetadataResolverTest {
 		resolver.setPublicTemplateLocations(Arrays.asList(
 				targetIrodsCollection1, targetIrodsCollection2));
 
-		resolver.findTemplateByNameInPublicTemplates("test1");
+		metadataTemplate = resolver
+				.findTemplateByNameInPublicTemplates("test1");
 
 		Assert.assertNotNull(
 				"no template returned from findTemplateByNameInPublicTemplates",
@@ -982,12 +1005,12 @@ public class JargonMetadataResolverTest {
 				.getIRODSAccessObjectFactory().getDataTransferOperations(
 						irodsAccount);
 
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				targetIrodsCollection1, PRIMARY_RESOURCE_NAME, null, null);
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2,
-				targetIrodsCollection2, PRIMARY_RESOURCE_NAME, null, null);
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME3,
-				targetIrodsCollection2, PRIMARY_RESOURCE_NAME, null, null);
+				targetIrodsCollection1,
+				irodsAccount.getDefaultStorageResource(), null, null);
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2,
+				targetIrodsCollection2,
+				irodsAccount.getDefaultStorageResource(), null, null);
 
 		MetadataTemplate metadataTemplate = new FormBasedMetadataTemplate();
 
@@ -997,7 +1020,8 @@ public class JargonMetadataResolverTest {
 		resolver.setPublicTemplateLocations(Arrays.asList(
 				targetIrodsCollection1, targetIrodsCollection2));
 
-		resolver.findTemplateByNameInPublicTemplates("test1");
+		metadataTemplate = resolver
+				.findTemplateByNameInPublicTemplates("test1");
 
 		Assert.assertNull(
 				"findTemplateByNameInPublicTemplates should have returned null for no match",
@@ -1041,9 +1065,10 @@ public class JargonMetadataResolverTest {
 						irodsAccount);
 
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				mdTemplatePath1, PRIMARY_RESOURCE_NAME, null, null);
+				mdTemplatePath1, irodsAccount.getDefaultStorageResource(),
+				null, null);
 
-		String templateFqName = mdTemplatePath1 + '/' + TEMPLATE_FILE_NAME1;
+		String templateFqName = mdTemplatePath1 + '/' + TEMPLATE_NOPATH1;
 
 		MetadataTemplate metadataTemplate = new FormBasedMetadataTemplate();
 
@@ -1059,7 +1084,7 @@ public class JargonMetadataResolverTest {
 		// that doesn't exist
 		// Assert that the returned template is null
 
-		String testDirName1 = "findTemplateByFqNameValidDir";
+		String testDirName1 = "findTemplateByFqNameInvalidDir";
 
 		String targetIrodsCollection1 = testingPropertiesHelper
 				.buildIRODSCollectionAbsolutePathFromTestProperties(
@@ -1089,7 +1114,8 @@ public class JargonMetadataResolverTest {
 						irodsAccount);
 
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				mdTemplatePath1, PRIMARY_RESOURCE_NAME, null, null);
+				mdTemplatePath1, irodsAccount.getDefaultStorageResource(),
+				null, null);
 
 		String badTemplateFqName = mdTemplatePath1 + "/notReallyATemplateFile";
 
@@ -1131,10 +1157,11 @@ public class JargonMetadataResolverTest {
 						irodsAccount);
 
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				targetIrodsCollection1, PRIMARY_RESOURCE_NAME, null, null);
+				targetIrodsCollection1,
+				irodsAccount.getDefaultStorageResource(), null, null);
 
 		String mdTemplateFqName = targetIrodsCollection1 + '/'
-				+ TEMPLATE_FILE_NAME1;
+				+ TEMPLATE_NOPATH1;
 
 		JargonMetadataResolver resolver = new JargonMetadataResolver(
 				irodsAccount, accessObjectFactory);
@@ -1177,10 +1204,11 @@ public class JargonMetadataResolverTest {
 						irodsAccount);
 
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				targetIrodsCollection1, PRIMARY_RESOURCE_NAME, null, null);
+				targetIrodsCollection1,
+				irodsAccount.getDefaultStorageResource(), null, null);
 
 		String mdTemplateFqName = targetIrodsCollection1 + '/'
-				+ TEMPLATE_FILE_NAME1;
+				+ TEMPLATE_NOPATH1;
 
 		JargonMetadataResolver resolver = new JargonMetadataResolver(
 				irodsAccount, accessObjectFactory);
@@ -1249,9 +1277,10 @@ public class JargonMetadataResolverTest {
 						irodsAccount);
 
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				mdTemplatePath1, PRIMARY_RESOURCE_NAME, null, null);
+				mdTemplatePath1, irodsAccount.getDefaultStorageResource(),
+				null, null);
 
-		String templateFqName = mdTemplatePath1 + '/' + TEMPLATE_FILE_NAME1;
+		String templateFqName = mdTemplatePath1 + '/' + TEMPLATE_NOPATH1;
 
 		MetadataTemplate metadataTemplate = new FormBasedMetadataTemplate();
 
@@ -1317,9 +1346,10 @@ public class JargonMetadataResolverTest {
 						irodsAccount);
 
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				mdTemplatePath1, PRIMARY_RESOURCE_NAME, null, null);
+				mdTemplatePath1, irodsAccount.getDefaultStorageResource(),
+				null, null);
 
-		String templateFqName = mdTemplatePath1 + '/' + TEMPLATE_FILE_NAME1;
+		String templateFqName = mdTemplatePath1 + '/' + TEMPLATE_NOPATH1;
 
 		MetadataTemplate metadataTemplate = new FormBasedMetadataTemplate();
 
@@ -1348,8 +1378,8 @@ public class JargonMetadataResolverTest {
 		// Assert that the AVUs on the file saved at the specified location
 		// include the correct mdtemplate and mdelement AVUs
 
-		String testDirName1 = "saveFormBasedTemplateAsJsonGivenMdTemplateDirLoadDir";
-		String testDirName2 = "saveFormBasedTemplateAsJsonGivenMdTemplateDirSaveDir";
+		String testDirName1 = "saveFormBasedTemplateAsJsonCheckAVUsLoadDir";
+		String testDirName2 = "saveFormBasedTemplateAsJsonCheckAVUsSaveDir";
 
 		String targetIrodsCollection1 = testingPropertiesHelper
 				.buildIRODSCollectionAbsolutePathFromTestProperties(
@@ -1389,9 +1419,10 @@ public class JargonMetadataResolverTest {
 						irodsAccount);
 
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				mdTemplatePath1, PRIMARY_RESOURCE_NAME, null, null);
+				mdTemplatePath1, irodsAccount.getDefaultStorageResource(),
+				null, null);
 
-		String templateFqName = mdTemplatePath1 + '/' + TEMPLATE_FILE_NAME1;
+		String templateFqName = mdTemplatePath1 + '/' + TEMPLATE_NOPATH1;
 
 		MetadataTemplate metadataTemplate = new FormBasedMetadataTemplate();
 
@@ -1448,10 +1479,11 @@ public class JargonMetadataResolverTest {
 						irodsAccount);
 
 		String mdTemplateFqName = targetIrodsCollection1 + '/'
-				+ TEMPLATE_FILE_NAME1;
+				+ TEMPLATE_NOPATH1;
 
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				mdTemplateFqName, PRIMARY_RESOURCE_NAME, null, null);
+				mdTemplateFqName, irodsAccount.getDefaultStorageResource(),
+				null, null);
 
 		String newFqName = targetIrodsCollection2
 				+ "/newTemplateName.mdTemplate";
@@ -1484,8 +1516,8 @@ public class JargonMetadataResolverTest {
 		// call renameTemplate... with a bogus path
 		// Assert that the template is unchanged in the original directory
 
-		String testDirName1 = "renameTemplateByFqNameValidDir1";
-		String testDirName2 = "renameTemplateByFqNameValidDir2";
+		String testDirName1 = "renameTemplateByFqNameInvalidDir1";
+		String testDirName2 = "renameTemplateByFqNameInvalidDir2";
 
 		String targetIrodsCollection1 = testingPropertiesHelper
 				.buildIRODSCollectionAbsolutePathFromTestProperties(
@@ -1517,10 +1549,11 @@ public class JargonMetadataResolverTest {
 						irodsAccount);
 
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				targetIrodsCollection1, PRIMARY_RESOURCE_NAME, null, null);
+				targetIrodsCollection1,
+				irodsAccount.getDefaultStorageResource(), null, null);
 
 		String mdTemplateFqName = targetIrodsCollection1 + '/'
-				+ TEMPLATE_FILE_NAME1;
+				+ TEMPLATE_NOPATH1;
 		String newFqName = "this/is/a/bogus/filename.mdtemplate";
 
 		JargonMetadataResolver resolver = new JargonMetadataResolver(
@@ -1539,7 +1572,7 @@ public class JargonMetadataResolverTest {
 				template);
 
 		List<MetaDataAndDomainData> templateAVUs = resolver
-				.queryTemplateAVUForFile(newFqName);
+				.queryTemplateAVUForFile(mdTemplateFqName);
 
 		Assert.assertEquals("renameTemplateByFqName changed mdTemplate AVU",
 				templateAVUs.get(0).getAvuAttribute(), "test1");
@@ -1587,12 +1620,11 @@ public class JargonMetadataResolverTest {
 						irodsAccount);
 
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				targetIrodsCollection1, PRIMARY_RESOURCE_NAME, null, null);
+				targetIrodsCollection1,
+				irodsAccount.getDefaultStorageResource(), null, null);
 
 		String mdTemplateFqName1 = targetIrodsCollection1 + '/'
-				+ TEMPLATE_FILE_NAME1;
-		String mdTemplateFqName2 = targetIrodsCollection2 + '/'
-				+ TEMPLATE_FILE_NAME1;
+				+ TEMPLATE_NOPATH1;
 
 		JargonMetadataResolver resolver = new JargonMetadataResolver(
 				irodsAccount, accessObjectFactory);
@@ -1600,7 +1632,8 @@ public class JargonMetadataResolverTest {
 		FormBasedMetadataTemplate template = (FormBasedMetadataTemplate) resolver
 				.findTemplateByFqName(mdTemplateFqName1);
 
-		resolver.saveFormBasedTemplateAsJSON(template, targetIrodsCollection2);
+		String mdTemplateFqName2 = resolver.saveFormBasedTemplateAsJSON(
+				template, targetIrodsCollection2);
 
 		template = (FormBasedMetadataTemplate) resolver
 				.findTemplateByFqName(mdTemplateFqName2);
@@ -1616,14 +1649,15 @@ public class JargonMetadataResolverTest {
 		boolean retVal = resolver.updateFormBasedTemplateByFqName(
 				mdTemplateFqName2, template);
 
-		template = (FormBasedMetadataTemplate) resolver
-				.findTemplateByFqName(mdTemplateFqName2);
-
 		Assert.assertTrue("updateFormBasedTemplateByFqName returned false",
 				retVal);
+		
+		template = (FormBasedMetadataTemplate) resolver
+				.findTemplateByFqName(mdTemplateFqName2);
+		
 		Assert.assertEquals(
 				"template description not changed by updateFormBasedTemplateByFqName",
-				template.getDescription(), "templateModified");
+				template.getDescription(), "TemplateModified");
 		Assert.assertTrue(
 				"elements list not changed by updateFormBasedTemplateByFqName",
 				template.getElements().size() == 4);
@@ -1672,12 +1706,11 @@ public class JargonMetadataResolverTest {
 						irodsAccount);
 
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				targetIrodsCollection1, PRIMARY_RESOURCE_NAME, null, null);
+				targetIrodsCollection1,
+				irodsAccount.getDefaultStorageResource(), null, null);
 
 		String mdTemplateFqName1 = targetIrodsCollection1 + '/'
-				+ TEMPLATE_FILE_NAME1;
-		String mdTemplateFqName2 = targetIrodsCollection2 + '/'
-				+ TEMPLATE_FILE_NAME1;
+				+ TEMPLATE_NOPATH1;
 
 		JargonMetadataResolver resolver = new JargonMetadataResolver(
 				irodsAccount, accessObjectFactory);
@@ -1685,7 +1718,8 @@ public class JargonMetadataResolverTest {
 		FormBasedMetadataTemplate template = (FormBasedMetadataTemplate) resolver
 				.findTemplateByFqName(mdTemplateFqName1);
 
-		resolver.saveFormBasedTemplateAsJSON(template, targetIrodsCollection2);
+		String mdTemplateFqName2 = resolver.saveFormBasedTemplateAsJSON(
+				template, targetIrodsCollection2);
 
 		template = (FormBasedMetadataTemplate) resolver
 				.findTemplateByFqName(mdTemplateFqName2);
@@ -1726,9 +1760,9 @@ public class JargonMetadataResolverTest {
 		// directory as the fqPath
 		// Assert that nothing was saved to the specified path
 
-		String testDirName1 = "updateFormBasedTemplateUuidMismatchDir1";
-		String testDirName2 = "updateFormBasedTemplateUuidMismatchDir2";
-		String testDirName3 = "updateFormBasedTemplateUuidMismatchDir3";
+		String testDirName1 = "updateFormBasedTemplateFqNameInvalidDir1";
+		String testDirName2 = "updateFormBasedTemplateFqNameInvalidDir2";
+		String testDirName3 = "updateFormBasedTemplateFqNameInvalidDir3";
 
 		String targetIrodsCollection1 = testingPropertiesHelper
 				.buildIRODSCollectionAbsolutePathFromTestProperties(
@@ -1768,18 +1802,16 @@ public class JargonMetadataResolverTest {
 						irodsAccount);
 
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				targetIrodsCollection1, PRIMARY_RESOURCE_NAME, null, null);
+				targetIrodsCollection1,
+				irodsAccount.getDefaultStorageResource(), null, null);
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2,
-				targetIrodsCollection3, PRIMARY_RESOURCE_NAME, null, null);
+				targetIrodsCollection2,
+				irodsAccount.getDefaultStorageResource(), null, null);
 
 		String mdTemplateFqName1 = targetIrodsCollection1 + '/'
-				+ TEMPLATE_FILE_NAME1;
+				+ TEMPLATE_NOPATH1;
 		String mdTemplateFqName2 = targetIrodsCollection2 + '/'
-				+ TEMPLATE_FILE_NAME1;
-		String mdTemplateFqName3 = targetIrodsCollection3 + '/'
-				+ TEMPLATE_FILE_NAME1;
-		String mdTemplateFqName4 = targetIrodsCollection3 + '/'
-				+ TEMPLATE_FILE_NAME2;
+				+ TEMPLATE_NOPATH2;
 
 		JargonMetadataResolver resolver = new JargonMetadataResolver(
 				irodsAccount, accessObjectFactory);
@@ -1787,10 +1819,21 @@ public class JargonMetadataResolverTest {
 		FormBasedMetadataTemplate template = (FormBasedMetadataTemplate) resolver
 				.findTemplateByFqName(mdTemplateFqName1);
 
-		resolver.saveFormBasedTemplateAsJSON(template, targetIrodsCollection2);
+		String mdTemplateFqName3 = resolver.saveFormBasedTemplateAsJSON(
+				template, targetIrodsCollection1);
 
 		template = (FormBasedMetadataTemplate) resolver
 				.findTemplateByFqName(mdTemplateFqName2);
+
+		String mdTemplateFqName4 = resolver.saveFormBasedTemplateAsJSON(
+				template, targetIrodsCollection2);
+
+		String mdTemplateFqName5 = resolver
+				.computeMetadataTemplatesPathUnderParent(targetIrodsCollection2)
+				+ '/' + TEMPLATE_NOPATH1;
+
+		template = (FormBasedMetadataTemplate) resolver
+				.findTemplateByFqName(mdTemplateFqName3);
 
 		MetadataElement me = new MetadataElement();
 		me.setElementName("addedElement");
@@ -1801,13 +1844,13 @@ public class JargonMetadataResolverTest {
 		template.getElements().add(me);
 
 		boolean retVal = resolver.updateFormBasedTemplateByFqName(
-				mdTemplateFqName2, template);
+				mdTemplateFqName4, template);
 
 		Assert.assertFalse("updateFormBasedTemplateByFqName returned true",
 				retVal);
 
 		MetadataTemplate template2 = resolver
-				.findTemplateByFqName(mdTemplateFqName3);
+				.findTemplateByFqName(mdTemplateFqName5);
 		template = (FormBasedMetadataTemplate) resolver
 				.findTemplateByFqName(mdTemplateFqName4);
 
@@ -1851,10 +1894,11 @@ public class JargonMetadataResolverTest {
 						irodsAccount);
 
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				targetIrodsCollection1, PRIMARY_RESOURCE_NAME, null, null);
+				targetIrodsCollection1,
+				irodsAccount.getDefaultStorageResource(), null, null);
 
 		String mdTemplateFqName = targetIrodsCollection1 + '/'
-				+ TEMPLATE_FILE_NAME1;
+				+ TEMPLATE_NOPATH1;
 
 		JargonMetadataResolver resolver = new JargonMetadataResolver(
 				irodsAccount, accessObjectFactory);
@@ -1921,6 +1965,6 @@ public class JargonMetadataResolverTest {
 		// Assert that MetadataTemplates A, B, & C (B & C at least partially
 		// instantiated from the file) are returned, and that the orphan list
 		// contains all the orphan AVUs from the file
-
+		Assert.assertFalse("Test not yet implemented", true);
 	}
 }
