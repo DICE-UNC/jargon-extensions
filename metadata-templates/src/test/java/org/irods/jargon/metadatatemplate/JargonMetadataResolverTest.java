@@ -16,6 +16,7 @@ import org.irods.jargon.core.pub.domain.AvuData;
 import org.irods.jargon.core.pub.io.IRODSFile;
 import org.irods.jargon.core.query.MetaDataAndDomainData;
 import org.irods.jargon.testutils.TestingPropertiesHelper;
+import org.irods.jargon.testutils.filemanip.FileGenerator;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -29,10 +30,12 @@ public class JargonMetadataResolverTest {
 	private static final String TEMPLATE_FILE_NAME1 = "src/test/resources/templates/test1.mdtemplate";
 	private static final String TEMPLATE_FILE_NAME2 = "src/test/resources/templates/test2.mdtemplate";
 	private static final String TEMPLATE_FILE_NAME3 = "src/test/resources/templates/test3.mdtemplate";
+	private static final String TEST_FILE_NAME = "src/test/resources/testFile.txt";
 
 	private static final String TEMPLATE_NOPATH1 = "test1.mdtemplate";
 	private static final String TEMPLATE_NOPATH2 = "test2.mdtemplate";
 	private static final String TEMPLATE_NOPATH3 = "test3.mdtemplate";
+	private static final String TEST_FILE_NOPATH = "testFile.txt";
 
 	public static final String IRODS_TEST_SUBDIR_PATH = "JargonMetadataResolverTest";
 	private static org.irods.jargon.testutils.IRODSTestSetupUtilities irodsTestSetupUtilities = null;
@@ -86,15 +89,8 @@ public class JargonMetadataResolverTest {
 				irodsAccount, accessObjectFactory);
 
 		resolver.saveFormBasedTemplateAsJSON(template, targetIrodsCollection);
-/*
-		DotIrodsService dotIrodsService = new DotIrodsServiceImpl(
-				accessObjectFactory, irodsAccount);
-		File[] metadataTemplateFiles = dotIrodsService
-				.listFilesOfTypeInDirectoryHierarchyDotIrods(
-						targetIrodsCollection,
-						new MetadataTemplateFileFilter(), true);
-*/
-		List<MetadataTemplate> metadataTemplates = resolver.listAllTemplates(targetIrodsCollection);
+		List<MetadataTemplate> metadataTemplates = resolver
+				.listAllTemplates(targetIrodsCollection);
 		Assert.assertTrue("no metadata template stored",
 				metadataTemplates.size() != 0);
 
@@ -1651,10 +1647,10 @@ public class JargonMetadataResolverTest {
 
 		Assert.assertTrue("updateFormBasedTemplateByFqName returned false",
 				retVal);
-		
+
 		template = (FormBasedMetadataTemplate) resolver
 				.findTemplateByFqName(mdTemplateFqName2);
-		
+
 		Assert.assertEquals(
 				"template description not changed by updateFormBasedTemplateByFqName",
 				template.getDescription(), "TemplateModified");
@@ -1951,20 +1947,141 @@ public class JargonMetadataResolverTest {
 
 	@Test
 	public void getAndMergeTemplateListForFile() throws Exception {
-		// Create a directory
-		// Create a file in that directory
-		// Create two metadata template file in that directory, one "required"
-		// (A) and one that the file already uses (B)
-		// Create a public directory
-		// Add that directory to the public template locations
-		// Create a metadata template file (C) in that directory that the test
-		// file uses
-		// Set the AVUs on the test file to correspond to the created metadata
-		// template files B & C, as well as at least one "orphan" AVU
-		// Call getAndMerge on the test file
-		// Assert that MetadataTemplates A, B, & C (B & C at least partially
-		// instantiated from the file) are returned, and that the orphan list
-		// contains all the orphan AVUs from the file
-		Assert.assertFalse("Test not yet implemented", true);
+		String testDirName1 = "getAndMergeTemplateListForFileDir1";
+		String testDirName2 = "getAndMergeTemplateListForFileDir2";
+
+		String targetIrodsCollection1 = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
+								+ testDirName1);
+		String targetIrodsCollection2 = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
+								+ testDirName2);
+
+		IRODSAccount irodsAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
+				.getIRODSAccessObjectFactory();
+
+		IRODSFile targetCollectionAsFile1 = accessObjectFactory
+				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
+						targetIrodsCollection1);
+		IRODSFile targetCollectionAsFile2 = accessObjectFactory
+				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
+						targetIrodsCollection2);
+
+		targetCollectionAsFile1.mkdirs();
+		targetCollectionAsFile2.mkdirs();
+
+		JargonMetadataResolver resolver = new JargonMetadataResolver(
+				irodsAccount, accessObjectFactory);
+
+		String mdTemplatePath1 = resolver
+				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection1);
+
+		DataTransferOperations dataTransferOperations = irodsFileSystem
+				.getIRODSAccessObjectFactory().getDataTransferOperations(
+						irodsAccount);
+
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
+				mdTemplatePath1, irodsAccount.getDefaultStorageResource(),
+				null, null);
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME3,
+				mdTemplatePath1, irodsAccount.getDefaultStorageResource(),
+				null, null);
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2,
+				targetIrodsCollection2,
+				irodsAccount.getDefaultStorageResource(), null, null);
+
+		String templateFqName1 = mdTemplatePath1 + '/' + TEMPLATE_NOPATH1;
+		String templateFqName3 = mdTemplatePath1 + '/' + TEMPLATE_NOPATH3;
+		String templateFqName2 = targetIrodsCollection2 + '/'
+				+ TEMPLATE_NOPATH2;
+
+		resolver.setPublicTemplateLocations(Arrays
+				.asList(targetIrodsCollection2));
+
+		UUID uuid1 = UUID.randomUUID();
+		AvuData avuData = AvuData.instance("test1", uuid1.toString(),
+				JargonMetadataTemplateConstants.MD_TEMPLATE_UNIT);
+		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(
+				templateFqName1, avuData);
+
+		UUID uuid2 = UUID.randomUUID();
+		avuData = AvuData.instance("test2", uuid2.toString(),
+				JargonMetadataTemplateConstants.MD_TEMPLATE_UNIT);
+		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(
+				templateFqName2, avuData);
+
+		UUID uuid3 = UUID.randomUUID();
+		avuData = AvuData.instance("test3", uuid3.toString(),
+				JargonMetadataTemplateConstants.MD_TEMPLATE_UNIT);
+		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(
+				templateFqName3, avuData);
+
+		// Create a file in targetIrodsCollection1
+		dataTransferOperations.putOperation(TEST_FILE_NAME,
+				targetIrodsCollection1,
+				irodsAccount.getDefaultStorageResource(), null, null);
+		String testFileNameFQ = targetIrodsCollection1 + '/' + TEST_FILE_NOPATH;
+
+		avuData = AvuData.instance(
+				"attribute3",
+				"test_value",
+				JargonMetadataTemplateConstants.AVU_UNIT_PREFIX
+						+ uuid2.toString());
+		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(
+				testFileNameFQ, avuData);
+		avuData = AvuData.instance(
+				"optional2",
+				"42",
+				JargonMetadataTemplateConstants.AVU_UNIT_PREFIX
+						+ uuid2.toString());
+		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(
+				testFileNameFQ, avuData);
+		avuData = AvuData.instance(
+				"attribute5",
+				"12",
+				JargonMetadataTemplateConstants.AVU_UNIT_PREFIX
+						+ uuid3.toString());
+		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(
+				testFileNameFQ, avuData);
+		avuData = AvuData.instance(
+				"attribute6",
+				"true",
+				JargonMetadataTemplateConstants.AVU_UNIT_PREFIX
+						+ uuid3.toString());
+		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(
+				testFileNameFQ, avuData);
+		avuData = AvuData.instance("orphan1", "littleOrphanAnnie", "");
+		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(
+				testFileNameFQ, avuData);
+		avuData = AvuData.instance("orphan2", "oliverTwist", "");
+		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(
+				testFileNameFQ, avuData);
+
+		MetadataMergeResult result = resolver
+				.getAndMergeTemplateListForFile(testFileNameFQ);
+
+		Assert.assertEquals("Wrong number of templates found", 3, result
+				.getTemplates().size());
+		Assert.assertEquals("Wrong number of orphan AVUs", 2, result
+				.getUnmatchedAvus().size());
+
+		// Because templates are assigned random UUIDs, they come out in random
+		// order. Need to find the right one to test.
+		FormBasedMetadataTemplate template = null;
+		for (MetadataTemplate mt : result.getTemplates()) {
+			if (mt.getName().compareTo("test2") == 0) {
+				template = (FormBasedMetadataTemplate) mt;
+				break;
+			}
+		}
+
+		Assert.assertEquals("Templates not instantiated", "test_value",
+				template.getElements().get(0).getCurrentValue());
+
 	}
 }

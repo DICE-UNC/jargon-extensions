@@ -545,23 +545,25 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 
 		IRODSFile inFile = this.getPathAsIrodsFile(fqName);
 		IRODSFile irodsRenameFile = this.getPathAsIrodsFile(newFqName);
-		
+
 		if (!inFile.exists()) {
 			log.info("{} does not exist, rename failed", inFile);
 			return false;
 		}
-		
-		if (!irodsRenameFile.canWrite() && !irodsRenameFile.getParentFile().isDirectory()) {
+
+		if (!irodsRenameFile.canWrite()
+				&& !irodsRenameFile.getParentFile().isDirectory()) {
 			log.info("{} cannot be written to, rename failed", irodsRenameFile);
 			return false;
 		}
 
 		boolean retVal = false;
-		
+
 		try {
 			retVal = inFile.renameTo(irodsRenameFile);
 		} catch (Exception e) {
-			log.info("Exception in IRODSFile.renameTo with parameter {}", irodsRenameFile);
+			log.info("Exception in IRODSFile.renameTo with parameter {}",
+					irodsRenameFile);
 			return false;
 		}
 
@@ -642,10 +644,9 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 			throw new IllegalArgumentException(
 					"metadataTemplate is null or empty");
 		}
-		
+
 		if (!fqName.endsWith(MetadataTemplateConstants.TEMPLATE_FILE_EXT)
-				&& !fqName
-						.endsWith(MetadataTemplateConstants.JSON_FILE_EXT)) {
+				&& !fqName.endsWith(MetadataTemplateConstants.JSON_FILE_EXT)) {
 			log.info("fqName does not represent a metadata template file, update not attempted");
 			return false;
 		}
@@ -719,8 +720,7 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 		}
 
 		if (!fqName.endsWith(MetadataTemplateConstants.TEMPLATE_FILE_EXT)
-				&& !fqName
-						.endsWith(MetadataTemplateConstants.JSON_FILE_EXT)) {
+				&& !fqName.endsWith(MetadataTemplateConstants.JSON_FILE_EXT)) {
 			throw new IllegalArgumentException(
 					"fqName does not represent a metadata template file, delete not attempted");
 		}
@@ -768,8 +768,8 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 		List<MetaDataAndDomainData> orphans = new ArrayList<MetaDataAndDomainData>();
 		Map<String, FormBasedMetadataTemplate> templateMap = new HashMap<String, FormBasedMetadataTemplate>();
 
-		for (MetadataTemplate mt : this
-				.listAllRequiredTemplates(irodsAbsolutePathToFile)) {
+		for (MetadataTemplate mt : this.listAllRequiredTemplates(this
+				.getPathFromFqName(irodsAbsolutePathToFile))) {
 			log.info("Required template found: {}", mt.getName());
 			// TODO Right now, only supports searching by UUID
 			// nameUUID would be more general
@@ -790,20 +790,18 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 		int uuidStart = 0;
 
 		for (MetaDataAndDomainData avu : avuList) {
-			if (avu.getAvuAttribute().contains(
+			if (avu.getAvuUnit().contains(
 					JargonMetadataTemplateConstants.AVU_UNIT_PREFIX)) {
 				log.info("unit contains a template UUID");
-				unitIndex = avu.getAvuAttribute().indexOf(
+				unitIndex = avu.getAvuUnit().indexOf(
 						JargonMetadataTemplateConstants.AVU_UNIT_PREFIX);
 				uuidStart = unitIndex
 						+ JargonMetadataTemplateConstants.AVU_UNIT_PREFIX
 								.length();
 
-				// 36 because UUID string is always 36 characters long
 				// The unit string might contain, e.g.,
 				// "fromTemplate:01234567-01234-01234-01234-0123456789ab"
-				String uuid = avu.getAvuAttribute().substring(uuidStart,
-						uuidStart + 36);
+				String uuid = avu.getAvuUnit().substring(uuidStart);
 
 				// See if the template is already in the hash map
 				if (templateMap.containsKey(uuid)) {
@@ -1551,8 +1549,19 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 		if (lastSlash == -1) {
 			localFileName = inFileName;
 		} else {
-			localFileName = inFileName.substring(lastSlash+1);
+			localFileName = inFileName.substring(lastSlash + 1);
 		}
 		return LocalFileUtils.getFileNameUpToExtension(localFileName);
+	}
+
+	String getPathFromFqName(String inFileName) {
+		String path;
+		int lastSlash = inFileName.lastIndexOf('/');
+		if ((lastSlash == -1) || (lastSlash == (inFileName.length() - 1))) {
+			path = inFileName;
+		} else {
+			path = inFileName.substring(0, lastSlash);
+		}
+		return path;
 	}
 }
