@@ -16,7 +16,6 @@ import org.irods.jargon.core.pub.domain.AvuData;
 import org.irods.jargon.core.pub.io.IRODSFile;
 import org.irods.jargon.core.query.MetaDataAndDomainData;
 import org.irods.jargon.testutils.TestingPropertiesHelper;
-import org.irods.jargon.testutils.filemanip.FileGenerator;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
