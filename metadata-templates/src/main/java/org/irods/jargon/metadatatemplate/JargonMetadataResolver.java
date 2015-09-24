@@ -742,11 +742,11 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 	}
 
 	/**
-	 * Populate metadata template from a list of AVUs
+	 * Populate metadata templates from a list of AVUs
 	 * 
 	 * TODO Are unaffiliated AVUs and orphan AVUs properly two separate lists?
 	 * 
-	 * @param irodsAbsolutePathToFile
+	 * @param irodsAbsolutePathToCollection
 	 * 
 	 * @return {@link MetadataMergeResult}, containing a
 	 *         {@link MetadataTemplate} that was initialized as a copy of
@@ -758,18 +758,26 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 	 * @throws FileNotFoundException
 	 * @throws org.irods.jargon.core.exception.FileNotFoundException
 	 * @throws JargonException
+	 * @throws JargonQueryException
 	 * 
 	 */
-	public MetadataMergeResult getAndMergeTemplateListForFile(
-			String irodsAbsolutePathToFile) throws FileNotFoundException,
-			IOException, JargonException {
-		log.info("getAndMergeTemplateListForFile()");
+	public MetadataMergeResult getAndMergeTemplateListForPath(
+			String irodsAbsolutePath)
+			throws org.irods.jargon.core.exception.FileNotFoundException,
+			JargonException, JargonQueryException, FileNotFoundException,
+			IOException {
+		log.info("getAndMergeTemplateListForPath()");
 
-		List<MetaDataAndDomainData> orphans = new ArrayList<MetaDataAndDomainData>();
+		ObjStat pathObjStat = irodsAccessObjectFactory.getIRODSFileSystemAO(
+				irodsAccount).getObjStat(irodsAbsolutePath);
+
 		Map<String, FormBasedMetadataTemplate> templateMap = new HashMap<String, FormBasedMetadataTemplate>();
 
-		for (MetadataTemplate mt : this.listAllRequiredTemplates(this
-				.getPathFromFqName(irodsAbsolutePathToFile))) {
+		String templateSearchPath = pathObjStat.isSomeTypeOfCollection() ? irodsAbsolutePath
+				: this.getPathFromFqName(irodsAbsolutePath);
+
+		for (MetadataTemplate mt : this
+				.listAllRequiredTemplates(templateSearchPath)) {
 			log.info("Required template found: {}", mt.getName());
 			// TODO Right now, only supports searching by UUID
 			// nameUUID would be more general
@@ -780,9 +788,25 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 			templateMap.put(hashKey, (FormBasedMetadataTemplate) mt);
 		}
 
-		List<MetaDataAndDomainData> avuList = irodsAccessObjectFactory
-				.getDataObjectAO(irodsAccount).findMetadataValuesForDataObject(
-						irodsAbsolutePathToFile);
+		List<MetaDataAndDomainData> avuList;
+		if (pathObjStat.isSomeTypeOfCollection()) {
+			avuList = irodsAccessObjectFactory.getCollectionAO(irodsAccount)
+					.findMetadataValuesForCollection(irodsAbsolutePath);
+		} else {
+			avuList = irodsAccessObjectFactory.getDataObjectAO(irodsAccount)
+					.findMetadataValuesForDataObject(irodsAbsolutePath);
+		}
+
+		return mergeTemplateListAndAVUs(templateMap, avuList);
+	}
+
+	MetadataMergeResult mergeTemplateListAndAVUs(
+			Map<String, FormBasedMetadataTemplate> templateMap,
+			List<MetaDataAndDomainData> avuList) throws FileNotFoundException,
+			IOException, JargonException {
+		log.info("mergeTemplateListAndAVUs()");
+
+		List<MetaDataAndDomainData> orphans = new ArrayList<MetaDataAndDomainData>();
 
 		boolean matched = false;
 		FormBasedMetadataTemplate tempMt = null;

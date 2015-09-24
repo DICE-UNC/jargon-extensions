@@ -2062,7 +2062,7 @@ public class JargonMetadataResolverTest {
 				testFileNameFQ, avuData);
 
 		MetadataMergeResult result = resolver
-				.getAndMergeTemplateListForFile(testFileNameFQ);
+				.getAndMergeTemplateListForPath(testFileNameFQ);
 
 		Assert.assertEquals("Wrong number of templates found", 3, result
 				.getTemplates().size());
@@ -2081,6 +2081,140 @@ public class JargonMetadataResolverTest {
 
 		Assert.assertEquals("Templates not instantiated", "test_value",
 				template.getElements().get(0).getCurrentValue());
+	}
+	
+	@Test
+	public void getAndMergeTemplateListForCollection() throws Exception {
+		String testDirName1 = "getAndMergeTemplateListForCollectionDir1";
+		String testDirName2 = "getAndMergeTemplateListForCollectionDir2";
 
+		String targetIrodsCollection1 = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
+								+ testDirName1);
+		String targetIrodsCollection2 = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
+								+ testDirName2);
+
+		IRODSAccount irodsAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
+				.getIRODSAccessObjectFactory();
+
+		IRODSFile targetCollectionAsFile1 = accessObjectFactory
+				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
+						targetIrodsCollection1);
+		IRODSFile targetCollectionAsFile2 = accessObjectFactory
+				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
+						targetIrodsCollection2);
+
+		targetCollectionAsFile1.mkdirs();
+		targetCollectionAsFile2.mkdirs();
+
+		JargonMetadataResolver resolver = new JargonMetadataResolver(
+				irodsAccount, accessObjectFactory);
+
+		String mdTemplatePath1 = resolver
+				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection1);
+
+		DataTransferOperations dataTransferOperations = irodsFileSystem
+				.getIRODSAccessObjectFactory().getDataTransferOperations(
+						irodsAccount);
+
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
+				mdTemplatePath1, irodsAccount.getDefaultStorageResource(),
+				null, null);
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME3,
+				mdTemplatePath1, irodsAccount.getDefaultStorageResource(),
+				null, null);
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2,
+				targetIrodsCollection2,
+				irodsAccount.getDefaultStorageResource(), null, null);
+
+		String templateFqName1 = mdTemplatePath1 + '/' + TEMPLATE_NOPATH1;
+		String templateFqName3 = mdTemplatePath1 + '/' + TEMPLATE_NOPATH3;
+		String templateFqName2 = targetIrodsCollection2 + '/'
+				+ TEMPLATE_NOPATH2;
+
+		resolver.setPublicTemplateLocations(Arrays
+				.asList(targetIrodsCollection2));
+
+		UUID uuid1 = UUID.randomUUID();
+		AvuData avuData = AvuData.instance("test1", uuid1.toString(),
+				JargonMetadataTemplateConstants.MD_TEMPLATE_UNIT);
+		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(
+				templateFqName1, avuData);
+
+		UUID uuid2 = UUID.randomUUID();
+		avuData = AvuData.instance("test2", uuid2.toString(),
+				JargonMetadataTemplateConstants.MD_TEMPLATE_UNIT);
+		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(
+				templateFqName2, avuData);
+
+		UUID uuid3 = UUID.randomUUID();
+		avuData = AvuData.instance("test3", uuid3.toString(),
+				JargonMetadataTemplateConstants.MD_TEMPLATE_UNIT);
+		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(
+				templateFqName3, avuData);
+		
+		String irodsCollectionString = targetIrodsCollection1;
+
+		avuData = AvuData.instance(
+				"attribute3",
+				"test_value",
+				JargonMetadataTemplateConstants.AVU_UNIT_PREFIX
+						+ uuid2.toString());
+		accessObjectFactory.getCollectionAO(irodsAccount).addAVUMetadata(
+				irodsCollectionString, avuData);
+		avuData = AvuData.instance(
+				"optional2",
+				"42",
+				JargonMetadataTemplateConstants.AVU_UNIT_PREFIX
+						+ uuid2.toString());
+		accessObjectFactory.getCollectionAO(irodsAccount).addAVUMetadata(
+				irodsCollectionString, avuData);
+		avuData = AvuData.instance(
+				"attribute5",
+				"12",
+				JargonMetadataTemplateConstants.AVU_UNIT_PREFIX
+						+ uuid3.toString());
+		accessObjectFactory.getCollectionAO(irodsAccount).addAVUMetadata(
+				irodsCollectionString, avuData);
+		avuData = AvuData.instance(
+				"attribute6",
+				"true",
+				JargonMetadataTemplateConstants.AVU_UNIT_PREFIX
+						+ uuid3.toString());
+		accessObjectFactory.getCollectionAO(irodsAccount).addAVUMetadata(
+				irodsCollectionString, avuData);
+		avuData = AvuData.instance("orphan1", "littleOrphanAnnie", "");
+		accessObjectFactory.getCollectionAO(irodsAccount).addAVUMetadata(
+				irodsCollectionString, avuData);
+		avuData = AvuData.instance("orphan2", "oliverTwist", "");
+		accessObjectFactory.getCollectionAO(irodsAccount).addAVUMetadata(
+				irodsCollectionString, avuData);
+
+		MetadataMergeResult result = resolver
+				.getAndMergeTemplateListForPath(irodsCollectionString);
+
+		Assert.assertEquals("Wrong number of templates found", 3, result
+				.getTemplates().size());
+		Assert.assertEquals("Wrong number of orphan AVUs", 2, result
+				.getUnmatchedAvus().size());
+
+		// Because templates are assigned random UUIDs, they come out in random
+		// order. Need to find the right one to test.
+		FormBasedMetadataTemplate template = null;
+		for (MetadataTemplate mt : result.getTemplates()) {
+			if (mt.getName().compareTo("test2") == 0) {
+				template = (FormBasedMetadataTemplate) mt;
+				break;
+			}
+		}
+
+		Assert.assertEquals("Templates not instantiated", "test_value",
+				template.getElements().get(0).getCurrentValue());
 	}
 }
