@@ -8,7 +8,9 @@ import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.core.service.AbstractJargonService;
 import org.irods.jargon.filetemplate.FileTemplate;
 import org.irods.jargon.filetemplate.exception.FileTemplateNotFoundException;
+import org.irods.jargon.filetemplate.impl.types.RuleFileCreator;
 import org.irods.jargon.filetemplate.impl.types.TextFileCreator;
+import org.irods.jargon.filetemplate.impl.types.XmlFileCreator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,6 +57,14 @@ public class FileCreatorFactory extends AbstractJargonService {
 		if (fileTemplate.getTemplateUniqueIdentifier().equals(
 				TextFileCreator.TEXT_CREATOR_ID)) {
 			return new TextFileCreator(this.getIrodsAccessObjectFactory(),
+					this.getIrodsAccount(), fileTemplate);
+		} else if (fileTemplate.getTemplateUniqueIdentifier().equals(
+				XmlFileCreator.XML_CREATOR_ID)) {
+			return new XmlFileCreator(this.getIrodsAccessObjectFactory(),
+					this.getIrodsAccount(), fileTemplate);
+		} else if (fileTemplate.getTemplateUniqueIdentifier().equals(
+				RuleFileCreator.RULE_CREATOR_ID)) {
+			return new RuleFileCreator(this.getIrodsAccessObjectFactory(),
 					this.getIrodsAccount(), fileTemplate);
 		} else {
 			log.error("cannot file creator for template:{}", fileTemplate);

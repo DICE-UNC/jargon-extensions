@@ -8,7 +8,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.irods.jargon.filetemplate.FileTemplate;
+import org.irods.jargon.filetemplate.impl.types.RuleFileCreator;
 import org.irods.jargon.filetemplate.impl.types.TextFileCreator;
+import org.irods.jargon.filetemplate.impl.types.XmlFileCreator;
 
 /**
  * Default repository of file templates, creates a fixed list of templates for
@@ -55,7 +57,8 @@ public class FileTemplateRepository {
 		fileTemplate.setTemplateName("iRODS Rule");
 		fileTemplate.setDefaultExtension(".r");
 		fileTemplate
-				.setTemplateUniqueIdentifier("file.template.default.text.plain");
+				.setTemplateUniqueIdentifier(RuleFileCreator.RULE_CREATOR_ID);
+		tempMap.put(fileTemplate.getTemplateUniqueIdentifier(), fileTemplate);
 
 		/*
 		 * .xml
@@ -65,8 +68,7 @@ public class FileTemplateRepository {
 		fileTemplate.setInfoType("");
 		fileTemplate.setMimeType("application/xml");
 		fileTemplate.setTemplateName("XML File");
-		fileTemplate
-				.setTemplateUniqueIdentifier("file.template.default.application.xml");
+		fileTemplate.setTemplateUniqueIdentifier(XmlFileCreator.XML_CREATOR_ID);
 		tempMap.put(fileTemplate.getTemplateUniqueIdentifier(), fileTemplate);
 
 		return tempMap;

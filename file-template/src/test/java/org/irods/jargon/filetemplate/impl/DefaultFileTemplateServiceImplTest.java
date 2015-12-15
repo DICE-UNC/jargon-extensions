@@ -11,6 +11,9 @@ import org.irods.jargon.core.pub.io.IRODSFile;
 import org.irods.jargon.filetemplate.FileTemplate;
 import org.irods.jargon.filetemplate.FileTemplateService;
 import org.irods.jargon.filetemplate.TemplateCreatedFile;
+import org.irods.jargon.filetemplate.impl.types.RuleFileCreator;
+import org.irods.jargon.filetemplate.impl.types.TextFileCreator;
+import org.irods.jargon.filetemplate.impl.types.XmlFileCreator;
 import org.irods.jargon.testutils.TestingPropertiesHelper;
 import org.junit.After;
 import org.junit.Assert;
@@ -83,7 +86,8 @@ public class DefaultFileTemplateServiceImplTest {
 
 		FileTemplate textTemplate = null;
 		for (FileTemplate fileTemplate : fileTemplates) {
-			if (fileTemplate.getMimeType().equals("text/plain")) {
+			if (fileTemplate.getTemplateUniqueIdentifier().equals(
+					TextFileCreator.TEXT_CREATOR_ID)) {
 				textTemplate = fileTemplate;
 				break;
 			}
@@ -91,6 +95,106 @@ public class DefaultFileTemplateServiceImplTest {
 
 		if (textTemplate == null) {
 			throw new JargonException("cannot find text template");
+		}
+
+		TemplateCreatedFile templateCreatedFile = fileTemplateService
+				.createFileBasedOnTemplateUniqueIdentifier(
+						targetIrodsCollection, testFileName,
+						textTemplate.getTemplateUniqueIdentifier());
+		Assert.assertNotNull("null template created file", templateCreatedFile);
+		Assert.assertEquals(testFileName, templateCreatedFile.getFileName());
+		Assert.assertEquals(targetIrodsCollection,
+				templateCreatedFile.getParentCollectionAbsolutePath());
+		Assert.assertNotNull(templateCreatedFile.getFileTemplate());
+		IRODSFile createdFile = accessObjectFactory.getIRODSFileFactory(
+				irodsAccount).instanceIRODSFile(targetIrodsCollection,
+				testFileName);
+		Assert.assertTrue("file not created", createdFile.exists());
+
+	}
+
+	@Test
+	public void testCreateFileBasedOnTemplateUniqueIdentifierXml()
+			throws Exception {
+		String testFileName = "testCreateFileBasedOnTemplateUniqueIdentifierXml.xml";
+
+		String targetIrodsCollection = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH);
+
+		IRODSAccount irodsAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
+				.getIRODSAccessObjectFactory();
+
+		FileTemplateService fileTemplateService = new DefaultFileTemplateServiceImpl(
+				accessObjectFactory, irodsAccount);
+
+		List<FileTemplate> fileTemplates = fileTemplateService
+				.listAvailableFileTemplates();
+
+		FileTemplate textTemplate = null;
+		for (FileTemplate fileTemplate : fileTemplates) {
+			if (fileTemplate.getTemplateUniqueIdentifier().equals(
+					XmlFileCreator.XML_CREATOR_ID)) {
+				textTemplate = fileTemplate;
+				break;
+			}
+		}
+
+		if (textTemplate == null) {
+			throw new JargonException("cannot find  template");
+		}
+
+		TemplateCreatedFile templateCreatedFile = fileTemplateService
+				.createFileBasedOnTemplateUniqueIdentifier(
+						targetIrodsCollection, testFileName,
+						textTemplate.getTemplateUniqueIdentifier());
+		Assert.assertNotNull("null template created file", templateCreatedFile);
+		Assert.assertEquals(testFileName, templateCreatedFile.getFileName());
+		Assert.assertEquals(targetIrodsCollection,
+				templateCreatedFile.getParentCollectionAbsolutePath());
+		Assert.assertNotNull(templateCreatedFile.getFileTemplate());
+		IRODSFile createdFile = accessObjectFactory.getIRODSFileFactory(
+				irodsAccount).instanceIRODSFile(targetIrodsCollection,
+				testFileName);
+		Assert.assertTrue("file not created", createdFile.exists());
+
+	}
+
+	@Test
+	public void testCreateFileBasedOnTemplateUniqueIdentifierRule()
+			throws Exception {
+		String testFileName = "testCreateFileBasedOnTemplateUniqueIdentifierRule.r";
+
+		String targetIrodsCollection = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH);
+
+		IRODSAccount irodsAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
+				.getIRODSAccessObjectFactory();
+
+		FileTemplateService fileTemplateService = new DefaultFileTemplateServiceImpl(
+				accessObjectFactory, irodsAccount);
+
+		List<FileTemplate> fileTemplates = fileTemplateService
+				.listAvailableFileTemplates();
+
+		FileTemplate textTemplate = null;
+		for (FileTemplate fileTemplate : fileTemplates) {
+			if (fileTemplate.getTemplateUniqueIdentifier().equals(
+					RuleFileCreator.RULE_CREATOR_ID)) {
+				textTemplate = fileTemplate;
+				break;
+			}
+		}
+
+		if (textTemplate == null) {
+			throw new JargonException("cannot find  template");
 		}
 
 		TemplateCreatedFile templateCreatedFile = fileTemplateService
