@@ -28,12 +28,8 @@ public class DefaultFileTemplateServiceImpl extends FileTemplateService {
 
 	public static final Logger log = LoggerFactory
 			.getLogger(DefaultFileTemplateServiceImpl.class);
-
-	/**
-	 * 
-	 */
-	public DefaultFileTemplateServiceImpl() {
-	}
+	private final FileTemplateRepository fileTemplateRepository = new FileTemplateRepository();
+	private final FileCreatorFactory fileCreatorFactory;
 
 	/**
 	 * @param irodsAccessObjectFactory
@@ -43,6 +39,8 @@ public class DefaultFileTemplateServiceImpl extends FileTemplateService {
 			IRODSAccessObjectFactory irodsAccessObjectFactory,
 			IRODSAccount irodsAccount) {
 		super(irodsAccessObjectFactory, irodsAccount);
+		this.fileCreatorFactory = new FileCreatorFactory(
+				irodsAccessObjectFactory, irodsAccount);
 	}
 
 	/*
@@ -57,60 +55,66 @@ public class DefaultFileTemplateServiceImpl extends FileTemplateService {
 			throws FileTemplateException {
 
 		log.info("listAvailableFileTemplates()");
+		return new ArrayList<FileTemplate>(fileTemplateRepository
+				.getFileTemplates().values());
 
-		List<FileTemplate> fileTemplates = new ArrayList<FileTemplate>();
-
-		FileTemplate template;
-
-		/*
-		 * .txt
-		 */
-		template = new FileTemplate();
-		template.setI18nTemplateName("jargon.file.template.text");
-		template.setInfoType("");
-		template.setMimeType("text/plain");
-		template.setTemplateName("txt");
-		template.setTemplateUniqueIdentifier("default.file.template.text");
-		fileTemplates.add(template);
-
-		/*
-		 * .xml
-		 */
-		template = new FileTemplate();
-		template.setI18nTemplateName("jargon.file.template.xml");
-		template.setInfoType("");
-		template.setMimeType("application/xml");
-		template.setTemplateName("xml");
-		template.setTemplateUniqueIdentifier("default.file.template.xml");
-		fileTemplates.add(template);
-
-		/*
-		 * .r (rule)
-		 */
-		template = new FileTemplate();
-		template.setI18nTemplateName("jargon.file.template.rule");
-		template.setInfoType("");
-		template.setMimeType("application/irods-rule");
-		template.setTemplateName("xml");
-		template.setTemplateUniqueIdentifier("default.file.template.rule");
-		fileTemplates.add(template);
-
-		return fileTemplates;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.irods.jargon.filetemplate.FileTemplateService#createFileBasedOnTemplate
-	 * (java.lang.String, java.lang.String, java.lang.String)
-	 */
 	@Override
-	public TemplateCreatedFile createFileBasedOnTemplate(String parentPath,
-			String fileName, String templateUniqueIdentifier)
-			throws DuplicateDataException, FileTemplateNotFoundException,
-			FileTemplateException {
-		return null;
+	protected TemplateCreatedFile createFileBasedOnTemplate(
+			FileTemplate fileTemplate, String parentPath, String fileName)
+			throws DuplicateDataException, FileTemplateException {
+
+		log.info("createFileBasedOnTemplate()");
+		if (fileTemplate == null) {
+			throw new IllegalArgumentException("null fileTemplate");
+		}
+
+		if (parentPath == null || parentPath.isEmpty()) {
+			throw new IllegalArgumentException("null or empty parentPath");
+		}
+
+		if (fileName == null || fileName.isEmpty()) {
+			throw new IllegalArgumentException("null or empty fileName");
+		}
+
+		log.info("fileTemplate:{}", fileTemplate);
+		log.info("parentPath:{}", parentPath);
+		log.info("fileName:{}", fileName);
+
+		log.info("getting creator for fileTemplate...");
+		FileCreator fileCreator = this.getFileCreatorFactory()
+				.instanceCreatorForFileTemplate(fileTemplate);
+		log.info("have creator...make file");
+		return fileCreator.create(parentPath, fileName);
+
+	}
+
+	@Override
+	protected FileTemplate retrieveTemplateByUniqueName(
+			String templateUniqueIdentifier)
+			throws FileTemplateNotFoundException, FileTemplateException {
+
+		if (templateUniqueIdentifier == null
+				|| templateUniqueIdentifier.isEmpty()) {
+			throw new IllegalArgumentException(
+					"null or empty templateUniqueIdentifier");
+		}
+		FileTemplate fileTemplate = fileTemplateRepository.getFileTemplates()
+				.get(templateUniqueIdentifier);
+
+		if (fileTemplate == null) {
+			throw new FileTemplateNotFoundException("cannot find file template");
+		}
+
+		return fileTemplate;
+	}
+
+	/**
+	 * @return the fileCreatorFactory
+	 */
+	public FileCreatorFactory getFileCreatorFactory() {
+		return fileCreatorFactory;
 	}
 
 }
