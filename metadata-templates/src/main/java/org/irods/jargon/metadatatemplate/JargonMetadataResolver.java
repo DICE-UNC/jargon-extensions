@@ -616,6 +616,89 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 	}
 
 	/**
+	 * Create an editable copy of an existing template with a new name and new
+	 * UUID.</p>
+	 * <p>
+	 * 
+	 * @param fqName
+	 *            {@link String}
+	 * @param newTemplateName
+	 *            {@link String}
+	 * @param destDir
+	 *            {@link String}
+	 * 
+	 * @return A {@link MetadataTemplate} instantiated from the cloned template
+	 *         file.
+	 * @throws MetadataTemplateProcessingException
+	 * @throws MetadataTemplateParsingException
+	 */
+	@Override
+	public MetadataTemplate cloneTemplateByFqName(String fqName,
+			String newTemplateName, String destDir)
+			throws FileNotFoundException, IOException,
+			MetadataTemplateParsingException,
+			MetadataTemplateProcessingException {
+		log.info("cloneTemplateByFqName()");
+
+		if (fqName == null || fqName.isEmpty()) {
+			throw new IllegalArgumentException("fqName is null or empty");
+		}
+
+		if (newTemplateName == null || newTemplateName.isEmpty()) {
+			throw new IllegalArgumentException(
+					"newTemplateName is null or empty");
+		}
+
+		if (destDir == null || destDir.isEmpty()) {
+			throw new IllegalArgumentException("destDir is null or empty");
+		}
+
+		if (!fqName.endsWith(MetadataTemplateConstants.TEMPLATE_FILE_EXT)
+				&& !fqName.endsWith(MetadataTemplateConstants.JSON_FILE_EXT)) {
+			log.info("fqName does not represent a metadata template file, clone not attempted");
+			return null;
+		}
+
+		IRODSFile inFile = this.getPathAsIrodsFile(fqName);
+		IRODSFile irodsDestDir = this.getPathAsIrodsFile(destDir);
+
+		if (!inFile.exists()) {
+			log.info("{} does not exist, clone failed", inFile);
+			return null;
+		}
+
+		if (!irodsDestDir.canWrite() || !irodsDestDir.isDirectory()) {
+			log.info("{} cannot be written to, clone failed", irodsDestDir);
+			return null;
+		}
+
+		MetadataTemplate templateToBeCloned = this.findTemplateByFqName(fqName);
+
+		if (templateToBeCloned == null) {
+			log.info(
+					"{} could not be loaded by findTemplateByFqName, clone failed",
+					inFile);
+			return null;
+		}
+
+		// Replace UUID and Name
+		UUID uuid = UUID.randomUUID();
+		templateToBeCloned.setUuid(uuid);
+		templateToBeCloned.setName(newTemplateName);
+
+		// Save updated template (saveFormBasedTemplateAsJSON)
+		String pathToSavedTemplate = this.saveFormBasedTemplateAsJSON(
+				(FormBasedMetadataTemplate) templateToBeCloned, destDir);
+
+		// Load template from file (findTemplateByFqName)
+		MetadataTemplate returnTemplate = this
+				.findTemplateByFqName(pathToSavedTemplate);
+
+		// return loaded template
+		return returnTemplate;
+	}
+
+	/**
 	 * Save over a metadata template file given its fully-qualified iRODS
 	 * path.</p>
 	 * <p>
@@ -781,7 +864,7 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 			log.info("Required template found: {}", mt.getName());
 			// TODO Right now, only supports searching by UUID
 			// nameUUID would be more general
-			// i.e. dublinCore01234567-01234-01234-01234-0123456789ab
+			// i.e. dublinCore01234567-0123-0123-0123-0123456789ab
 			String hashKey = mt.getUuid().toString();
 			// TODO Need to address different kinds of templates
 			// XXX FormBasedMetadataTemplate typecast
