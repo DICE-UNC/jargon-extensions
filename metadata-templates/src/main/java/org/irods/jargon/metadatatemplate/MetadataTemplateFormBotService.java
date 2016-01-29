@@ -5,7 +5,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.JargonException;
+import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.core.pub.domain.AvuData;
 import org.irods.jargon.core.pub.io.IRODSFileFactoryImpl;
 import org.irods.jargon.core.service.AbstractJargonService;
@@ -187,106 +189,6 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 	}
 
 	@Override
-	public FormBotValidationResult validateFormBotForm(String json) {
-		JsonNode node = null;
-		List<String> fieldNames = null;
-		List<String> fieldValues = null;
-
-		try {
-			node = objectMapper.readValue(json, JsonNode.class);
-		} catch (IOException e) {
-			log.error("IOException: Failed to parse input JSON to JsonNode");
-			return new FormBotValidationResult(FormBotValidationEnum.ERROR,
-					"Bad JSON");
-		}
-
-		if (!(node.has("formUniqueName") && node.has("fields"))) {
-			log.error("Insufficient information to find metadata template and fields: json must contain formUniqueName and fields elements");
-			return new FormBotValidationResult(FormBotValidationEnum.ERROR,
-					"Bad JSON");
-		}
-
-		JargonMetadataResolver resolver = null;
-		MetadataTemplate template = null;
-
-		try {
-			resolver = new JargonMetadataResolver(irodsAccount,
-					irodsAccessObjectFactory);
-		} catch (JargonException e) {
-			log.error(
-					"JargonException: JargonMetadataResolver could not be created",
-					e);
-		}
-
-		if (resolver == null) {
-			log.error("Unable to instantiate JargonMetadataResolver");
-			return null;
-		}
-
-		fieldNames = new ArrayList<String>();
-		fieldValues = new ArrayList<String>();
-
-		if (node.get("fields").isArray()) {
-			for (JsonNode fieldNode : node.get("fields")) {
-				// Legal for value to be empty, but if no field name, ignore
-				if (fieldNode.has("fieldName")) {
-					fieldNames.add(fieldNode.get("fieldName").asText());
-					fieldValues.add(fieldNode.get("value").asText());
-				}
-			}
-		}
-
-		try {
-			template = resolver.findTemplateByUUID(node.get("formUniqueName")
-					.asText());
-		} catch (MetadataTemplateParsingException e) {
-			log.error("MetadataTemplateParsingException: Error parsing metadata template");
-			return new FormBotValidationResult(FormBotValidationEnum.ERROR,
-					"Error parsing metadata template");
-		} catch (FileNotFoundException e) {
-			log.error("FileNotFoundException: Metadata template not found");
-			return new FormBotValidationResult(FormBotValidationEnum.ERROR,
-					"Metadata template not found");
-		} catch (MetadataTemplateProcessingException e) {
-			log.error("MetadataTemplateProcessingException: Error processing metadata template");
-			return new FormBotValidationResult(FormBotValidationEnum.ERROR,
-					"Error processing metadata template");
-		} catch (IOException e) {
-			log.error("IOException: Error reading metadata template from disk");
-			return new FormBotValidationResult(FormBotValidationEnum.ERROR,
-					"Error reading metadata template from disk");
-		}
-
-		// XXX Hard cast to FormBasedMetadataTemplate
-		for (MetadataElement me : ((FormBasedMetadataTemplate) template)
-				.getElements()) {
-			for (int i = 0; i < fieldNames.size(); i++) {
-				String fieldName = fieldNames.get(i);
-				String value = fieldValues.get(i);
-				if (me.getName().equalsIgnoreCase(fieldName)) {
-					me.setCurrentValue(value);
-					ValidationReturnEnum validationReturn = ValidatorSingleton.VALIDATOR
-							.validate(me);
-					if (validationReturn == ValidationReturnEnum.SUCCESS) {
-						continue;
-					} else if ((validationReturn == ValidationReturnEnum.NOT_VALIDATED)
-							|| (validationReturn == ValidationReturnEnum.REGEX_SYNTAX_ERROR)) {
-						continue;
-					} else {
-						String retString = "Validation failed for field "
-								+ fieldName + " with value " + value;
-						return new FormBotValidationResult(
-								FormBotValidationEnum.FAILURE, retString);
-					}
-				}
-			}
-		}
-
-		return new FormBotValidationResult(FormBotValidationEnum.SUCCESS,
-				"All fields passed validation");
-	}
-
-	@Override
 	public FormBotValidationResult validateFormBotField(String json) {
 		JsonNode node = null;
 
@@ -389,23 +291,27 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 	}
 
 	@Override
-	public FormBotExecutionResult executeFormBotForm(String json) {
+	public List<FormBotValidationResult> validateFormBotForm(String json) {
 		JsonNode node = null;
 		List<String> fieldNames = null;
 		List<String> fieldValues = null;
+
+		List<FormBotValidationResult> returnList = new ArrayList<FormBotValidationResult>();
 
 		try {
 			node = objectMapper.readValue(json, JsonNode.class);
 		} catch (IOException e) {
 			log.error("IOException: Failed to parse input JSON to JsonNode");
-			return new FormBotExecutionResult(FormBotExecutionEnum.ERROR,
-					"Bad JSON");
+			returnList.add(new FormBotValidationResult(
+					FormBotValidationEnum.ERROR, "Bad JSON"));
+			return returnList;
 		}
 
-		if (!(node.has("formUniqueName") && node.has("pathToFile") && node.has("fields"))) {
+		if (!(node.has("formUniqueName") && node.has("fields"))) {
 			log.error("Insufficient information to find metadata template and fields: json must contain formUniqueName and fields elements");
-			return new FormBotExecutionResult(FormBotExecutionEnum.ERROR,
-					"Bad JSON");
+			returnList.add(new FormBotValidationResult(
+					FormBotValidationEnum.ERROR, "Bad JSON"));
+			return returnList;
 		}
 
 		JargonMetadataResolver resolver = null;
@@ -422,11 +328,11 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 
 		if (resolver == null) {
 			log.error("Unable to instantiate JargonMetadataResolver");
-			return null;
+			returnList.add(new FormBotValidationResult(
+					FormBotValidationEnum.ERROR,
+					"Unable to instantiate JargonMetadataResolver"));
+			return returnList;
 		}
-		
-		String pathToFile = node.get("pathToFile").asText();
-		String formUuid = node.get("formUniqueName").asText();
 
 		fieldNames = new ArrayList<String>();
 		fieldValues = new ArrayList<String>();
@@ -442,66 +348,76 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 		}
 
 		try {
-			template = resolver.findTemplateByUUID(formUuid);
+			template = resolver.findTemplateByUUID(node.get("formUniqueName")
+					.asText());
 		} catch (MetadataTemplateParsingException e) {
 			log.error("MetadataTemplateParsingException: Error parsing metadata template");
-			return new FormBotExecutionResult(FormBotExecutionEnum.ERROR,
-					"Error parsing metadata template");
+			returnList.add(new FormBotValidationResult(
+					FormBotValidationEnum.ERROR,
+					"Error parsing metadata template"));
+			return returnList;
 		} catch (FileNotFoundException e) {
 			log.error("FileNotFoundException: Metadata template not found");
-			return new FormBotExecutionResult(FormBotExecutionEnum.ERROR,
-					"Metadata template not found");
+			returnList
+					.add(new FormBotValidationResult(
+							FormBotValidationEnum.ERROR,
+							"Metadata template not found"));
+			return returnList;
 		} catch (MetadataTemplateProcessingException e) {
 			log.error("MetadataTemplateProcessingException: Error processing metadata template");
-			return new FormBotExecutionResult(FormBotExecutionEnum.ERROR,
-					"Error processing metadata template");
+			returnList.add(new FormBotValidationResult(
+					FormBotValidationEnum.ERROR,
+					"Error processing metadata template"));
+			return returnList;
 		} catch (IOException e) {
 			log.error("IOException: Error reading metadata template from disk");
-			return new FormBotExecutionResult(FormBotExecutionEnum.ERROR,
-					"Error reading metadata template from disk");
+			returnList.add(new FormBotValidationResult(
+					FormBotValidationEnum.ERROR,
+					"Error reading metadata template from disk"));
+			return returnList;
 		}
 
+		boolean validationFailed = false;
 		// XXX Hard cast to FormBasedMetadataTemplate
-		for (MetadataElement me : ((FormBasedMetadataTemplate) template)
-				.getElements()) {
-			for (int i = 0; i < fieldNames.size(); i++) {
+		for (int i = 0; i < fieldNames.size(); i++) {
+			for (MetadataElement me : ((FormBasedMetadataTemplate) template)
+					.getElements()) {
 				String fieldName = fieldNames.get(i);
 				String value = fieldValues.get(i);
 				if (me.getName().equalsIgnoreCase(fieldName)) {
 					me.setCurrentValue(value);
 					ValidationReturnEnum validationReturn = ValidatorSingleton.VALIDATOR
 							.validate(me);
-					if (validationReturn == ValidationReturnEnum.SUCCESS
-							|| validationReturn == ValidationReturnEnum.NOT_VALIDATED
-							|| validationReturn == ValidationReturnEnum.REGEX_SYNTAX_ERROR) {
-
-						String unit = JargonMetadataTemplateConstants.AVU_UNIT_PREFIX
-								+ formUuid;
-						AvuData avuData;
-						try {
-							avuData = AvuData.instance(fieldName, value, unit);
-							irodsAccessObjectFactory.getDataObjectAO(irodsAccount)
-									.addAVUMetadata(pathToFile, avuData);
-						} catch (JargonException e) {
-							log.error("JargonException when trying to add metadata to data object");
-							return new FormBotExecutionResult(
-									FormBotExecutionEnum.ERROR,
-									"JargonException when trying to add metadata to data object");
-						}
+					if ((validationReturn == ValidationReturnEnum.SUCCESS)
+							|| (validationReturn == ValidationReturnEnum.NOT_VALIDATED)
+							|| (validationReturn == ValidationReturnEnum.REGEX_SYNTAX_ERROR)) {
+						returnList.add(new FormBotValidationResult(
+								FormBotValidationEnum.SUCCESS, validationReturn
+										.toString()));
+						break;
 					} else {
-						String retString = "Validation failed for field "
-								+ fieldName + " with value " + value;
-						return new FormBotExecutionResult(
-								FormBotExecutionEnum.VALIDATION_FAILED, retString);
+						returnList.add(new FormBotValidationResult(
+								FormBotValidationEnum.FAILURE, validationReturn
+										.toString()));
+						validationFailed = true;
+						break;
 					}
 				}
 			}
 		}
 
-		return new FormBotExecutionResult(FormBotExecutionEnum.SUCCESS,
-				"All fields added to file metadata");
-	}
+		if (validationFailed) {
+			returnList.add(0, new FormBotValidationResult(
+					FormBotValidationEnum.FAILURE,
+					"At least one field failed validation"));
+		} else {
+			returnList.add(0, new FormBotValidationResult(
+					FormBotValidationEnum.SUCCESS,
+					"All fields passed validation"));
+		}
 
+		return returnList;
+	}
 
 	@Override
 	public FormBotExecutionResult executeFormBotField(String json) {
@@ -603,7 +519,7 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 								FormBotExecutionEnum.ERROR,
 								"JargonException when trying to add metadata to data object");
 					}
-					
+
 					return new FormBotExecutionResult(
 							FormBotExecutionEnum.SUCCESS,
 							"Metadata added to data object");
@@ -617,5 +533,170 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 		}
 		return new FormBotExecutionResult(FormBotExecutionEnum.ERROR,
 				"Field not found");
+	}
+
+	@Override
+	public List<FormBotExecutionResult> executeFormBotForm(String json) {
+		JsonNode node = null;
+		List<String> fieldNames = null;
+		List<String> fieldValues = null;
+
+		List<FormBotExecutionResult> returnList = new ArrayList<FormBotExecutionResult>();
+
+		try {
+			node = objectMapper.readValue(json, JsonNode.class);
+		} catch (IOException e) {
+			log.error("IOException: Failed to parse input JSON to JsonNode");
+			returnList.add(new FormBotExecutionResult(
+					FormBotExecutionEnum.ERROR, "Bad JSON"));
+			return returnList;
+		}
+
+		if (!(node.has("formUniqueName") && node.has("pathToFile") && node
+				.has("fields"))) {
+			log.error("Insufficient information to find metadata template and fields: json must contain formUniqueName and fields elements");
+			returnList.add(new FormBotExecutionResult(
+					FormBotExecutionEnum.ERROR, "Bad JSON"));
+			return returnList;
+		}
+
+		JargonMetadataResolver resolver = null;
+		MetadataTemplate template = null;
+
+		try {
+			resolver = new JargonMetadataResolver(irodsAccount,
+					irodsAccessObjectFactory);
+		} catch (JargonException e) {
+			log.error(
+					"JargonException: JargonMetadataResolver could not be created",
+					e);
+		}
+
+		if (resolver == null) {
+			log.error("Unable to instantiate JargonMetadataResolver");
+			returnList.add(new FormBotExecutionResult(
+					FormBotExecutionEnum.ERROR,
+					"Unable to instantiate JargonMetadataResolver"));
+			return returnList;
+		}
+
+		String pathToFile = node.get("pathToFile").asText();
+		String formUuid = node.get("formUniqueName").asText();
+
+		fieldNames = new ArrayList<String>();
+		fieldValues = new ArrayList<String>();
+
+		if (node.get("fields").isArray()) {
+			for (JsonNode fieldNode : node.get("fields")) {
+				// Legal for value to be empty, but if no field name, ignore
+				if (fieldNode.has("fieldName")) {
+					fieldNames.add(fieldNode.get("fieldName").asText());
+					fieldValues.add(fieldNode.get("value").asText());
+				}
+			}
+		}
+
+		try {
+			template = resolver.findTemplateByUUID(formUuid);
+		} catch (MetadataTemplateParsingException e) {
+			log.error("MetadataTemplateParsingException: Error parsing metadata template");
+			returnList.add(new FormBotExecutionResult(
+					FormBotExecutionEnum.ERROR,
+					"Error parsing metadata template"));
+			return returnList;
+		} catch (FileNotFoundException e) {
+			log.error("FileNotFoundException: Metadata template not found");
+			returnList.add(new FormBotExecutionResult(
+					FormBotExecutionEnum.ERROR, "Metadata template not found"));
+			return returnList;
+		} catch (MetadataTemplateProcessingException e) {
+			log.error("MetadataTemplateProcessingException: Error processing metadata template");
+			returnList.add(new FormBotExecutionResult(
+					FormBotExecutionEnum.ERROR,
+					"Error processing metadata template"));
+			return returnList;
+		} catch (IOException e) {
+			log.error("IOException: Error reading metadata template from disk");
+			returnList.add(new FormBotExecutionResult(
+					FormBotExecutionEnum.ERROR,
+					"Error reading metadata template from disk"));
+			return returnList;
+		}
+		
+		boolean validationFailed = false;
+		boolean error = false;
+
+		// XXX Hard cast to FormBasedMetadataTemplate
+		for (int i = 0; i < fieldNames.size(); i++) {
+			for (MetadataElement me : ((FormBasedMetadataTemplate) template)
+					.getElements()) {
+				String fieldName = fieldNames.get(i);
+				String value = fieldValues.get(i);
+				if (me.getName().equalsIgnoreCase(fieldName)) {
+					me.setCurrentValue(value);
+					ValidationReturnEnum validationReturn = ValidatorSingleton.VALIDATOR
+							.validate(me);
+					if (validationReturn == ValidationReturnEnum.SUCCESS
+							|| validationReturn == ValidationReturnEnum.NOT_VALIDATED
+							|| validationReturn == ValidationReturnEnum.REGEX_SYNTAX_ERROR) {
+
+						String unit = JargonMetadataTemplateConstants.AVU_UNIT_PREFIX
+								+ formUuid;
+						AvuData avuData;
+						try {
+							avuData = AvuData.instance(fieldName, value, unit);
+							irodsAccessObjectFactory.getDataObjectAO(
+									irodsAccount).addAVUMetadata(pathToFile,
+									avuData);
+						} catch (JargonException e) {
+							log.error("JargonException when trying to add metadata to data object");
+							returnList
+									.add(new FormBotExecutionResult(
+											FormBotExecutionEnum.ERROR,
+											"JargonException when adding metadata to data obj"));
+							error = true;
+							break;
+						}
+						
+						returnList.add(new FormBotExecutionResult(
+								FormBotExecutionEnum.SUCCESS,
+								validationReturn.toString()));
+						break;
+					} else {
+						returnList.add(new FormBotExecutionResult(
+								FormBotExecutionEnum.VALIDATION_FAILED,
+								validationReturn.toString()));
+						validationFailed = true;
+						break;
+					}
+				}
+			}
+		}
+
+		if (error) {
+			returnList.add(0, new FormBotExecutionResult(
+					FormBotExecutionEnum.ERROR,
+					"At least one field generated an error"));
+		} else if (validationFailed) {
+			returnList.add(0, new FormBotExecutionResult(
+					FormBotExecutionEnum.VALIDATION_FAILED,
+					"At least one field failed validation"));			
+		} else {
+			returnList.add(0, new FormBotExecutionResult(
+					FormBotExecutionEnum.SUCCESS,
+					"All fields passed validation"));
+		}
+
+		return returnList;
+	}
+
+	public MetadataTemplateFormBotService() {
+		super();
+	}
+
+	public MetadataTemplateFormBotService(
+			final IRODSAccessObjectFactory irodsAccessObjectFactory,
+			final IRODSAccount irodsAccount) {
+		super(irodsAccessObjectFactory, irodsAccount);
 	}
 }
