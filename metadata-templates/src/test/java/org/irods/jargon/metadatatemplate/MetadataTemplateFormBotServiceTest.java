@@ -305,7 +305,7 @@ public class MetadataTemplateFormBotServiceTest {
 
 		FormBotValidationResult returnResult = formBotService
 				.validateFormBotField(fieldJson);
-		
+
 		Assert.assertEquals(
 				"validateFormBotField should have returned an error",
 				FormBotValidationEnum.ERROR, returnResult.getCode());
@@ -539,7 +539,7 @@ public class MetadataTemplateFormBotServiceTest {
 
 		FormBotExecutionResult returnResult = formBotService
 				.executeFormBotField(fieldJson);
-		
+
 		Assert.assertEquals(
 				"executeFormBotField should have returned an error",
 				FormBotExecutionEnum.ERROR, returnResult.getCode());
@@ -593,7 +593,9 @@ public class MetadataTemplateFormBotServiceTest {
 		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(
 				mdTemplateFqName, avuData);
 
-		String fieldJson = "{\n\t\"value\":\"15\",\n\t\"fieldUniqueName\":\"" + uuid.toString() + "attribute2\",\n\t\"pathToFile\":\"path/is/bogus\"}";
+		String fieldJson = "{\n\t\"value\":\"15\",\n\t\"fieldUniqueName\":\""
+				+ uuid.toString()
+				+ "attribute2\",\n\t\"pathToFile\":\"path/is/bogus\"}";
 
 		MetadataTemplateFormBotService formBotService = new MetadataTemplateFormBotService(
 				accessObjectFactory, irodsAccount);
@@ -785,9 +787,9 @@ public class MetadataTemplateFormBotServiceTest {
 		String testFileNameFQ = targetIrodsCollection + '/' + TEST_FILE_NOPATH;
 
 		String fieldJson = "{\n\t\"value\":\"42\",\n\t\"fieldUniqueName\":\""
-				+ uuid.toString()
-				+ "attribute2\",\n\t\"pathToFile\":\""
-				+ testFileNameFQ + "\"}";;
+				+ uuid.toString() + "attribute2\",\n\t\"pathToFile\":\""
+				+ testFileNameFQ + "\"}";
+		;
 
 		MetadataTemplateFormBotService formBotService = new MetadataTemplateFormBotService(
 				accessObjectFactory, irodsAccount);
@@ -798,6 +800,378 @@ public class MetadataTemplateFormBotServiceTest {
 		Assert.assertEquals(
 				"validateFormBotField should have returned SUCCESS",
 				FormBotExecutionEnum.SUCCESS, returnResult.getCode());
+	}
+
+	@Test
+	public void validateFormBotFormBadJson() throws Exception {
+		String testDirName = "validateFormBotFormBadJson";
+
+		String targetIrodsCollection = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
+								+ testDirName);
+
+		IRODSAccount irodsAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
+				.getIRODSAccessObjectFactory();
+
+		IRODSFile targetCollectionAsFile = accessObjectFactory
+				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
+						targetIrodsCollection);
+
+		targetCollectionAsFile.mkdirs();
+
+		JargonMetadataResolver resolver = new JargonMetadataResolver(
+				irodsAccount, accessObjectFactory);
+
+		String mdTemplatePath = resolver
+				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection);
+
+		DataTransferOperations dataTransferOperations = irodsFileSystem
+				.getIRODSAccessObjectFactory().getDataTransferOperations(
+						irodsAccount);
+
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
+				mdTemplatePath, irodsAccount.getDefaultStorageResource(), null,
+				null);
+
+		String mdTemplateFqName = mdTemplatePath + '/' + TEMPLATE_NOPATH1;
+
+		UUID uuid = UUID.randomUUID();
+		AvuData avuData = AvuData.instance("test1", uuid.toString(),
+				JargonMetadataTemplateConstants.MD_TEMPLATE_UNIT);
+		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(
+				mdTemplateFqName, avuData);
+
+		String fieldJson = "{\"broken\" : \"WhereItLives\", \"fields\" : [ {\"fieldName\" : \"NameOfField\", \"value\" : \"MyValue\"}, {\"fieldName\" : \"NameOfField\", \"value\" : \"MyValue\"}, {\"fieldName\" : \"NameOfField\", \"value\" : \"MyValue\"}]}";
+
+		MetadataTemplateFormBotService formBotService = new MetadataTemplateFormBotService(
+				accessObjectFactory, irodsAccount);
+
+		List<FormBotValidationResult> returnResult = formBotService
+				.validateFormBotForm(fieldJson);
+
+		Assert.assertEquals(
+				"validateFormBotForm should have returned an error",
+				FormBotValidationEnum.ERROR, returnResult.get(0).getCode());
+	}
+
+	@Test
+	public void validateFormBotFormValidationFailed() throws Exception {
+		String testDirName = "validateFormBotFormValidationFailed";
+
+		String targetIrodsCollection = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
+								+ testDirName);
+
+		IRODSAccount irodsAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
+				.getIRODSAccessObjectFactory();
+
+		IRODSFile targetCollectionAsFile = accessObjectFactory
+				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
+						targetIrodsCollection);
+
+		targetCollectionAsFile.mkdirs();
+
+		JargonMetadataResolver resolver = new JargonMetadataResolver(
+				irodsAccount, accessObjectFactory);
+
+		String mdTemplatePath = resolver
+				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection);
+
+		DataTransferOperations dataTransferOperations = irodsFileSystem
+				.getIRODSAccessObjectFactory().getDataTransferOperations(
+						irodsAccount);
+
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
+				mdTemplatePath, irodsAccount.getDefaultStorageResource(), null,
+				null);
+
+		String mdTemplateFqName = mdTemplatePath + '/' + TEMPLATE_NOPATH1;
+
+		UUID uuid = UUID.randomUUID();
+		AvuData avuData = AvuData.instance("test1", uuid.toString(),
+				JargonMetadataTemplateConstants.MD_TEMPLATE_UNIT);
+		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(
+				mdTemplateFqName, avuData);
+
+		String fieldJson = "{\"formUniqueName\" : \""
+				+ uuid.toString()
+				+ "\", \"fields\" : [ {\"fieldName\" : \"attribute1\", \"value\" : \"MyValue\"}, {\"fieldName\" : \"attribute2\", \"value\" : \"MyValue\"}, {\"fieldName\" : \"optional1\", \"value\" : \"MyValue\"}]}";
+
+		MetadataTemplateFormBotService formBotService = new MetadataTemplateFormBotService(
+				accessObjectFactory, irodsAccount);
+
+		List<FormBotValidationResult> returnResult = formBotService
+				.validateFormBotForm(fieldJson);
+
+		Assert.assertEquals(
+				"validateFormBotForm return list should have 4 elements", 4,
+				returnResult.size());
+		Assert.assertEquals(
+				"validateFormBotForm overall return value should be FAILURE",
+				FormBotValidationEnum.FAILURE, returnResult.get(0).getCode());
+	}
+
+	@Test
+	public void validateFormBotFormValidationSuccess() throws Exception {
+		String testDirName = "validateFormBotFormValidationSuccess";
+
+		String targetIrodsCollection = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
+								+ testDirName);
+
+		IRODSAccount irodsAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
+				.getIRODSAccessObjectFactory();
+
+		IRODSFile targetCollectionAsFile = accessObjectFactory
+				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
+						targetIrodsCollection);
+
+		targetCollectionAsFile.mkdirs();
+
+		JargonMetadataResolver resolver = new JargonMetadataResolver(
+				irodsAccount, accessObjectFactory);
+
+		String mdTemplatePath = resolver
+				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection);
+
+		DataTransferOperations dataTransferOperations = irodsFileSystem
+				.getIRODSAccessObjectFactory().getDataTransferOperations(
+						irodsAccount);
+
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
+				mdTemplatePath, irodsAccount.getDefaultStorageResource(), null,
+				null);
+
+		String mdTemplateFqName = mdTemplatePath + '/' + TEMPLATE_NOPATH1;
+
+		UUID uuid = UUID.randomUUID();
+		AvuData avuData = AvuData.instance("test1", uuid.toString(),
+				JargonMetadataTemplateConstants.MD_TEMPLATE_UNIT);
+		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(
+				mdTemplateFqName, avuData);
+
+		String fieldJson = "{\"formUniqueName\" : \""
+				+ uuid.toString()
+				+ "\", \"fields\" : [ {\"fieldName\" : \"attribute1\", \"value\" : \"hello\"}, {\"fieldName\" : \"attribute2\", \"value\" : \"42\"}, {\"fieldName\" : \"optional1\", \"value\" : \"MyValue\"}]}";
+
+		MetadataTemplateFormBotService formBotService = new MetadataTemplateFormBotService(
+				accessObjectFactory, irodsAccount);
+
+		List<FormBotValidationResult> returnResult = formBotService
+				.validateFormBotForm(fieldJson);
+
+		Assert.assertEquals(
+				"validateFormBotForm return list should have 4 elements", 4,
+				returnResult.size());
+		Assert.assertEquals(
+				"validateFormBotForm overall return value should be FAILURE",
+				FormBotValidationEnum.SUCCESS, returnResult.get(0).getCode());
+	}
+
+	@Test
+	public void executeFormBotFormBadJson() throws Exception {
+		String testDirName = "executeFormBotFormBadJson";
+
+		String targetIrodsCollection = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
+								+ testDirName);
+
+		IRODSAccount irodsAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
+				.getIRODSAccessObjectFactory();
+
+		IRODSFile targetCollectionAsFile = accessObjectFactory
+				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
+						targetIrodsCollection);
+
+		targetCollectionAsFile.mkdirs();
+
+		JargonMetadataResolver resolver = new JargonMetadataResolver(
+				irodsAccount, accessObjectFactory);
+
+		String mdTemplatePath = resolver
+				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection);
+
+		DataTransferOperations dataTransferOperations = irodsFileSystem
+				.getIRODSAccessObjectFactory().getDataTransferOperations(
+						irodsAccount);
+
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
+				mdTemplatePath, irodsAccount.getDefaultStorageResource(), null,
+				null);
+
+		String mdTemplateFqName = mdTemplatePath + '/' + TEMPLATE_NOPATH1;
+
+		UUID uuid = UUID.randomUUID();
+		AvuData avuData = AvuData.instance("test1", uuid.toString(),
+				JargonMetadataTemplateConstants.MD_TEMPLATE_UNIT);
+		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(
+				mdTemplateFqName, avuData);
+
+		String fieldJson = "{\"broken\" : \"WhereItLives\", \"pathToFile\" : \"path\\to\\file\", \"fields\" : [ {\"fieldName\" : \"NameOfField\", \"value\" : \"MyValue\"}, {\"fieldName\" : \"NameOfField\", \"value\" : \"MyValue\"}, {\"fieldName\" : \"NameOfField\", \"value\" : \"MyValue\"}]}";
+
+		MetadataTemplateFormBotService formBotService = new MetadataTemplateFormBotService(
+				accessObjectFactory, irodsAccount);
+
+		List<FormBotExecutionResult> returnResult = formBotService
+				.executeFormBotForm(fieldJson);
+
+		Assert.assertEquals(
+				"validateFormBotForm should have returned an error",
+				FormBotExecutionEnum.ERROR, returnResult.get(0).getCode());
+	}
+
+	@Test
+	public void executeFormBotFormValidationFailed() throws Exception {
+		String testDirName = "executeFormBotFormValidationFailed";
+
+		String targetIrodsCollection = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
+								+ testDirName);
+
+		IRODSAccount irodsAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
+				.getIRODSAccessObjectFactory();
+
+		IRODSFile targetCollectionAsFile = accessObjectFactory
+				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
+						targetIrodsCollection);
+
+		targetCollectionAsFile.mkdirs();
+
+		JargonMetadataResolver resolver = new JargonMetadataResolver(
+				irodsAccount, accessObjectFactory);
+
+		String mdTemplatePath = resolver
+				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection);
+
+		DataTransferOperations dataTransferOperations = irodsFileSystem
+				.getIRODSAccessObjectFactory().getDataTransferOperations(
+						irodsAccount);
+
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
+				mdTemplatePath, irodsAccount.getDefaultStorageResource(), null,
+				null);
+
+		String mdTemplateFqName = mdTemplatePath + '/' + TEMPLATE_NOPATH1;
+
+		UUID uuid = UUID.randomUUID();
+		AvuData avuData = AvuData.instance("test1", uuid.toString(),
+				JargonMetadataTemplateConstants.MD_TEMPLATE_UNIT);
+		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(
+				mdTemplateFqName, avuData);
+
+		// Create a file in targetIrodsCollection1
+		dataTransferOperations.putOperation(TEST_FILE_NAME,
+				targetIrodsCollection,
+				irodsAccount.getDefaultStorageResource(), null, null);
+		String testFileNameFQ = targetIrodsCollection + '/' + TEST_FILE_NOPATH;
+
+		String fieldJson = "{\"formUniqueName\" : \""
+				+ uuid.toString()
+				+ "\", \"pathToFile\" : \""
+				+ testFileNameFQ
+				+ "\", \"fields\" : [ {\"fieldName\" : \"attribute1\", \"value\" : \"MyValue\"}, {\"fieldName\" : \"attribute2\", \"value\" : \"MyValue\"}, {\"fieldName\" : \"optional1\", \"value\" : \"MyValue\"}]}";
+
+		MetadataTemplateFormBotService formBotService = new MetadataTemplateFormBotService(
+				accessObjectFactory, irodsAccount);
+
+		List<FormBotExecutionResult> returnResult = formBotService
+				.executeFormBotForm(fieldJson);
+
+		Assert.assertEquals(
+				"executeFormBotForm return list should have 4 elements", 4,
+				returnResult.size());
+		Assert.assertEquals(
+				"validateFormBotForm overall return value should be VALIDATION_FAILED",
+				FormBotExecutionEnum.VALIDATION_FAILED, returnResult.get(0).getCode());
+	}
+
+	@Test
+	public void executeFormBotFormSuccess() throws Exception {
+		String testDirName = "executeFormBotFormSuccess";
+
+		String targetIrodsCollection = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
+								+ testDirName);
+
+		IRODSAccount irodsAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
+				.getIRODSAccessObjectFactory();
+
+		IRODSFile targetCollectionAsFile = accessObjectFactory
+				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
+						targetIrodsCollection);
+
+		targetCollectionAsFile.mkdirs();
+
+		JargonMetadataResolver resolver = new JargonMetadataResolver(
+				irodsAccount, accessObjectFactory);
+
+		String mdTemplatePath = resolver
+				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection);
+
+		DataTransferOperations dataTransferOperations = irodsFileSystem
+				.getIRODSAccessObjectFactory().getDataTransferOperations(
+						irodsAccount);
+
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
+				mdTemplatePath, irodsAccount.getDefaultStorageResource(), null,
+				null);
+
+		String mdTemplateFqName = mdTemplatePath + '/' + TEMPLATE_NOPATH1;
+
+		UUID uuid = UUID.randomUUID();
+		AvuData avuData = AvuData.instance("test1", uuid.toString(),
+				JargonMetadataTemplateConstants.MD_TEMPLATE_UNIT);
+		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(
+				mdTemplateFqName, avuData);
+
+		// Create a file in targetIrodsCollection1
+		dataTransferOperations.putOperation(TEST_FILE_NAME,
+				targetIrodsCollection,
+				irodsAccount.getDefaultStorageResource(), null, null);
+		String testFileNameFQ = targetIrodsCollection + '/' + TEST_FILE_NOPATH;
+
+		String fieldJson = "{\"formUniqueName\" : \""
+				+ uuid.toString()
+				+ "\", \"pathToFile\" : \""
+				+ testFileNameFQ
+				+ "\", \"fields\" : [ {\"fieldName\" : \"attribute1\", \"value\" : \"MyValue\"}, {\"fieldName\" : \"attribute2\", \"value\" : \"42\"}, {\"fieldName\" : \"optional1\", \"value\" : \"MyValue\"}]}";
+
+		MetadataTemplateFormBotService formBotService = new MetadataTemplateFormBotService(
+				accessObjectFactory, irodsAccount);
+
+		List<FormBotExecutionResult> returnResult = formBotService
+				.executeFormBotForm(fieldJson);
+
+		Assert.assertEquals(
+				"executeFormBotForm return list should have 4 elements", 4,
+				returnResult.size());
+		Assert.assertEquals(
+				"executeFormBotForm overall return value should be SUCCESS",
+				FormBotExecutionEnum.SUCCESS, returnResult.get(0).getCode());
 	}
 
 }
