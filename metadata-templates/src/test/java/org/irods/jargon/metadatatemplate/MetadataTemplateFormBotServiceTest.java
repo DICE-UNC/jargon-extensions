@@ -10,12 +10,12 @@ import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.pub.DataTransferOperations;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.core.pub.IRODSFileSystem;
+import org.irods.jargon.core.pub.ResourceAO;
 import org.irods.jargon.core.pub.domain.AvuData;
 import org.irods.jargon.core.pub.io.IRODSFile;
-import org.irods.jargon.core.service.AbstractJargonService;
+import org.irods.jargon.core.query.MetaDataAndDomainData;
 import org.irods.jargon.formbot.FormBotExecutionEnum;
 import org.irods.jargon.formbot.FormBotExecutionResult;
-import org.irods.jargon.formbot.FormBotField;
 import org.irods.jargon.formbot.FormBotForm;
 import org.irods.jargon.formbot.FormBotValidationEnum;
 import org.irods.jargon.formbot.FormBotValidationResult;
@@ -796,10 +796,25 @@ public class MetadataTemplateFormBotServiceTest {
 
 		FormBotExecutionResult returnResult = formBotService
 				.executeFormBotField(fieldJson);
+		
+		List<MetaDataAndDomainData> fileAvus = accessObjectFactory
+				.getDataObjectAO(irodsAccount).findMetadataValuesForDataObject(
+						targetIrodsCollection, TEST_FILE_NOPATH);
+
+		String attribute2Value = "";
+		for (MetaDataAndDomainData avu : fileAvus) {
+			if (avu.getAvuAttribute().equalsIgnoreCase("attribute2")) {
+				attribute2Value = avu.getAvuValue();
+				break;
+			}
+		}
 
 		Assert.assertEquals(
 				"validateFormBotField should have returned SUCCESS",
 				FormBotExecutionEnum.SUCCESS, returnResult.getCode());
+		Assert.assertEquals(
+				"executeFormBotField should have set metadata on file", "42",
+				attribute2Value);
 	}
 
 	@Test
@@ -1102,7 +1117,8 @@ public class MetadataTemplateFormBotServiceTest {
 				returnResult.size());
 		Assert.assertEquals(
 				"validateFormBotForm overall return value should be VALIDATION_FAILED",
-				FormBotExecutionEnum.VALIDATION_FAILED, returnResult.get(0).getCode());
+				FormBotExecutionEnum.VALIDATION_FAILED, returnResult.get(0)
+						.getCode());
 	}
 
 	@Test
@@ -1166,12 +1182,27 @@ public class MetadataTemplateFormBotServiceTest {
 		List<FormBotExecutionResult> returnResult = formBotService
 				.executeFormBotForm(fieldJson);
 
+		List<MetaDataAndDomainData> fileAvus = accessObjectFactory
+				.getDataObjectAO(irodsAccount).findMetadataValuesForDataObject(
+						targetIrodsCollection, TEST_FILE_NOPATH);
+
+		String attribute2Value = "";
+		for (MetaDataAndDomainData avu : fileAvus) {
+			if (avu.getAvuAttribute().equalsIgnoreCase("attribute2")) {
+				attribute2Value = avu.getAvuValue();
+				break;
+			}
+		}
+
 		Assert.assertEquals(
 				"executeFormBotForm return list should have 4 elements", 4,
 				returnResult.size());
 		Assert.assertEquals(
 				"executeFormBotForm overall return value should be SUCCESS",
 				FormBotExecutionEnum.SUCCESS, returnResult.get(0).getCode());
+		Assert.assertEquals(
+				"executeFormBotForm should have set metadata on file", "42",
+				attribute2Value);
 	}
 
 }
