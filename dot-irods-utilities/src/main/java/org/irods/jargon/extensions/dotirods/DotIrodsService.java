@@ -2,10 +2,15 @@ package org.irods.jargon.extensions.dotirods;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.irods.jargon.core.exception.FileNotFoundException;
 import org.irods.jargon.core.exception.JargonException;
+import org.irods.jargon.core.pub.io.IRODSFile;
 import org.irods.jargon.core.pub.io.IRODSFileImpl;
+import org.irods.jargon.core.utils.MiscIRODSUtils;
 
 /**
  * Interface for service to discover and manipulate .irods collections
@@ -325,4 +330,7 @@ public interface DotIrodsService {
 			final String irodsAbsolutePath, final String subDir,
 			FilenameFilter filter) throws FileNotFoundException,
 			JargonException;
+
+	public abstract List<String> listStringifiedFilesInDotIrodsCollection(
+			final String irodsAbsolutePath, final String dotIrodsSubdir) throws JargonException;
 }

@@ -11,8 +11,8 @@ import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.core.service.AbstractJargonService;
 import org.irods.jargon.extensions.dotirods.DotIrodsService;
 import org.irods.jargon.extensions.dotirods.DotIrodsServiceImpl;
-import org.irods.jargon.vircoll.VirtualCollectionException;
 import org.irods.jargon.vircoll.VirtualCollectionMaintenanceService;
+import org.irods.jargon.vircoll.exception.VirtualCollectionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -5,6 +5,7 @@ package org.irods.jargon.extensions.dotirods;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,6 +56,49 @@ public class DotIrodsServiceImpl extends AbstractJargonService implements
 		sb.append("/");
 		sb.append(DotIrodsConstants.DOT_IRODS_DIR);
 		return sb.toString();
+	}
+
+	@Override
+	public List<String> listStringifiedFilesInDotIrodsCollection(
+			final String irodsAbsolutePath, final String dotIrodsSubdir)
+			throws JargonException {
+		log.info("listStringifiedFilesInDotIrodsCollection()");
+		if (irodsAbsolutePath == null || irodsAbsolutePath.isEmpty()) {
+			throw new IllegalArgumentException(
+					"null or emtpy irodsAbsolutePath");
+		}
+
+		if (dotIrodsSubdir == null || dotIrodsSubdir.isEmpty()) {
+			throw new IllegalArgumentException("null or empty dotIrodsSubdir");
+		}
+
+		log.info("irodsAbsolutePath:{}", irodsAbsolutePath);
+		log.info("dotIrodsSubdir:{}", dotIrodsSubdir);
+
+		IRODSFile irodsFile = this.getIrodsAccessObjectFactory()
+				.getIRODSFileFactory(getIrodsAccount())
+				.instanceIRODSFile(irodsAbsolutePath, dotIrodsSubdir);
+
+		List<String> stringifiedFiles = new ArrayList<String>();
+		String encoding = this.getIrodsAccessObjectFactory()
+				.getJargonProperties().getEncoding();
+		InputStream inputStream;
+		for (File vcFile : irodsFile.listFiles()) {
+			inputStream = this.getIrodsAccessObjectFactory()
+					.getIRODSFileFactory(getIrodsAccount())
+					.instanceIRODSFileInputStream((IRODSFile) vcFile);
+			try {
+				stringifiedFiles.add(MiscIRODSUtils.convertStreamToString(
+						inputStream, encoding));
+			} catch (Exception e) {
+				log.error("error stringifying file at:{}", vcFile, e);
+				throw new JargonException("unable to get file contents", e);
+			}
+
+		}
+
+		return stringifiedFiles;
+
 	}
 
 	/*
