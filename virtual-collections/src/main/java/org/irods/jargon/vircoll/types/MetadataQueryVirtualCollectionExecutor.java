@@ -1,9 +1,17 @@
 package org.irods.jargon.vircoll.types;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
+import org.irods.jargon.core.query.CollectionAndDataObjectListingEntry;
 import org.irods.jargon.core.query.PagingAwareCollectionListing;
+import org.irods.jargon.core.query.CollectionAndDataObjectListingEntry.ObjectType;
+import org.irods.jargon.core.utils.CollectionAndPath;
+import org.irods.jargon.core.utils.MiscIRODSUtils;
+import org.irods.jargon.usertagging.domain.IRODSStarredFileOrCollection;
 import org.irods.jargon.vircoll.impl.VirtualCollectionExecutorImpl;
 import org.irods.jargon.mdquery.service.MetadataQueryService;
 import org.slf4j.Logger;
@@ -52,16 +60,56 @@ public class MetadataQueryVirtualCollectionExecutor extends
 	@Override
 	public PagingAwareCollectionListing queryAll(final int offset)
 			throws JargonException {
-
-		PagingAwareCollectionListing listing = buildInitialPagingAwareCollectionListing();
 		log.info("queryAll()");
+
+		PagingAwareCollectionListing listing =  buildInitialPagingAwareCollectionListing();
+		
 		log.info("adding colls");
 		this.addAndCharacterizeCollectionListingForSplitListing(listing,
 				queryCollections(0));
+		
 		log.info("adding data objects");
 		this.addAndCharacterizeDataObjectListingForSplitListing(listing,
 				queryDataObjects(0));
+		
 		return listing;
+	}
+	
+	private List<CollectionAndDataObjectListingEntry> queryCollections(
+			final int offset) throws JargonException {
+		log.info("queryCollections()");
 
+		List<CollectionAndDataObjectListingEntry> entries = metadataQueryService.executeQuery(super.getCollection().getQueryString()).getCollectionAndDataObjectListingEntries();
+		
+		List<CollectionAndDataObjectListingEntry> collectionEntries = new ArrayList<CollectionAndDataObjectListingEntry>();
+		
+		log.info("have entries, now format");
+		
+		for (CollectionAndDataObjectListingEntry entry: entries) {
+			if (entry.isCollection()) {
+				collectionEntries.add(entry);
+			}
+		}
+
+		return collectionEntries;
+	}
+
+	private List<CollectionAndDataObjectListingEntry> queryDataObjects(
+			final int offset) throws JargonException {
+		log.info("queryCollections()");
+
+		List<CollectionAndDataObjectListingEntry> entries = metadataQueryService.executeQuery(super.getCollection().getQueryString()).getCollectionAndDataObjectListingEntries();
+		
+		List<CollectionAndDataObjectListingEntry> dataObjEntries = new ArrayList<CollectionAndDataObjectListingEntry>();
+		
+		log.info("have entries, now format");
+		
+		for (CollectionAndDataObjectListingEntry entry: entries) {
+			if (entry.isDataObject()) {
+				dataObjEntries.add(entry);
+			}
+		}
+
+		return dataObjEntries;
 	}
 }

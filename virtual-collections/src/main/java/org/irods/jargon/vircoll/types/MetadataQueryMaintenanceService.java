@@ -17,7 +17,7 @@ import org.irods.jargon.extensions.dotirods.DotIrodsService;
 import org.irods.jargon.extensions.dotirods.DotIrodsServiceImpl;
 import org.irods.jargon.vircoll.ConfigurableVirtualCollection;
 import org.irods.jargon.vircoll.MetadataQueryVirtualCollectionConstants;
-import org.irods.jargon.vircoll.VirtualCollectionException;
+import org.irods.jargon.vircoll.exception.VirtualCollectionException;
 import org.irods.jargon.vircoll.VirtualCollectionMaintenanceService;
 import org.irods.jargon.vircoll.VirtualCollectionMarshalingException;
 import org.slf4j.Logger;
