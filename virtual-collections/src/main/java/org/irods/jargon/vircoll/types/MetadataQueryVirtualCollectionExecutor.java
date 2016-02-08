@@ -8,12 +8,8 @@ import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.core.query.CollectionAndDataObjectListingEntry;
 import org.irods.jargon.core.query.PagingAwareCollectionListing;
-import org.irods.jargon.core.query.CollectionAndDataObjectListingEntry.ObjectType;
-import org.irods.jargon.core.utils.CollectionAndPath;
-import org.irods.jargon.core.utils.MiscIRODSUtils;
-import org.irods.jargon.usertagging.domain.IRODSStarredFileOrCollection;
-import org.irods.jargon.vircoll.impl.VirtualCollectionExecutorImpl;
 import org.irods.jargon.mdquery.service.MetadataQueryService;
+import org.irods.jargon.vircoll.impl.VirtualCollectionExecutorImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +31,7 @@ public class MetadataQueryVirtualCollectionExecutor extends
 	 * @param irodsAccount
 	 *            {@link IRODSAccount} with host and login information
 	 * @param metadataQueryService
-	 * 			  {@link MetadataQuerySerice}
+	 *            {@link MetadataQuerySerice}
 	 */
 	public MetadataQueryVirtualCollectionExecutor(
 			final MetadataQueryVirtualCollection metadataQueryVirtualCollection,
@@ -51,7 +47,7 @@ public class MetadataQueryVirtualCollectionExecutor extends
 
 		this.metadataQueryService = metadataQueryService;
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -62,30 +58,32 @@ public class MetadataQueryVirtualCollectionExecutor extends
 			throws JargonException {
 		log.info("queryAll()");
 
-		PagingAwareCollectionListing listing =  buildInitialPagingAwareCollectionListing();
-		
+		PagingAwareCollectionListing listing = buildInitialPagingAwareCollectionListing();
+
 		log.info("adding colls");
 		this.addAndCharacterizeCollectionListingForSplitListing(listing,
 				queryCollections(0));
-		
+
 		log.info("adding data objects");
 		this.addAndCharacterizeDataObjectListingForSplitListing(listing,
 				queryDataObjects(0));
-		
+
 		return listing;
 	}
-	
+
 	private List<CollectionAndDataObjectListingEntry> queryCollections(
 			final int offset) throws JargonException {
 		log.info("queryCollections()");
 
-		List<CollectionAndDataObjectListingEntry> entries = metadataQueryService.executeQuery(super.getCollection().getQueryString()).getCollectionAndDataObjectListingEntries();
-		
+		List<CollectionAndDataObjectListingEntry> entries = metadataQueryService
+				.executeQuery(super.getCollection().getQueryString())
+				.getCollectionAndDataObjectListingEntries();
+
 		List<CollectionAndDataObjectListingEntry> collectionEntries = new ArrayList<CollectionAndDataObjectListingEntry>();
-		
+
 		log.info("have entries, now format");
-		
-		for (CollectionAndDataObjectListingEntry entry: entries) {
+
+		for (CollectionAndDataObjectListingEntry entry : entries) {
 			if (entry.isCollection()) {
 				collectionEntries.add(entry);
 			}
@@ -98,13 +96,15 @@ public class MetadataQueryVirtualCollectionExecutor extends
 			final int offset) throws JargonException {
 		log.info("queryCollections()");
 
-		List<CollectionAndDataObjectListingEntry> entries = metadataQueryService.executeQuery(super.getCollection().getQueryString()).getCollectionAndDataObjectListingEntries();
-		
+		List<CollectionAndDataObjectListingEntry> entries = metadataQueryService
+				.executeQuery(super.getCollection().getQueryString())
+				.getCollectionAndDataObjectListingEntries();
+
 		List<CollectionAndDataObjectListingEntry> dataObjEntries = new ArrayList<CollectionAndDataObjectListingEntry>();
-		
+
 		log.info("have entries, now format");
-		
-		for (CollectionAndDataObjectListingEntry entry: entries) {
+
+		for (CollectionAndDataObjectListingEntry entry : entries) {
 			if (entry.isDataObject()) {
 				dataObjEntries.add(entry);
 			}
