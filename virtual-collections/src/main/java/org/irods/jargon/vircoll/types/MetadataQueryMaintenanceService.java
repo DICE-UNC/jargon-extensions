@@ -60,7 +60,7 @@ public class MetadataQueryMaintenanceService extends AbstractJargonService
 
 		IRODSFile vcFile = getPathAsIrodsFile(collection + "/" + uniqueName);
 
-		if (vcFile != null) {
+		if (vcFile != null && vcFile.exists()) {
 			log.error("File already exists: " + collection + "/" + uniqueName);
 			throw new DuplicateDataException("File already exists: "
 					+ collection + "/" + uniqueName);
@@ -136,7 +136,7 @@ public class MetadataQueryMaintenanceService extends AbstractJargonService
 
 		IRODSFile vcFile = getPathAsIrodsFile(collection + "/" + uniqueName);
 
-		if (vcFile == null) {
+		if (vcFile == null || !vcFile.exists()) {
 			log.error("Cannot find file: " + collection + "/" + uniqueName);
 			throw new FileNotFoundException("Cannot find file: " + collection
 					+ "/" + uniqueName);
@@ -153,7 +153,7 @@ public class MetadataQueryMaintenanceService extends AbstractJargonService
 			String decoded = new String(b, "UTF-8");
 
 			return objectMapper.readValue(decoded,
-					MetadataQueryVirtualCollection.class);
+					ConfigurableVirtualCollection.class);
 
 		} catch (JargonException e) {
 			log.error(
@@ -185,7 +185,7 @@ public class MetadataQueryMaintenanceService extends AbstractJargonService
 
 		IRODSFile vcFile = getPathAsIrodsFile(collection + "/" + uniqueName);
 
-		if (vcFile == null) {
+		if (vcFile == null || !vcFile.exists()) {
 			log.error("Cannot find file: " + collection + "/" + uniqueName);
 			throw new FileNotFoundException("Cannot find file: " + collection
 					+ "/" + uniqueName);
