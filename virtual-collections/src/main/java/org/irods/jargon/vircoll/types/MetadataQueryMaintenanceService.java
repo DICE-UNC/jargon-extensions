@@ -16,6 +16,7 @@ import org.irods.jargon.extensions.dotirods.DotIrodsConstants;
 import org.irods.jargon.extensions.dotirods.DotIrodsService;
 import org.irods.jargon.extensions.dotirods.DotIrodsServiceImpl;
 import org.irods.jargon.vircoll.ConfigurableVirtualCollection;
+import org.irods.jargon.vircoll.GeneralParameterConstants;
 import org.irods.jargon.vircoll.MetadataQueryVirtualCollectionConstants;
 import org.irods.jargon.vircoll.exception.VirtualCollectionException;
 import org.irods.jargon.vircoll.VirtualCollectionMaintenanceService;
@@ -195,7 +196,7 @@ public class MetadataQueryMaintenanceService extends AbstractJargonService
 
 	}
 
-	String findOrCreateMetadataQueryCollection(
+	String findOrCreateTempMetadataQueryCollection(
 			final String irodsAbsolutePathToParent) throws JargonException {
 		log.info("findOrCreateMetadataTemplatesCollection()");
 
@@ -209,7 +210,7 @@ public class MetadataQueryMaintenanceService extends AbstractJargonService
 
 		String irodsAbsolutePathToCollection = null;
 
-		if (this.isMetadataQueryCollection(irodsAbsolutePathToParent)) {
+		if (this.isTempMetadataQueryCollection(irodsAbsolutePathToParent)) {
 			// Already a .irods/md_queries collection, so we're good
 			log.info("{} is a .irods/metadataTemplates collection",
 					irodsAbsolutePathToParent);
@@ -219,20 +220,20 @@ public class MetadataQueryMaintenanceService extends AbstractJargonService
 			// md_queries collection beneath it.
 			log.info("{} is a .irods collection", irodsAbsolutePathToParent);
 
-			if (this.isMetadataQueryCollectionPresentUnderDotIrodsCollection(irodsAbsolutePathToParent)) {
+			if (this.isTempMetadataQueryCollectionPresentUnderDotIrodsCollection(irodsAbsolutePathToParent)) {
 				log.info("{} contains a metadataTemplates collection",
 						irodsAbsolutePathToParent);
 				irodsAbsolutePathToCollection = this
-						.computeMetadataQueryPathUnderDotIrods(irodsAbsolutePathToParent);
+						.computeTempMetadataQueryPathUnderDotIrods(irodsAbsolutePathToParent);
 			} else {
 				log.info(
 						"{} does not contain a metadataTemplates collection, attempting to create",
 						irodsAbsolutePathToParent);
 
-				if (this.createMetadataQueryCollectionUnderDotIrods(irodsAbsolutePathToParent)) {
+				if (this.createTempMetadataQueryCollectionUnderDotIrods(irodsAbsolutePathToParent)) {
 					log.info("metadataTemplates collection created");
 					irodsAbsolutePathToCollection = this
-							.computeMetadataQueryPathUnderDotIrods(irodsAbsolutePathToParent);
+							.computeTempMetadataQueryPathUnderDotIrods(irodsAbsolutePathToParent);
 				} else {
 					log.error("Error, collection not created");
 					throw new JargonException(
@@ -272,10 +273,10 @@ public class MetadataQueryMaintenanceService extends AbstractJargonService
 			log.info(".irods created: {}", dotIrodsDir);
 
 			// Create md_queries subcollection
-			if (this.createMetadataQueryCollectionUnderDotIrods(dotIrodsDir)) {
+			if (this.createTempMetadataQueryCollectionUnderDotIrods(dotIrodsDir)) {
 				log.info("metadata query collection created");
 				irodsAbsolutePathToCollection = this
-						.computeMetadataQueryPathUnderDotIrods(dotIrodsDir);
+						.computeTempMetadataQueryPathUnderDotIrods(dotIrodsDir);
 			} else {
 				log.error("Error, collection not created");
 				throw new JargonException(
@@ -319,7 +320,7 @@ public class MetadataQueryMaintenanceService extends AbstractJargonService
 		return (dotIrodsCollectionAsFile != null);
 	}
 
-	boolean isMetadataQueryCollectionPresentUnderDotIrodsCollection(
+	boolean isTempMetadataQueryCollectionPresentUnderDotIrodsCollection(
 			String irodsAbsolutePathToDotIrods) {
 		log.info("isMetadataQueryCollectionPresentUnderParentCollection()");
 
@@ -347,12 +348,12 @@ public class MetadataQueryMaintenanceService extends AbstractJargonService
 
 		IRODSFile metadataQueryCollectionAsFile = this
 				.getPathAsIrodsFile(this
-						.computeMetadataQueryPathUnderDotIrods(irodsAbsolutePathToDotIrods));
+						.computeTempMetadataQueryPathUnderDotIrods(irodsAbsolutePathToDotIrods));
 
 		return (metadataQueryCollectionAsFile != null);
 	}
 
-	boolean isMetadataQueryCollection(String irodsAbsolutePath) {
+	boolean isTempMetadataQueryCollection(String irodsAbsolutePath) {
 		log.info("isMetadataQueryCollection()");
 
 		if (irodsAbsolutePath == null || irodsAbsolutePath.isEmpty()) {
@@ -379,7 +380,7 @@ public class MetadataQueryMaintenanceService extends AbstractJargonService
 		boolean retVal = false;
 
 		if (!irodsAbsolutePath
-				.endsWith(MetadataQueryVirtualCollectionConstants.QUERIES_SUBDIR)) {
+				.endsWith(GeneralParameterConstants.USER_VC_TEMP_RECENT_VC_QUERIES)) {
 			retVal = false;
 		} else {
 			IRODSFile pathAsFile = this.getPathAsIrodsFile(irodsAbsolutePath);
@@ -450,7 +451,7 @@ public class MetadataQueryMaintenanceService extends AbstractJargonService
 		return sb.toString();
 	}
 
-	String computeMetadataQueryPathUnderParent(
+	String computeTempMetadataQueryPathUnderParent(
 			final String irodsAbsolutePathToParent) {
 		log.info("computeMetadataQueryPathUnderParent");
 
@@ -462,11 +463,11 @@ public class MetadataQueryMaintenanceService extends AbstractJargonService
 		StringBuilder sb = new StringBuilder();
 		sb.append(irodsAbsolutePathToParent);
 		sb.append("/");
-		sb.append(MetadataQueryVirtualCollectionConstants.QUERIES_SUBDIR);
+		sb.append(GeneralParameterConstants.USER_VC_TEMP_RECENT_VC_QUERIES);
 		return sb.toString();
 	}
 
-	String computeMetadataQueryPathUnderDotIrods(
+	String computeTempMetadataQueryPathUnderDotIrods(
 			final String irodsAbsolutePathToDotIrods) {
 		log.info("computeMetadataQueryPathUnderDotIrods");
 
@@ -478,11 +479,11 @@ public class MetadataQueryMaintenanceService extends AbstractJargonService
 		StringBuilder sb = new StringBuilder();
 		sb.append(irodsAbsolutePathToDotIrods);
 		sb.append("/");
-		sb.append(MetadataQueryVirtualCollectionConstants.QUERIES_SUBDIR);
+		sb.append(GeneralParameterConstants.USER_VC_TEMP_RECENT_VC_QUERIES);
 		return sb.toString();
 	}
 
-	boolean createMetadataQueryCollectionUnderDotIrods(
+	boolean createTempMetadataQueryCollectionUnderDotIrods(
 			final String irodsAbsolutePathToDotIrods) throws JargonException {
 		log.info("createMetadataQueryCollectionUnderDotIrods()");
 
@@ -495,7 +496,7 @@ public class MetadataQueryMaintenanceService extends AbstractJargonService
 		log.info("irodsAbsolutePathToDotIrods: {}", irodsAbsolutePathToDotIrods);
 
 		String metadataQueryPath = this
-				.computeMetadataQueryPathUnderDotIrods(irodsAbsolutePathToDotIrods);
+				.computeTempMetadataQueryPathUnderDotIrods(irodsAbsolutePathToDotIrods);
 		log.info("metadataQueryPath computed to be:{}", metadataQueryPath);
 
 		IRODSFile metadataQueryFile = this
