@@ -90,7 +90,15 @@ public class VirtualCollectionDiscoveryServiceImpl extends
 	@Override
 	public UserVirtualCollectionProfile userVirtualCollectionProfile(
 			String userName) throws VirtualCollectionProfileException {
-		return null;
+
+		UserVirtualCollectionProfile userVirtualCollectionProfile = new UserVirtualCollectionProfile();
+		userVirtualCollectionProfile.setHomeZone(this.getIrodsAccount()
+				.getZone());
+		userVirtualCollectionProfile.setUserName(this.getIrodsAccount()
+				.getUserName());
+		userVirtualCollectionProfile
+				.setUserHomeCollections(listDefaultUserCollections());
+		return userVirtualCollectionProfile;
 	}
 
 	/*
