@@ -12,15 +12,16 @@ import org.irods.jargon.core.pub.io.IRODSFile;
 import org.irods.jargon.core.pub.io.IRODSFileInputStream;
 import org.irods.jargon.core.pub.io.IRODSFileOutputStream;
 import org.irods.jargon.core.service.AbstractJargonService;
+import org.irods.jargon.extensions.dotirods.DotIrodsCollection;
 import org.irods.jargon.extensions.dotirods.DotIrodsConstants;
 import org.irods.jargon.extensions.dotirods.DotIrodsService;
 import org.irods.jargon.extensions.dotirods.DotIrodsServiceImpl;
 import org.irods.jargon.vircoll.ConfigurableVirtualCollection;
 import org.irods.jargon.vircoll.GeneralParameterConstants;
-import org.irods.jargon.vircoll.MetadataQueryVirtualCollectionConstants;
-import org.irods.jargon.vircoll.exception.VirtualCollectionException;
 import org.irods.jargon.vircoll.VirtualCollectionMaintenanceService;
 import org.irods.jargon.vircoll.VirtualCollectionMarshalingException;
+import org.irods.jargon.vircoll.exception.VirtualCollectionException;
+import org.irods.jargon.vircoll.exception.VirtualCollectionRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,14 +67,15 @@ public class MetadataQueryMaintenanceService extends AbstractJargonService
 			throw new DuplicateDataException("File already exists: "
 					+ collection + "/" + uniqueName);
 		}
-		
+
 		try {
-		saveJsonStringToFile(
-				serializeVirtualCollectionToJson(configurableVirtualCollection),
-				collection + "/" + uniqueName);
+			saveJsonStringToFile(
+					serializeVirtualCollectionToJson(configurableVirtualCollection),
+					collection + "/" + uniqueName);
 		} catch (IOException e) {
 			log.error("IOException saving JSON to file", e);
-			throw new FileNotFoundException("IOException saving JSON to file", e);			
+			throw new FileNotFoundException("IOException saving JSON to file",
+					e);
 		}
 	}
 
@@ -92,12 +94,13 @@ public class MetadataQueryMaintenanceService extends AbstractJargonService
 		}
 
 		try {
-		saveJsonStringToFile(
-				serializeVirtualCollectionToJson(configurableVirtualCollection),
-				collection + "/" + uniqueName);
+			saveJsonStringToFile(
+					serializeVirtualCollectionToJson(configurableVirtualCollection),
+					collection + "/" + uniqueName);
 		} catch (IOException e) {
 			log.error("IOException saving JSON to file", e);
-			throw new FileNotFoundException("IOException saving JSON to file", e);	
+			throw new FileNotFoundException("IOException saving JSON to file",
+					e);
 		}
 	}
 
@@ -154,7 +157,7 @@ public class MetadataQueryMaintenanceService extends AbstractJargonService
 			String decoded = new String(b, "UTF-8");
 
 			return objectMapper.readValue(decoded,
-					ConfigurableVirtualCollection.class);
+					MetadataQueryVirtualCollection.class);
 
 		} catch (JargonException e) {
 			log.error(
@@ -193,6 +196,49 @@ public class MetadataQueryMaintenanceService extends AbstractJargonService
 		}
 
 		vcFile.delete();
+
+	}
+
+	/**
+	 * Finds the iRODS absolute path to the user home temp metadata query
+	 * collections, will create it if it does not exist. This is idempotent so
+	 * if the coll exists it will silently ignore.
+	 * 
+	 * @param userName
+	 *            <code>String</code> user name used to locate the home
+	 *            directory
+	 * @return
+	 */
+	public String findOrCreateUserTempMetadataQueryCollection(
+			final String userName) {
+
+		log.info("findOrCreateUserTempMetadataQueryCollection()");
+
+		if (userName == null || userName.isEmpty()) {
+			throw new IllegalArgumentException("null or empty userName");
+		}
+
+		log.info("userName: {}", userName);
+
+		try {
+			DotIrodsCollection dotIrodsCollection = dotIrodsService
+					.findOrCreateUserHomeCollection(userName);
+			StringBuilder sb = new StringBuilder();
+			sb.append(dotIrodsCollection.getAbsolutePath());
+			sb.append("/");
+			sb.append(GeneralParameterConstants.USER_VC_TEMP_RECENT_VC_QUERIES);
+			String collName = sb.toString();
+			IRODSFile vcFile = this.getIrodsAccessObjectFactory()
+					.getIRODSFileFactory(getIrodsAccount())
+					.instanceIRODSFile(collName);
+			vcFile.mkdirs();
+			return collName;
+
+		} catch (JargonException e) {
+			log.error("unable to compute path for vc", e);
+			throw new VirtualCollectionRuntimeException(
+					"unable to compute path to user home dir", e);
+		}
 
 	}
 
