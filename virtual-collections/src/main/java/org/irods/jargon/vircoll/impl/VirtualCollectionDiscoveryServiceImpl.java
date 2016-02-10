@@ -196,8 +196,6 @@ public class VirtualCollectionDiscoveryServiceImpl extends
 		StringBuilder sb = new StringBuilder();
 		sb.append(irodsAbsolutePathToDotIrods);
 		sb.append("/");
-		sb.append(GeneralParameterConstants.VIRTUAL_COLLECTIONS_SUBDIR);
-		sb.append("/");
 		sb.append(GeneralParameterConstants.USER_VC_TEMP_RECENT_VC_QUERIES);
 		return sb.toString();
 	}
