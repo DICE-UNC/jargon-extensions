@@ -26,5 +26,6 @@ public class MetadataQueryVirtualCollection extends
 	 */
 	public MetadataQueryVirtualCollection(String queryString) {
 		this.setQueryString(queryString);
+		this.setType(MY_TYPE);
 	}
 }
