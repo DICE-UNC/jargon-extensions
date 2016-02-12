@@ -1,12 +1,16 @@
 package org.irods.jargon.vircoll.types;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.DuplicateDataException;
 import org.irods.jargon.core.exception.FileNotFoundException;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
+import org.irods.jargon.core.pub.domain.AvuData;
 import org.irods.jargon.core.pub.domain.Collection;
 import org.irods.jargon.core.pub.io.IRODSFile;
 import org.irods.jargon.core.pub.io.IRODSFileInputStream;
@@ -16,6 +20,7 @@ import org.irods.jargon.extensions.dotirods.DotIrodsCollection;
 import org.irods.jargon.extensions.dotirods.DotIrodsConstants;
 import org.irods.jargon.extensions.dotirods.DotIrodsService;
 import org.irods.jargon.extensions.dotirods.DotIrodsServiceImpl;
+import org.irods.jargon.vircoll.AbstractVirtualCollection;
 import org.irods.jargon.vircoll.ConfigurableVirtualCollection;
 import org.irods.jargon.vircoll.GeneralParameterConstants;
 import org.irods.jargon.vircoll.VirtualCollectionMaintenanceService;
@@ -29,7 +34,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class MetadataQueryMaintenanceService extends AbstractJargonService
-		implements VirtualCollectionMaintenanceService {
+		implements VirtualCollectionMaintenanceService{
 	private final DotIrodsService dotIrodsService;
 
 	private static Logger log = LoggerFactory
@@ -60,18 +65,21 @@ public class MetadataQueryMaintenanceService extends AbstractJargonService
 			throw new IllegalArgumentException("null or empty collection");
 		}
 
-		IRODSFile vcFile = getPathAsIrodsFile(collection + "/" + uniqueName);
+		String path = collection + "/" + uniqueName;
+
+		IRODSFile vcFile = getPathAsIrodsFile(path);
 
 		if (vcFile != null && vcFile.exists()) {
-			log.error("File already exists: " + collection + "/" + uniqueName);
-			throw new DuplicateDataException("File already exists: "
-					+ collection + "/" + uniqueName);
+			log.error("File already exists: " + path);
+			throw new DuplicateDataException("File already exists: " + path);
 		}
 
 		try {
 			saveJsonStringToFile(
 					serializeVirtualCollectionToJson(configurableVirtualCollection),
-					collection + "/" + uniqueName);
+					path);
+			addVcTypeAVUToFile(path);
+			addUniqueNameAVUToFile(path, uniqueName);
 		} catch (IOException e) {
 			log.error("IOException saving JSON to file", e);
 			throw new FileNotFoundException("IOException saving JSON to file",
@@ -93,10 +101,14 @@ public class MetadataQueryMaintenanceService extends AbstractJargonService
 			throw new IllegalArgumentException("null or empty collection");
 		}
 
+		String path = collection + "/" + uniqueName;
+
 		try {
 			saveJsonStringToFile(
 					serializeVirtualCollectionToJson(configurableVirtualCollection),
-					collection + "/" + uniqueName);
+					path);
+			addVcTypeAVUToFile(path);
+			addUniqueNameAVUToFile(path, uniqueName);
 		} catch (IOException e) {
 			log.error("IOException saving JSON to file", e);
 			throw new FileNotFoundException("IOException saving JSON to file",
@@ -601,6 +613,30 @@ public class MetadataQueryMaintenanceService extends AbstractJargonService
 		irodsFileOutputStream.write(jsonByteArray);
 
 		queryIrodsFile.close();
+	}
+
+	void addVcTypeAVUToFile(String path) throws JargonException {
+		log.info("addVcTypeAVUToFile()");
+		AvuData avuData = AvuData.instance(
+				GeneralParameterConstants.VCTYPE_AVU_ATTRIBUTE,
+				GeneralParameterConstants.MDQUERY_VCTYPE_VALUE_UNIT,
+				GeneralParameterConstants.VCTYPE_AVU_UNIT);
+		getIrodsAccessObjectFactory().getDataObjectAO(irodsAccount)
+				.deleteAVUMetadata(path, avuData);
+		getIrodsAccessObjectFactory().getDataObjectAO(irodsAccount)
+				.addAVUMetadata(path, avuData);
+	}
+
+	void addUniqueNameAVUToFile(String path, String name)
+			throws JargonException {
+		log.info("addUniqueNameAVUToFile()");
+		AvuData avuData = AvuData.instance(
+				GeneralParameterConstants.UNIQUE_NAME_AVU_ATTRIBUTE, name,
+				GeneralParameterConstants.UNIQUE_NAME_AVU_UNIT);
+		getIrodsAccessObjectFactory().getDataObjectAO(irodsAccount)
+				.deleteAVUMetadata(path, avuData);
+		getIrodsAccessObjectFactory().getDataObjectAO(irodsAccount)
+				.addAVUMetadata(path, avuData);
 	}
 
 }

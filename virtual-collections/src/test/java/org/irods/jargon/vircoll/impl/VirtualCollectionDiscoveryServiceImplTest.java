@@ -99,6 +99,13 @@ public class VirtualCollectionDiscoveryServiceImplTest {
 
 		VirtualCollectionDiscoveryService virtualCollectionDiscoveryService = new VirtualCollectionDiscoveryServiceImpl(
 				accessObjectFactory, irodsAccount);
+		
+		IRODSFile targetCollectionAsFile = accessObjectFactory
+				.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(
+						"/testZone/home/test1/.irods/user_vc_temp_recent_vc_queries");
+
+		targetCollectionAsFile.deleteWithForceOption();
 
 		UserVirtualCollectionProfile actual = virtualCollectionDiscoveryService
 				.userVirtualCollectionProfile(null);
@@ -126,8 +133,9 @@ public class VirtualCollectionDiscoveryServiceImplTest {
 		IRODSFile targetCollectionAsFile = accessObjectFactory
 				.getIRODSFileFactory(irodsAccount)
 				.instanceIRODSFile(
-						"/testZone/home/test1/.irods/virtualCollections/user_vc_temp_recent_vc_queries");
+						"/testZone/home/test1/.irods/user_vc_temp_recent_vc_queries");
 
+		targetCollectionAsFile.deleteWithForceOption();
 		targetCollectionAsFile.mkdirs();
 
 		UserVirtualCollectionProfile actual = virtualCollectionDiscoveryService
@@ -156,8 +164,9 @@ public class VirtualCollectionDiscoveryServiceImplTest {
 		IRODSFile targetCollectionAsFile = accessObjectFactory
 				.getIRODSFileFactory(irodsAccount)
 				.instanceIRODSFile(
-						"/testZone/home/test1/.irods/virtualCollections/user_vc_temp_recent_vc_queries");
+						"/testZone/home/test1/.irods/user_vc_temp_recent_vc_queries");
 
+		targetCollectionAsFile.deleteWithForceOption();
 		targetCollectionAsFile.mkdirs();
 
 		MetadataQueryMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
@@ -169,7 +178,7 @@ public class VirtualCollectionDiscoveryServiceImplTest {
 		String queryName = "query1";
 		cvc.setUniqueName(queryName);
 
-		String savePath = "/testZone/home/test1/.irods/virtualCollections/user_vc_temp_recent_vc_queries";
+		String savePath = "/testZone/home/test1/.irods/user_vc_temp_recent_vc_queries";
 
 		mdQueryService.storeVirtualCollection(cvc, savePath, queryName);
 

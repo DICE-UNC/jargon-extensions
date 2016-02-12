@@ -40,16 +40,6 @@ public class MetadataQueryVirtualCollectionTest {
 	private static TestingPropertiesHelper testingPropertiesHelper = new TestingPropertiesHelper();
 	private static IRODSFileSystem irodsFileSystem;
 
-	private static final String TEMPLATE_FILE_NAME1 = "src/test/resources/templates/test1.mdtemplate";
-	private static final String TEMPLATE_FILE_NAME2 = "src/test/resources/templates/test2.mdtemplate";
-	private static final String TEMPLATE_FILE_NAME3 = "src/test/resources/templates/test3.mdtemplate";
-	private static final String TEST_FILE_NAME = "src/test/resources/testFile.txt";
-
-	private static final String TEMPLATE_NOPATH1 = "test1.mdtemplate";
-	private static final String TEMPLATE_NOPATH2 = "test2.mdtemplate";
-	private static final String TEMPLATE_NOPATH3 = "test3.mdtemplate";
-	private static final String TEST_FILE_NOPATH = "testFile.txt";
-
 	public static final String IRODS_TEST_SUBDIR_PATH = "MetadataQueryVirtualCollectionTest";
 	private static org.irods.jargon.testutils.IRODSTestSetupUtilities irodsTestSetupUtilities = null;
 

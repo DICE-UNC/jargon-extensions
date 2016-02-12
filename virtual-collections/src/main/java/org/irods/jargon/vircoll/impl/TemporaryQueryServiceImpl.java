@@ -3,9 +3,13 @@
  */
 package org.irods.jargon.vircoll.impl;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import org.irods.jargon.core.connection.IRODSAccount;
+import org.irods.jargon.core.exception.FileNotFoundException;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.core.pub.io.IRODSFile;
@@ -112,6 +116,49 @@ public class TemporaryQueryServiceImpl extends AbstractJargonService implements
 		}
 
 	}
+	
+	@Override
+	public List<ConfigurableVirtualCollection> getLastNTemporaryQueries(
+			int n,
+			String userName,
+			VirtualCollectionMaintenanceService virtualCollectionMaintenanceService)
+			throws VirtualCollectionException {
+		log.info("retrieveLastNVirtualCollectionsFromTemp");
+
+		String myUser = userName;
+		if (userName == null || userName.isEmpty()) {
+			myUser = this.getIrodsAccount().getUserName();
+		}
+
+		if (n < 0) {
+			throw new IllegalArgumentException(
+					"requested a negative number of virtual collections");
+		}
+
+		List<ConfigurableVirtualCollection> returnList = new ArrayList<ConfigurableVirtualCollection>();
+
+		String tempQueryDir = computeTempQueryPathUnderDotIrods(myUser);
+		IRODSFile tempQueryDirAsIrodsFile = getPathAsIrodsFile(tempQueryDir);
+
+		File[] tempQueries = tempQueryDirAsIrodsFile.listFiles();
+		int oldestIndex = (tempQueries.length < n) ? 0
+				: (tempQueries.length - n);
+		
+		
+		for (int i = (tempQueries.length - 1); i >= oldestIndex; i--) {
+			try {
+			returnList.add(virtualCollectionMaintenanceService.retrieveVirtualCollection(tempQueryDir,
+					tempQueries[i].getName()));
+			} catch (FileNotFoundException e) {
+				log.error("error reading temp query file:{}", tempQueries[i],
+						e);
+				throw new VirtualCollectionException(
+						"error reading temp query file", e);			
+			}
+		}
+
+		return returnList;		
+	}
 
 	/**
 	 * TODO: prime for refactor
@@ -147,5 +194,25 @@ public class TemporaryQueryServiceImpl extends AbstractJargonService implements
 					"cannot store virtual collection query", e);
 		}
 	}
+	
+	IRODSFile getPathAsIrodsFile(String irodsAbsolutePath) {
+		log.info("getPathAsIrodsFile()");
+
+		IRODSFile retFile = null;
+
+		try {
+			retFile = irodsAccessObjectFactory
+					.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
+							irodsAbsolutePath);
+		} catch (JargonException je) {
+			log.error(
+					"JargonException thrown by instanceIRODSFile, {} does not exist",
+					irodsAbsolutePath, je);
+			retFile = null;
+		}
+
+		return retFile;
+	}
+
 
 }
