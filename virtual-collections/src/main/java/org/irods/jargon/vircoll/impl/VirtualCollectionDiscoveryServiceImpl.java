@@ -140,6 +140,7 @@ public class VirtualCollectionDiscoveryServiceImpl extends
 				this.getIrodsAccessObjectFactory(), this.getIrodsAccount());
 		MetadataQueryMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
 				this.getIrodsAccessObjectFactory(), this.getIrodsAccount());
+		
 		DotIrodsCollection userHomeDir = null;
 		try {
 			userHomeDir = dotIrodsService

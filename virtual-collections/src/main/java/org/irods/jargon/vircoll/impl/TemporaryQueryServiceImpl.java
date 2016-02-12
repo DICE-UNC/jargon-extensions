@@ -66,8 +66,6 @@ public class TemporaryQueryServiceImpl extends AbstractJargonService implements
 
 		StringBuilder sb = new StringBuilder();
 		sb.append(System.currentTimeMillis());
-		sb.append("-");
-		sb.append(UUID.randomUUID());
 		return sb.toString();
 	}
 
