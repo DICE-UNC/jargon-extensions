@@ -15,6 +15,8 @@ import org.irods.jargon.vircoll.AbstractVirtualCollectionExecutor;
 import org.irods.jargon.vircoll.VirtualCollectionExecutorFactory;
 import org.irods.jargon.vircoll.types.CollectionBasedVirtualCollection;
 import org.irods.jargon.vircoll.types.CollectionBasedVirtualCollectionExecutor;
+import org.irods.jargon.vircoll.types.MetadataQueryVirtualCollection;
+import org.irods.jargon.vircoll.types.MetadataQueryVirtualCollectionExecutor;
 import org.irods.jargon.vircoll.types.StarredFoldersVirtualCollection;
 import org.irods.jargon.vircoll.types.StarredFoldersVirtualCollectionExecutor;
 import org.slf4j.Logger;
@@ -50,6 +52,12 @@ public class VirtualCollectionFactoryImpl extends AbstractJargonService
 		super(irodsAccessObjectFactory, irodsAccount);
 	}
 
+	/**
+	 * TODO: this needs refactoring to a pluggable discovery mechanism with the
+	 * ability to dynamically load and discover the collections/executors. Right
+	 * now this is all done in code
+	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public AbstractVirtualCollectionExecutor instanceExecutorBasedOnVirtualCollection(
 			AbstractVirtualCollection virtualCollection)
@@ -80,6 +88,11 @@ public class VirtualCollectionFactoryImpl extends AbstractJargonService
 					(StarredFoldersVirtualCollection) virtualCollection,
 					getIrodsAccessObjectFactory(), getIrodsAccount(),
 					irodsStarringService);
+		} else if (virtualCollection.getType().equals(
+				MetadataQueryVirtualCollection.MY_TYPE)) {
+			return new MetadataQueryVirtualCollectionExecutor(
+					(MetadataQueryVirtualCollection) virtualCollection,
+					getIrodsAccessObjectFactory(), getIrodsAccount());
 		} else {
 			throw new UnsupportedOperationException(
 					"cannot support collection type yet");

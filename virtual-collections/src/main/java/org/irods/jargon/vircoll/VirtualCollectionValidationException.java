@@ -3,6 +3,8 @@
  */
 package org.irods.jargon.vircoll;
 
+import org.irods.jargon.vircoll.exception.VirtualCollectionException;
+
 /**
  * Exception caused by an invalid query (missing parameters, malformed query
  * information)

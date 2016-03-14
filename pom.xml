@@ -13,6 +13,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<jargon.version>4.0.3.1-SNAPSHOT</jargon.version>
 		<java.version>1.7</java.version>
+		<jargon.extensions.version>4.0.3.1-SNAPSHOT</jargon.extensions.version>
 	</properties>
 	<issueManagement>
 		<system>GitHub</system>
@@ -180,6 +181,11 @@
 				<version>${jargon.version}</version>
 			</dependency>
 			<dependency>
+				<groupId>org.irods.jargon</groupId>
+				<artifactId>jargon-extensions-if</artifactId>
+				<version>${jargon.extensions.version}</version>
+			</dependency>
+			<dependency>
 				<groupId>junit</groupId>
 				<artifactId>junit</artifactId>
 				<version>4.8.2</version>
@@ -250,6 +256,10 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.irods.jargon</groupId>
+			<artifactId>jargon-extensions-if</artifactId>
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
@@ -316,6 +326,6 @@
 	<modules>
 		<module>dot-irods-utilities</module>
 		<module>virtual-collections</module>
-<module>file-template</module>
+		<module>file-template</module>
 	</modules>
 </project>

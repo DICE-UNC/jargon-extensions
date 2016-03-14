@@ -3,6 +3,8 @@
  */
 package org.irods.jargon.vircoll;
 
+import org.irods.jargon.vircoll.exception.VirtualCollectionException;
+
 /**
  * Exception with marshaling, unmarshaling of virtual collections
  * 
