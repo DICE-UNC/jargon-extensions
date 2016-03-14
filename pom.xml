@@ -13,6 +13,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<jargon.version>4.0.3.1-SNAPSHOT</jargon.version>
 		<java.version>1.7</java.version>
+		<jargon.extensions.version>4.0.3.1-SNAPSHOT</jargon.extensions.version>
 	</properties>
 	<issueManagement>
 		<system>GitHub</system>
@@ -165,6 +166,11 @@
 				<groupId>org.irods.jargon</groupId>
 				<artifactId>jargon-user-tagging</artifactId>
 				<version>${jargon.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.irods.jargon</groupId>
+				<artifactId>jargon-extensions-if</artifactId>
+				<version>${jargon.extensions.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>junit</groupId>

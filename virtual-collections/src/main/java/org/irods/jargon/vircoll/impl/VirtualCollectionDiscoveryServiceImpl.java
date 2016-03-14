@@ -3,17 +3,28 @@
  */
 package org.irods.jargon.vircoll.impl;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.irods.jargon.core.connection.IRODSAccount;
+import org.irods.jargon.core.exception.FileNotFoundException;
+import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
+import org.irods.jargon.core.pub.io.IRODSFile;
 import org.irods.jargon.core.service.AbstractJargonService;
 import org.irods.jargon.core.utils.MiscIRODSUtils;
+import org.irods.jargon.extensions.dotirods.DotIrodsCollection;
+import org.irods.jargon.extensions.dotirods.DotIrodsService;
+import org.irods.jargon.extensions.dotirods.DotIrodsServiceImpl;
 import org.irods.jargon.vircoll.AbstractVirtualCollection;
+import org.irods.jargon.vircoll.GeneralParameterConstants;
+import org.irods.jargon.vircoll.UserVirtualCollectionProfile;
 import org.irods.jargon.vircoll.VirtualCollectionDiscoveryService;
-import org.irods.jargon.vircoll.VirtualCollectionMarshalingException;
+import org.irods.jargon.vircoll.exception.VirtualCollectionException;
+import org.irods.jargon.vircoll.exception.VirtualCollectionProfileException;
 import org.irods.jargon.vircoll.types.CollectionBasedVirtualCollection;
+import org.irods.jargon.vircoll.types.MetadataQueryMaintenanceService;
 import org.irods.jargon.vircoll.types.StarredFoldersVirtualCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,89 +63,6 @@ public class VirtualCollectionDiscoveryServiceImpl extends
 		super(irodsAccessObjectFactory, irodsAccount);
 	}
 
-	/**
-	 * Given a virtual collection, use its unmarshaling capability to turn the
-	 * object into a string representation.
-	 * <p/>
-	 * Note that the specific deserializer may just do a default conversion from
-	 * the JSON, but has the ability to do other decoration or manipulation as
-	 * part of the process.
-	 * 
-	 * @param abstractVirtualCollection
-	 * @return
-	 * @throws VirtualCollectionMarshalingException
-	 */
-	public String stringRepresentationFromVirtualCollection(
-			final AbstractVirtualCollection abstractVirtualCollection)
-			throws VirtualCollectionMarshalingException {
-		log.info("stringRepresentationFromVirtualCollection()");
-
-		/*
-		 * if (abstractVirtualCollection == null) { throw new
-		 * IllegalArgumentException("null abstractVirtualCollection"); }
-		 * 
-		 * AbstractVirtualCollectionSerializer serializerObject;
-		 * serializerObject =
-		 * instantiateSerializerFromName(abstractVirtualCollection
-		 * .getSerializerClass());
-		 * 
-		 * log.info("...got serializer, parse JSON as that object type"); return
-		 * serializerObject
-		 * .serializeToStringRepresentation(abstractVirtualCollection);
-		 */return null;
-	}
-
-	/**
-	 * Given a <code>String</code> representing a virtual collection in raw
-	 * (JSON) form, return the corresponding object.
-	 * <p/>
-	 * This is done by creating the specified deserialzier object, which may do
-	 * a straight conversion from JSON, or it may do addtional decoration based
-	 * on the chose deserializer.
-	 * 
-	 * @param stringRepresentation
-	 *            <code>String</code> with a representation of the virtual
-	 *            collection
-	 * @return {@link VirtualCollection}
-	 * @throws VirtualCollectionMarshalingException
-	 */
-	public AbstractVirtualCollection virtualCollectionFromStringRepresentation(
-			final String stringRepresentation)
-			throws VirtualCollectionMarshalingException {
-
-		/*
-		 * log.info("virtualCollectionFromStringRepresentation()"); if
-		 * (stringRepresentation == null || stringRepresentation.isEmpty()) {
-		 * throw new IllegalArgumentException(
-		 * "null or empty stringRepresentation"); }
-		 * 
-		 * log.info("..turning underlying JSON representation into a map...");
-		 * 
-		 * try {
-		 * 
-		 * @SuppressWarnings("unchecked") Map<String, Object> result = new
-		 * ObjectMapper().readValue( stringRepresentation, HashMap.class);
-		 * log.info("unmarshalled..."); String serializerClassName = (String)
-		 * result.get("serializerClass"); AbstractVirtualCollectionSerializer
-		 * serializerObject =
-		 * instantiateSerializerFromName(serializerClassName);
-		 * 
-		 * log.info("...got serializer, parse JSON as that object type"); return
-		 * serializerObject
-		 * .deserializeFromStringRepresentation(stringRepresentation);
-		 * 
-		 * } catch (JsonParseException e) { log.info("JsonParseException", e);
-		 * throw new VirtualCollectionMarshalingException(e); } catch
-		 * (JsonMappingException e) { log.info("JsonMappingException", e); throw
-		 * new VirtualCollectionMarshalingException(e); } catch (IOException e)
-		 * { log.info("IOException", e); throw new
-		 * VirtualCollectionMarshalingException(e); }
-		 */
-
-		return null;
-
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -163,4 +91,132 @@ public class VirtualCollectionDiscoveryServiceImpl extends
 
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.irods.jargon.vircoll.VirtualCollectionDiscoveryService#
+	 * userVirtualCollectionProfile(java.lang.String)
+	 */
+	@Override
+	public UserVirtualCollectionProfile userVirtualCollectionProfile(
+			String userName) throws VirtualCollectionProfileException {
+		log.info("userVirtualCollectionProfile()");
+
+		String user = userName;
+
+		if (userName == null || userName.isEmpty()) {
+			log.info("null or empty username passed - using name of logged-in user");
+			user = this.getIrodsAccount().getUserName();
+		}
+
+		UserVirtualCollectionProfile userVirtualCollectionProfile = new UserVirtualCollectionProfile();
+		userVirtualCollectionProfile.setHomeZone(this.getIrodsAccount()
+				.getZone());
+		/*
+		 * XXX - should delete if below replacement is correct
+		 * userVirtualCollectionProfile.setUserName(this.getIrodsAccount()
+		 * .getUserName());
+		 */
+		userVirtualCollectionProfile.setUserName(user);
+		userVirtualCollectionProfile
+				.setUserHomeCollections(listDefaultUserCollections());
+		userVirtualCollectionProfile
+				.setUserRecentQueries(listUserRecentQueries(user));
+		return userVirtualCollectionProfile;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.irods.jargon.vircoll.VirtualCollectionDiscoveryService#
+	 * listUserRecentQueries(java.lang.String)
+	 */
+	@Override
+	public List<AbstractVirtualCollection> listUserRecentQueries(String userName)
+			throws VirtualCollectionProfileException {
+		log.info("listUserRecentQueries()");
+
+		DotIrodsService dotIrodsService = new DotIrodsServiceImpl(
+				this.getIrodsAccessObjectFactory(), this.getIrodsAccount());
+		MetadataQueryMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
+				this.getIrodsAccessObjectFactory(), this.getIrodsAccount());
+		
+		DotIrodsCollection userHomeDir = null;
+		try {
+			userHomeDir = dotIrodsService
+					.findOrCreateUserHomeCollection(userName);
+		} catch (JargonException e) {
+			log.error(
+					"JargonException trying to find user home .irods collection",
+					e);
+			throw new VirtualCollectionProfileException(
+					"JargonException trying to find user home .irods collection",
+					e);
+		}
+
+		String tempQueryDir = computeTempMetadataQueryPathUnderDotIrods(userHomeDir
+				.getAbsolutePath());
+		IRODSFile tempQueryDirAsIrodsFile = getPathAsIrodsFile(tempQueryDir);
+
+		if (tempQueryDirAsIrodsFile == null | !tempQueryDirAsIrodsFile.exists()) {
+			tempQueryDirAsIrodsFile.mkdirs();
+		}
+
+		List<AbstractVirtualCollection> returnList = new ArrayList<AbstractVirtualCollection>();
+
+		try {
+			for (File f : tempQueryDirAsIrodsFile.listFiles()) {
+				returnList.add(mdQueryService.retrieveVirtualCollection(
+						tempQueryDir, f.getName()));
+			}
+		} catch (FileNotFoundException e) {
+			log.error("FileNotFoundException trying to read mdQuery VC file", e);
+			throw new VirtualCollectionProfileException(
+					"FileNotFoundException trying to read mdQuery VC file", e);
+		} catch (VirtualCollectionException e) {
+			log.error(
+					"VirtualCollectionException trying to read mdQuery VC file",
+					e);
+			throw new VirtualCollectionProfileException(
+					"VirtualCollectionException trying to read mdQuery VC file",
+					e);
+		}
+
+		return returnList;
+	}
+
+	String computeTempMetadataQueryPathUnderDotIrods(
+			final String irodsAbsolutePathToDotIrods) {
+		log.info("computeMetadataQueryPathUnderDotIrods");
+
+		if (irodsAbsolutePathToDotIrods == null
+				|| irodsAbsolutePathToDotIrods.isEmpty()) {
+			throw new IllegalArgumentException(
+					"irodsAbsolutePathToParent is null or empty");
+		}
+		StringBuilder sb = new StringBuilder();
+		sb.append(irodsAbsolutePathToDotIrods);
+		sb.append("/");
+		sb.append(GeneralParameterConstants.USER_VC_TEMP_RECENT_VC_QUERIES);
+		return sb.toString();
+	}
+
+	IRODSFile getPathAsIrodsFile(String irodsAbsolutePath) {
+		log.info("getPathAsIrodsFile()");
+
+		IRODSFile retFile = null;
+
+		try {
+			retFile = irodsAccessObjectFactory
+					.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
+							irodsAbsolutePath);
+		} catch (JargonException je) {
+			log.error(
+					"JargonException thrown by instanceIRODSFile, {} does not exist",
+					irodsAbsolutePath, je);
+			retFile = null;
+		}
+
+		return retFile;
+	}
 }

@@ -3,6 +3,8 @@
  */
 package org.irods.jargon.vircoll.impl;
 
+import java.util.Map;
+
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
@@ -10,6 +12,7 @@ import org.irods.jargon.core.query.PagingAwareCollectionListing;
 import org.irods.jargon.vircoll.AbstractVirtualCollection;
 import org.irods.jargon.vircoll.AbstractVirtualCollectionExecutor;
 import org.irods.jargon.vircoll.VirtualCollectionExecutorFactory;
+import org.irods.jargon.vircoll.exception.VirtualCollectionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,8 +61,12 @@ public abstract class VirtualCollectionExecutorImpl<T extends AbstractVirtualCol
 	 * @throws JargonException
 	 */
 	@Override
-	public abstract PagingAwareCollectionListing queryAll(int offset)
-			throws JargonException;
+	public PagingAwareCollectionListing queryAll(int offset)
+			throws VirtualCollectionException {
+		log.info("queryAll(int)");
+
+		return queryAll("", offset, null);
+	}
 
 	/**
 	 * Given a path, process the query. Note that a virtual collection may be
@@ -74,27 +81,39 @@ public abstract class VirtualCollectionExecutorImpl<T extends AbstractVirtualCol
 	 * If this default behavior is not desired, it must be overridden in the
 	 * child class.
 	 * 
-	 * @param path
-	 *            <code>String</code> with the iRODS absolute path of the parent
-	 *            for the query.
+	 * @param queryHint
+	 *            <code>String</code> with a hint or query string that can be
+	 *            passed to the virtual collection to execute. Virtual
+	 *            collections may hold the actual query in their definition,
+	 *            this hook allows the passing of a reformulated query or a path
+	 *            hint
 	 * @param offset
 	 *            <code>int</code> with an offset into the result set
 	 * @return {@link PagingAwareCollectionListing} with the query results
-	 * @throws JargonException
+	 * @throws VirtualCollectionException
 	 */
 	@Override
-	public PagingAwareCollectionListing queryAll(String path, int offset)
-			throws JargonException {
+	public PagingAwareCollectionListing queryAll(String queryHint, int offset)
+			throws VirtualCollectionException {
+
+		log.info("queryAll(String, int)");
+		return queryAll(queryHint, offset, null);
+
+	}
+
+	public PagingAwareCollectionListing queryAll(String queryHint, int offset,
+			Map<String, String> additionalProperties)
+			throws VirtualCollectionException {
 
 		log.info("queryAll()");
-		if (path == null) {
-			throw new IllegalArgumentException("null path");
+		if (queryHint == null) {
+			throw new IllegalArgumentException("null queryHint");
 		}
 
-		log.info("path:{}", path);
+		log.info("path:{}", queryHint);
 		log.info("offset:{}", offset);
 
-		if (path.isEmpty()) {
+		if (queryHint.isEmpty()) {
 			// no path provided, so just do the query all
 			return queryAll(offset);
 		} else if (getCollection().isPathHintable()) {
@@ -107,7 +126,7 @@ public abstract class VirtualCollectionExecutorImpl<T extends AbstractVirtualCol
 		}
 
 		log.info("dropping down to normal iRODS ls query as the virtual collection is not path hintable");
-		return deferToCollectionBasedPathQuery(path, offset);
+		return deferToCollectionBasedPathQuery(queryHint, offset);
 
 	}
 
@@ -115,12 +134,19 @@ public abstract class VirtualCollectionExecutorImpl<T extends AbstractVirtualCol
 	 * @param path
 	 * @param offset
 	 * @return
-	 * @throws JargonException
+	 * @throws VirtualCollectionException
 	 */
 	private PagingAwareCollectionListing deferToCollectionBasedPathQuery(
-			String path, int offset) throws JargonException {
-		AbstractVirtualCollectionExecutor<?> exec = this.virtualCollectionExecutorFactory
-				.instanceCollectionBasedVirtualCollectionExecutorAtRoot();
+			String path, int offset) throws VirtualCollectionException {
+		AbstractVirtualCollectionExecutor<?> exec;
+		try {
+			exec = this.virtualCollectionExecutorFactory
+					.instanceCollectionBasedVirtualCollectionExecutorAtRoot();
+		} catch (JargonException e) {
+			log.error("exception deferring to a colledction query", e);
+			throw new VirtualCollectionException(
+					"error defering to a path based query");
+		}
 		return exec.queryAll(path, offset);
 	}
 

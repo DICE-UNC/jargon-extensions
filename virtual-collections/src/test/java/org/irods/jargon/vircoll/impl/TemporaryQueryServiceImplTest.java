@@ -1,0 +1,177 @@
+package org.irods.jargon.vircoll.impl;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
+import junit.framework.Assert;
+
+import org.irods.jargon.core.connection.IRODSAccount;
+import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
+import org.irods.jargon.core.pub.IRODSFileSystem;
+import org.irods.jargon.core.pub.io.IRODSFile;
+import org.irods.jargon.testutils.TestingPropertiesHelper;
+import org.irods.jargon.vircoll.ConfigurableVirtualCollection;
+import org.irods.jargon.vircoll.TemporaryQueryService;
+import org.irods.jargon.vircoll.types.MetadataQueryMaintenanceService;
+import org.junit.After;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+public class TemporaryQueryServiceImplTest {
+
+	private static Properties testingProperties = new Properties();
+	private static TestingPropertiesHelper testingPropertiesHelper = new TestingPropertiesHelper();
+	private static IRODSFileSystem irodsFileSystem;
+
+	public static final String IRODS_TEST_SUBDIR_PATH = "TemporaryQueryServiceImplTest";
+	private static org.irods.jargon.testutils.IRODSTestSetupUtilities irodsTestSetupUtilities = null;
+
+	@BeforeClass
+	public static void setUpBeforeClass() throws Exception {
+		TestingPropertiesHelper testingPropertiesLoader = new TestingPropertiesHelper();
+		testingProperties = testingPropertiesLoader.getTestProperties();
+		irodsFileSystem = IRODSFileSystem.instance();
+		irodsTestSetupUtilities = new org.irods.jargon.testutils.IRODSTestSetupUtilities();
+		irodsTestSetupUtilities.clearIrodsScratchDirectory();
+		irodsTestSetupUtilities.initializeIrodsScratchDirectory();
+		irodsTestSetupUtilities
+				.initializeDirectoryForTest(IRODS_TEST_SUBDIR_PATH);
+	}
+
+	@After
+	public void tearDown() throws Exception {
+		irodsFileSystem.closeAndEatExceptions();
+	}
+
+	@Test
+	public void testNameAndStoreTemporaryQuery() throws Exception {
+
+		IRODSAccount irodsAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
+				.getIRODSAccessObjectFactory();
+
+		MetadataQueryMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
+				accessObjectFactory, irodsAccount);
+
+		ConfigurableVirtualCollection cvc = new ConfigurableVirtualCollection();
+		cvc.setQueryString("QueryStringTest42");
+
+		TemporaryQueryService temporaryQueryService = new TemporaryQueryServiceImpl(
+				accessObjectFactory, irodsAccount);
+		String uniqueName = temporaryQueryService.nameAndStoreTemporaryQuery(
+				cvc, irodsAccount.getUserName(), mdQueryService);
+		Assert.assertNotNull(uniqueName);
+
+	}
+	
+	@Test
+	public void testRetrieveLastNQueriesFewerThanNQueries() throws Exception {
+		IRODSAccount irodsAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
+				.getIRODSAccessObjectFactory();
+
+		IRODSFile targetCollectionAsFile = accessObjectFactory
+				.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(
+						"/testZone/home/test1/.irods/user_vc_temp_recent_vc_queries");
+
+		targetCollectionAsFile.deleteWithForceOption();
+		targetCollectionAsFile.mkdirs();
+
+		MetadataQueryMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
+				accessObjectFactory, irodsAccount);
+		TemporaryQueryServiceImpl tempQueryService = new TemporaryQueryServiceImpl(accessObjectFactory, irodsAccount);
+
+		ConfigurableVirtualCollection cvc = new ConfigurableVirtualCollection();
+
+		for (int i = 1; i <= 5; i++) {
+			cvc = new ConfigurableVirtualCollection();
+			cvc.setQueryString("QueryStringTest" + i);
+			
+			tempQueryService.nameAndStoreTemporaryQuery(cvc, irodsAccount.getUserName(), mdQueryService);
+		}
+		
+		//List<ConfigurableVirtualCollection> returnedList = mdQueryService.retrieveLastNVirtualCollectionsFromTemp(10, irodsAccount.getUserName());
+		
+		List<ConfigurableVirtualCollection> returnedList = tempQueryService.getLastNTemporaryQueries(10, irodsAccount.getUserName(), mdQueryService);
+		
+		Assert.assertEquals("Wrong number of queries returned", 5, returnedList.size());
+		Assert.assertTrue("Newest query not returned first", returnedList.get(0).getQueryString().equals("QueryStringTest5"));
+	}
+
+	@Test
+	public void testRetrieveLastNQueriesExactlyNQueries() throws Exception {
+		IRODSAccount irodsAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
+				.getIRODSAccessObjectFactory();
+
+		IRODSFile targetCollectionAsFile = accessObjectFactory
+				.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(
+						"/testZone/home/test1/.irods/user_vc_temp_recent_vc_queries");
+
+		targetCollectionAsFile.deleteWithForceOption();
+		targetCollectionAsFile.mkdirs();
+
+		MetadataQueryMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
+				accessObjectFactory, irodsAccount);
+		TemporaryQueryServiceImpl tempQueryService = new TemporaryQueryServiceImpl(accessObjectFactory, irodsAccount);
+
+		ConfigurableVirtualCollection cvc = new ConfigurableVirtualCollection();
+
+		for (int i = 1; i <= 10; i++) {
+			cvc = new ConfigurableVirtualCollection();
+			cvc.setQueryString("QueryStringTest" + i);
+			
+			tempQueryService.nameAndStoreTemporaryQuery(cvc, irodsAccount.getUserName(), mdQueryService);
+		}
+		
+		List<ConfigurableVirtualCollection> returnedList = tempQueryService.getLastNTemporaryQueries(10, irodsAccount.getUserName(), mdQueryService);
+		
+		Assert.assertEquals("Wrong number of queries returned", 10, returnedList.size());
+		Assert.assertTrue("Newest query not returned first", returnedList.get(0).getQueryString().equals("QueryStringTest10"));
+	}
+
+	@Test
+	public void testRetrieveLastNQueriesMoreThanNQueries() throws Exception {
+		IRODSAccount irodsAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
+				.getIRODSAccessObjectFactory();
+
+		IRODSFile targetCollectionAsFile = accessObjectFactory
+				.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(
+						"/testZone/home/test1/.irods/user_vc_temp_recent_vc_queries");
+
+		targetCollectionAsFile.deleteWithForceOption();
+		targetCollectionAsFile.mkdirs();
+
+		MetadataQueryMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
+				accessObjectFactory, irodsAccount);
+		TemporaryQueryServiceImpl tempQueryService = new TemporaryQueryServiceImpl(accessObjectFactory, irodsAccount);
+
+		ConfigurableVirtualCollection cvc = new ConfigurableVirtualCollection();
+		
+		List<String> filenameList = new ArrayList<String>();
+
+		for (int i = 1; i <= 15; i++) {
+			cvc = new ConfigurableVirtualCollection();
+			cvc.setQueryString("QueryStringTest" + i);
+			
+			String path = tempQueryService.nameAndStoreTemporaryQuery(cvc, irodsAccount.getUserName(), mdQueryService);
+			filenameList.add(path);
+		}
+		
+		List<ConfigurableVirtualCollection> returnedList = tempQueryService.getLastNTemporaryQueries(10, irodsAccount.getUserName(), mdQueryService);
+		
+		Assert.assertEquals("Wrong number of queries returned", 10, returnedList.size());
+		Assert.assertTrue("Newest query not returned first", returnedList.get(0).getQueryString().equals("QueryStringTest15"));
+	}
+
+}

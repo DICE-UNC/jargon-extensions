@@ -11,8 +11,9 @@ import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.core.service.AbstractJargonService;
 import org.irods.jargon.extensions.dotirods.DotIrodsService;
 import org.irods.jargon.extensions.dotirods.DotIrodsServiceImpl;
-import org.irods.jargon.vircoll.VirtualCollectionException;
+import org.irods.jargon.vircoll.ConfigurableVirtualCollection;
 import org.irods.jargon.vircoll.VirtualCollectionMaintenanceService;
+import org.irods.jargon.vircoll.exception.VirtualCollectionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -236,14 +237,6 @@ public class VirtualCollectionPersistenceServiceImpl extends
 	}
 
 	@Override
-	public void addVirtualCollectionToUserCollection(
-			org.irods.jargon.vircoll.ConfigurableVirtualCollection configurableVirtualCollection)
-			throws DuplicateDataException, JargonException {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
 	public String serializeVirtualCollectionToJson(
 			org.irods.jargon.vircoll.ConfigurableVirtualCollection configurableVirtualCollection)
 			throws VirtualCollectionException {
@@ -252,19 +245,35 @@ public class VirtualCollectionPersistenceServiceImpl extends
 	}
 
 	@Override
-	public org.irods.jargon.vircoll.ConfigurableVirtualCollection retrieveVirtualCollectionFromFile(
-			String virtualCollectionAbsolutePath) throws FileNotFoundException,
+	public void addVirtualCollection(
+			ConfigurableVirtualCollection configurableVirtualCollection,
+			String collection, String uniqueName)
+			throws DuplicateDataException, JargonException {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void storeVirtualCollection(
+			ConfigurableVirtualCollection configurableVirtualCollection,
+			String collection, String uniqueName) throws JargonException {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public ConfigurableVirtualCollection retrieveVirtualCollection(
+			String collection, String uniqueName) throws FileNotFoundException,
 			VirtualCollectionException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public org.irods.jargon.vircoll.ConfigurableVirtualCollection retrieveVirtualCollectionFromUserCollection(
-			String userName, String virtualCollectionName)
+	public void deleteVirtualCollection(String collection, String uniqueName)
 			throws FileNotFoundException, VirtualCollectionException {
 		// TODO Auto-generated method stub
-		return null;
+
 	}
 
 }
