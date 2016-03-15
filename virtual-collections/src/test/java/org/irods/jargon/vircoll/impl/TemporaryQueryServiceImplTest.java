@@ -14,6 +14,7 @@ import org.irods.jargon.testutils.TestingPropertiesHelper;
 import org.irods.jargon.vircoll.ConfigurableVirtualCollection;
 import org.irods.jargon.vircoll.TemporaryQueryService;
 import org.irods.jargon.vircoll.types.MetadataQueryMaintenanceService;
+import org.irods.jargon.vircoll.types.MetadataQueryVirtualCollection;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -56,7 +57,7 @@ public class TemporaryQueryServiceImplTest {
 		MetadataQueryMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
 				accessObjectFactory, irodsAccount);
 
-		ConfigurableVirtualCollection cvc = new ConfigurableVirtualCollection();
+		ConfigurableVirtualCollection cvc = new MetadataQueryVirtualCollection();
 		cvc.setQueryString("QueryStringTest42");
 
 		TemporaryQueryService temporaryQueryService = new TemporaryQueryServiceImpl(
@@ -66,7 +67,7 @@ public class TemporaryQueryServiceImplTest {
 		Assert.assertNotNull(uniqueName);
 
 	}
-	
+
 	@Test
 	public void testRetrieveLastNQueriesFewerThanNQueries() throws Exception {
 		IRODSAccount irodsAccount = testingPropertiesHelper
@@ -74,33 +75,43 @@ public class TemporaryQueryServiceImplTest {
 		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
 				.getIRODSAccessObjectFactory();
 
+		TemporaryQueryServiceImpl tempQueryService = new TemporaryQueryServiceImpl(
+				accessObjectFactory, irodsAccount);
+
 		IRODSFile targetCollectionAsFile = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount)
-				.instanceIRODSFile(
-						"/testZone/home/test1/.irods/user_vc_temp_recent_vc_queries");
+				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
+						tempQueryService
+								.computeTempQueryPathUnderDotIrods(irodsAccount
+										.getUserName()));
 
 		targetCollectionAsFile.deleteWithForceOption();
 		targetCollectionAsFile.mkdirs();
 
 		MetadataQueryMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
 				accessObjectFactory, irodsAccount);
-		TemporaryQueryServiceImpl tempQueryService = new TemporaryQueryServiceImpl(accessObjectFactory, irodsAccount);
 
-		ConfigurableVirtualCollection cvc = new ConfigurableVirtualCollection();
+		ConfigurableVirtualCollection cvc = new MetadataQueryVirtualCollection();
 
 		for (int i = 1; i <= 5; i++) {
-			cvc = new ConfigurableVirtualCollection();
+			cvc = new MetadataQueryVirtualCollection();
 			cvc.setQueryString("QueryStringTest" + i);
-			
-			tempQueryService.nameAndStoreTemporaryQuery(cvc, irodsAccount.getUserName(), mdQueryService);
+
+			tempQueryService.nameAndStoreTemporaryQuery(cvc,
+					irodsAccount.getUserName(), mdQueryService);
 		}
-		
-		//List<ConfigurableVirtualCollection> returnedList = mdQueryService.retrieveLastNVirtualCollectionsFromTemp(10, irodsAccount.getUserName());
-		
-		List<ConfigurableVirtualCollection> returnedList = tempQueryService.getLastNTemporaryQueries(10, irodsAccount.getUserName(), mdQueryService);
-		
-		Assert.assertEquals("Wrong number of queries returned", 5, returnedList.size());
-		Assert.assertTrue("Newest query not returned first", returnedList.get(0).getQueryString().equals("QueryStringTest5"));
+
+		// List<ConfigurableVirtualCollection> returnedList =
+		// mdQueryService.retrieveLastNVirtualCollectionsFromTemp(10,
+		// irodsAccount.getUserName());
+
+		List<ConfigurableVirtualCollection> returnedList = tempQueryService
+				.getLastNTemporaryQueries(10, irodsAccount.getUserName(),
+						mdQueryService);
+
+		Assert.assertEquals("Wrong number of queries returned", 5,
+				returnedList.size());
+		Assert.assertTrue("Newest query not returned first", returnedList
+				.get(0).getQueryString().equals("QueryStringTest5"));
 	}
 
 	@Test
@@ -110,31 +121,38 @@ public class TemporaryQueryServiceImplTest {
 		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
 				.getIRODSAccessObjectFactory();
 
-		IRODSFile targetCollectionAsFile = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount)
-				.instanceIRODSFile(
-						"/testZone/home/test1/.irods/user_vc_temp_recent_vc_queries");
+		TemporaryQueryServiceImpl tempQueryService = new TemporaryQueryServiceImpl(
+				accessObjectFactory, irodsAccount);
 
+		IRODSFile targetCollectionAsFile = accessObjectFactory
+				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
+						tempQueryService
+								.computeTempQueryPathUnderDotIrods(irodsAccount
+										.getUserName()));
 		targetCollectionAsFile.deleteWithForceOption();
 		targetCollectionAsFile.mkdirs();
 
 		MetadataQueryMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
 				accessObjectFactory, irodsAccount);
-		TemporaryQueryServiceImpl tempQueryService = new TemporaryQueryServiceImpl(accessObjectFactory, irodsAccount);
 
-		ConfigurableVirtualCollection cvc = new ConfigurableVirtualCollection();
+		ConfigurableVirtualCollection cvc = new MetadataQueryVirtualCollection();
 
 		for (int i = 1; i <= 10; i++) {
-			cvc = new ConfigurableVirtualCollection();
+			cvc = new MetadataQueryVirtualCollection();
 			cvc.setQueryString("QueryStringTest" + i);
-			
-			tempQueryService.nameAndStoreTemporaryQuery(cvc, irodsAccount.getUserName(), mdQueryService);
+
+			tempQueryService.nameAndStoreTemporaryQuery(cvc,
+					irodsAccount.getUserName(), mdQueryService);
 		}
-		
-		List<ConfigurableVirtualCollection> returnedList = tempQueryService.getLastNTemporaryQueries(10, irodsAccount.getUserName(), mdQueryService);
-		
-		Assert.assertEquals("Wrong number of queries returned", 10, returnedList.size());
-		Assert.assertTrue("Newest query not returned first", returnedList.get(0).getQueryString().equals("QueryStringTest10"));
+
+		List<ConfigurableVirtualCollection> returnedList = tempQueryService
+				.getLastNTemporaryQueries(10, irodsAccount.getUserName(),
+						mdQueryService);
+
+		Assert.assertEquals("Wrong number of queries returned", 10,
+				returnedList.size());
+		Assert.assertTrue("Newest query not returned first", returnedList
+				.get(0).getQueryString().equals("QueryStringTest10"));
 	}
 
 	@Test
@@ -144,34 +162,42 @@ public class TemporaryQueryServiceImplTest {
 		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
 				.getIRODSAccessObjectFactory();
 
+		TemporaryQueryServiceImpl tempQueryService = new TemporaryQueryServiceImpl(
+				accessObjectFactory, irodsAccount);
+
 		IRODSFile targetCollectionAsFile = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount)
-				.instanceIRODSFile(
-						"/testZone/home/test1/.irods/user_vc_temp_recent_vc_queries");
+				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
+						tempQueryService
+								.computeTempQueryPathUnderDotIrods(irodsAccount
+										.getUserName()));
 
 		targetCollectionAsFile.deleteWithForceOption();
 		targetCollectionAsFile.mkdirs();
 
 		MetadataQueryMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
 				accessObjectFactory, irodsAccount);
-		TemporaryQueryServiceImpl tempQueryService = new TemporaryQueryServiceImpl(accessObjectFactory, irodsAccount);
 
-		ConfigurableVirtualCollection cvc = new ConfigurableVirtualCollection();
-		
+		ConfigurableVirtualCollection cvc = new MetadataQueryVirtualCollection();
+
 		List<String> filenameList = new ArrayList<String>();
 
 		for (int i = 1; i <= 15; i++) {
-			cvc = new ConfigurableVirtualCollection();
+			cvc = new MetadataQueryVirtualCollection();
 			cvc.setQueryString("QueryStringTest" + i);
-			
-			String path = tempQueryService.nameAndStoreTemporaryQuery(cvc, irodsAccount.getUserName(), mdQueryService);
+
+			String path = tempQueryService.nameAndStoreTemporaryQuery(cvc,
+					irodsAccount.getUserName(), mdQueryService);
 			filenameList.add(path);
 		}
-		
-		List<ConfigurableVirtualCollection> returnedList = tempQueryService.getLastNTemporaryQueries(10, irodsAccount.getUserName(), mdQueryService);
-		
-		Assert.assertEquals("Wrong number of queries returned", 10, returnedList.size());
-		Assert.assertTrue("Newest query not returned first", returnedList.get(0).getQueryString().equals("QueryStringTest15"));
+
+		List<ConfigurableVirtualCollection> returnedList = tempQueryService
+				.getLastNTemporaryQueries(10, irodsAccount.getUserName(),
+						mdQueryService);
+
+		Assert.assertEquals("Wrong number of queries returned", 10,
+				returnedList.size());
+		Assert.assertTrue("Newest query not returned first", returnedList
+				.get(0).getQueryString().equals("QueryStringTest15"));
 	}
 
 }

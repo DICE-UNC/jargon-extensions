@@ -6,7 +6,6 @@ package org.irods.jargon.vircoll.impl;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.FileNotFoundException;
@@ -114,7 +113,7 @@ public class TemporaryQueryServiceImpl extends AbstractJargonService implements
 		}
 
 	}
-	
+
 	@Override
 	public List<ConfigurableVirtualCollection> getLastNTemporaryQueries(
 			int n,
@@ -141,31 +140,29 @@ public class TemporaryQueryServiceImpl extends AbstractJargonService implements
 		File[] tempQueries = tempQueryDirAsIrodsFile.listFiles();
 		int oldestIndex = (tempQueries.length < n) ? 0
 				: (tempQueries.length - n);
-		
-		
+
 		for (int i = (tempQueries.length - 1); i >= oldestIndex; i--) {
 			try {
-			returnList.add(virtualCollectionMaintenanceService.retrieveVirtualCollection(tempQueryDir,
-					tempQueries[i].getName()));
+				returnList.add(virtualCollectionMaintenanceService
+						.retrieveVirtualCollection(tempQueryDir,
+								tempQueries[i].getName()));
 			} catch (FileNotFoundException e) {
-				log.error("error reading temp query file:{}", tempQueries[i],
-						e);
+				log.error("error reading temp query file:{}", tempQueries[i], e);
 				throw new VirtualCollectionException(
-						"error reading temp query file", e);			
+						"error reading temp query file", e);
 			}
 		}
 
-		return returnList;		
+		return returnList;
 	}
 
 	/**
-	 * TODO: prime for refactor
 	 * 
 	 * @param irodsAbsolutePathToDotIrods
 	 * @return
 	 * @throws VirtualCollectionException
 	 */
-	private String computeTempQueryPathUnderDotIrods(final String userName)
+	public String computeTempQueryPathUnderDotIrods(final String userName)
 			throws VirtualCollectionException {
 		log.info("computeTempQueryPathUnderDotIrods");
 		try {
@@ -192,7 +189,7 @@ public class TemporaryQueryServiceImpl extends AbstractJargonService implements
 					"cannot store virtual collection query", e);
 		}
 	}
-	
+
 	IRODSFile getPathAsIrodsFile(String irodsAbsolutePath) {
 		log.info("getPathAsIrodsFile()");
 
@@ -211,6 +208,5 @@ public class TemporaryQueryServiceImpl extends AbstractJargonService implements
 
 		return retFile;
 	}
-
 
 }

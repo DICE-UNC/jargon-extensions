@@ -83,7 +83,7 @@ public class MetadataQueryVirtualCollectionTest {
 		MetadataQueryMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
 				accessObjectFactory, irodsAccount);
 
-		ConfigurableVirtualCollection cvc = new ConfigurableVirtualCollection();
+		ConfigurableVirtualCollection cvc = new MetadataQueryVirtualCollection();
 		cvc.setQueryString("QueryStringTest42");
 
 		String queryName = "query1";
@@ -134,7 +134,7 @@ public class MetadataQueryVirtualCollectionTest {
 		MetadataQueryMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
 				accessObjectFactory, irodsAccount);
 
-		ConfigurableVirtualCollection cvc = new ConfigurableVirtualCollection();
+		ConfigurableVirtualCollection cvc = new MetadataQueryVirtualCollection();
 		cvc.setQueryString("QueryStringTest42");
 
 		String queryName = "query1";
@@ -170,7 +170,7 @@ public class MetadataQueryVirtualCollectionTest {
 		MetadataQueryMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
 				accessObjectFactory, irodsAccount);
 
-		ConfigurableVirtualCollection cvc = new ConfigurableVirtualCollection();
+		ConfigurableVirtualCollection cvc = new MetadataQueryVirtualCollection();
 		cvc.setQueryString("QueryStringTest42");
 
 		String queryName = "query1";
@@ -221,7 +221,7 @@ public class MetadataQueryVirtualCollectionTest {
 		MetadataQueryMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
 				accessObjectFactory, irodsAccount);
 
-		ConfigurableVirtualCollection cvc = new ConfigurableVirtualCollection();
+		ConfigurableVirtualCollection cvc = new MetadataQueryVirtualCollection();
 		cvc.setQueryString("OriginalQueryString");
 
 		String queryName = "query1";
@@ -291,7 +291,7 @@ public class MetadataQueryVirtualCollectionTest {
 		MetadataQueryMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
 				accessObjectFactory, irodsAccount);
 
-		ConfigurableVirtualCollection cvc = new ConfigurableVirtualCollection();
+		ConfigurableVirtualCollection cvc = new MetadataQueryVirtualCollection();
 		cvc.setQueryString("QueryStringTest42");
 
 		String queryName = "query1";
@@ -455,7 +455,7 @@ public class MetadataQueryVirtualCollectionTest {
 		MetadataQueryMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
 				accessObjectFactory, irodsAccount);
 
-		ConfigurableVirtualCollection cvc = new ConfigurableVirtualCollection();
+		ConfigurableVirtualCollection cvc = new MetadataQueryVirtualCollection();
 		cvc.setQueryString("QueryStringTest42");
 
 		String queryName = "query1";
@@ -521,7 +521,7 @@ public class MetadataQueryVirtualCollectionTest {
 		MetadataQueryMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
 				accessObjectFactory, irodsAccount);
 
-		ConfigurableVirtualCollection cvc = new ConfigurableVirtualCollection();
+		ConfigurableVirtualCollection cvc = new MetadataQueryVirtualCollection();
 		cvc.setQueryString("QueryStringTest42");
 
 		String queryName = "query1";
