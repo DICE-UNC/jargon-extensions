@@ -169,6 +169,11 @@
 			</dependency>
 			<dependency>
 				<groupId>org.irods.jargon</groupId>
+				<artifactId>jargon-mdquery</artifactId>
+				<version>${jargon.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.irods.jargon</groupId>
 				<artifactId>jargon-extensions-if</artifactId>
 				<version>${jargon.extensions.version}</version>
 			</dependency>
