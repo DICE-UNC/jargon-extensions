@@ -16,6 +16,7 @@ public class MetadataQueryVirtualCollection extends
 	 */
 	public MetadataQueryVirtualCollection() {
 		super();
+		this.setType(MY_TYPE);
 	}
 
 	/**
