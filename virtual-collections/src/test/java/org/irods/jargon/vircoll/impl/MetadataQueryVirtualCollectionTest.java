@@ -80,7 +80,7 @@ public class MetadataQueryVirtualCollectionTest {
 
 		targetCollectionAsFile.mkdirs();
 
-		MetadataQueryMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
+		AbstractVirtualCollectionMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
 				accessObjectFactory, irodsAccount);
 
 		ConfigurableVirtualCollection cvc = new MetadataQueryVirtualCollection();
@@ -131,7 +131,7 @@ public class MetadataQueryVirtualCollectionTest {
 
 		targetCollectionAsFile.mkdirs();
 
-		MetadataQueryMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
+		AbstractVirtualCollectionMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
 				accessObjectFactory, irodsAccount);
 
 		ConfigurableVirtualCollection cvc = new MetadataQueryVirtualCollection();
@@ -167,7 +167,7 @@ public class MetadataQueryVirtualCollectionTest {
 
 		targetCollectionAsFile.mkdirs();
 
-		MetadataQueryMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
+		AbstractVirtualCollectionMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
 				accessObjectFactory, irodsAccount);
 
 		ConfigurableVirtualCollection cvc = new MetadataQueryVirtualCollection();
@@ -218,7 +218,7 @@ public class MetadataQueryVirtualCollectionTest {
 
 		targetCollectionAsFile.mkdirs();
 
-		MetadataQueryMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
+		AbstractVirtualCollectionMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
 				accessObjectFactory, irodsAccount);
 
 		ConfigurableVirtualCollection cvc = new MetadataQueryVirtualCollection();
@@ -288,7 +288,7 @@ public class MetadataQueryVirtualCollectionTest {
 
 		targetCollectionAsFile.mkdirs();
 
-		MetadataQueryMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
+		AbstractVirtualCollectionMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
 				accessObjectFactory, irodsAccount);
 
 		ConfigurableVirtualCollection cvc = new MetadataQueryVirtualCollection();
@@ -368,17 +368,18 @@ public class MetadataQueryVirtualCollectionTest {
 		MetadataQueryJsonService metadataQueryJsonService = new MetadataQueryJsonService();
 		String queryAsString = metadataQueryJsonService
 				.jsonFromMetadataQuery(metadataQuery);
-
-		MetadataQueryVirtualCollection metadataQueryVirtualCollection = new MetadataQueryVirtualCollection(
-				queryAsString);
-
-		MetadataQueryMaintenanceService mdQueryMaintenanceService = new MetadataQueryMaintenanceService(
-				accessObjectFactory, irodsAccount);
 		StringBuilder sb = new StringBuilder();
 		sb.append(System.currentTimeMillis());
 		sb.append("-");
 		sb.append(testDirName);
 		String testVcName = sb.toString();
+
+		MetadataQueryVirtualCollection metadataQueryVirtualCollection = new MetadataQueryVirtualCollection(
+				queryAsString);
+		metadataQueryVirtualCollection.setUniqueName(testVcName);
+
+		MetadataQueryMaintenanceService mdQueryMaintenanceService = new MetadataQueryMaintenanceService(
+				accessObjectFactory, irodsAccount);
 
 		String parentCollPath = mdQueryMaintenanceService
 				.findOrCreateUserTempMetadataQueryCollection(irodsAccount
@@ -389,7 +390,7 @@ public class MetadataQueryVirtualCollectionTest {
 
 		// now retrieve it
 		ConfigurableVirtualCollection returnedVc = mdQueryMaintenanceService
-				.retrieveVirtualCollection(parentCollPath, testVcName);
+				.retrieveVirtualCollectionGivenUniqueName(testVcName);
 		Assert.assertNotNull("no vc returned", returnedVc);
 
 		// now execute it
@@ -425,11 +426,10 @@ public class MetadataQueryVirtualCollectionTest {
 
 		targetCollectionAsFile.mkdirs();
 
-		MetadataQueryMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
+		AbstractVirtualCollectionMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
 				accessObjectFactory, irodsAccount);
 
-		mdQueryService.retrieveVirtualCollection(targetIrodsCollection,
-				"junkFileName");
+		mdQueryService.retrieveVirtualCollectionGivenUniqueName("junkFileName");
 	}
 
 	@Test
@@ -452,7 +452,7 @@ public class MetadataQueryVirtualCollectionTest {
 
 		targetCollectionAsFile.mkdirs();
 
-		MetadataQueryMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
+		AbstractVirtualCollectionMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
 				accessObjectFactory, irodsAccount);
 
 		ConfigurableVirtualCollection cvc = new MetadataQueryVirtualCollection();
@@ -465,7 +465,7 @@ public class MetadataQueryVirtualCollectionTest {
 				queryName);
 
 		ConfigurableVirtualCollection cvcTest = mdQueryService
-				.retrieveVirtualCollection(targetIrodsCollection, queryName);
+				.retrieveVirtualCollectionGivenUniqueName(queryName);
 
 		Assert.assertTrue("file not deserialized correctly", cvcTest
 				.getQueryString().equals("QueryStringTest42"));
@@ -491,7 +491,7 @@ public class MetadataQueryVirtualCollectionTest {
 
 		targetCollectionAsFile.mkdirs();
 
-		MetadataQueryMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
+		AbstractVirtualCollectionMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
 				accessObjectFactory, irodsAccount);
 
 		mdQueryService.deleteVirtualCollection(targetIrodsCollection,
@@ -518,7 +518,7 @@ public class MetadataQueryVirtualCollectionTest {
 
 		targetCollectionAsFile.mkdirs();
 
-		MetadataQueryMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
+		AbstractVirtualCollectionMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
 				accessObjectFactory, irodsAccount);
 
 		ConfigurableVirtualCollection cvc = new MetadataQueryVirtualCollection();

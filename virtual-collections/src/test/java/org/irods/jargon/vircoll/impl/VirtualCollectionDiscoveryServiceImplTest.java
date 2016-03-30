@@ -179,7 +179,7 @@ public class VirtualCollectionDiscoveryServiceImplTest {
 		targetCollectionAsFile.deleteWithForceOption();
 		targetCollectionAsFile.mkdirs();
 
-		MetadataQueryMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
+		AbstractVirtualCollectionMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
 				accessObjectFactory, irodsAccount);
 
 		ConfigurableVirtualCollection cvc = new MetadataQueryVirtualCollection();

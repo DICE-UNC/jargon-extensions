@@ -115,6 +115,46 @@ public class TemporaryQueryServiceImplTest {
 	}
 
 	@Test
+	public void testRetrieveQueryByName() throws Exception {
+		IRODSAccount irodsAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
+				.getIRODSAccessObjectFactory();
+		String uniqueName = "testRetrieveQueryByName";
+
+		TemporaryQueryServiceImpl tempQueryService = new TemporaryQueryServiceImpl(
+				accessObjectFactory, irodsAccount);
+
+		IRODSFile targetCollectionAsFile = accessObjectFactory
+				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
+						tempQueryService
+								.computeTempQueryPathUnderDotIrods(irodsAccount
+										.getUserName()));
+
+		targetCollectionAsFile.deleteWithForceOption();
+		targetCollectionAsFile.mkdirs();
+
+		MetadataQueryMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
+				accessObjectFactory, irodsAccount);
+
+		ConfigurableVirtualCollection cvc = new MetadataQueryVirtualCollection();
+
+		cvc.setQueryString(uniqueName);
+		cvc.setUniqueName(uniqueName);
+		tempQueryService.nameAndStoreTemporaryQuery(cvc,
+				irodsAccount.getUserName(), mdQueryService);
+
+		// List<ConfigurableVirtualCollection> returnedList =
+		// mdQueryService.retrieveLastNVirtualCollectionsFromTemp(10,
+		// irodsAccount.getUserName());
+
+		ConfigurableVirtualCollection actual = tempQueryService
+				.getTemporaryQueryByUniqueName(irodsAccount.getUserName(),
+						mdQueryService, uniqueName);
+		Assert.assertNotNull("no query found", actual);
+	}
+
+	@Test
 	public void testRetrieveLastNQueriesExactlyNQueries() throws Exception {
 		IRODSAccount irodsAccount = testingPropertiesHelper
 				.buildIRODSAccountFromTestProperties(testingProperties);

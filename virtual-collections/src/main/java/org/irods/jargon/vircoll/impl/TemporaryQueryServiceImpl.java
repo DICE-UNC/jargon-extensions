@@ -16,6 +16,7 @@ import org.irods.jargon.core.service.AbstractJargonService;
 import org.irods.jargon.extensions.dotirods.DotIrodsCollection;
 import org.irods.jargon.extensions.dotirods.DotIrodsService;
 import org.irods.jargon.extensions.dotirods.DotIrodsServiceImpl;
+import org.irods.jargon.vircoll.AbstractVirtualCollection;
 import org.irods.jargon.vircoll.ConfigurableVirtualCollection;
 import org.irods.jargon.vircoll.GeneralParameterConstants;
 import org.irods.jargon.vircoll.TemporaryQueryService;
@@ -47,6 +48,7 @@ public class TemporaryQueryServiceImpl extends AbstractJargonService implements
 		super(irodsAccessObjectFactory, irodsAccount);
 		dotIrodsService = new DotIrodsServiceImpl(
 				this.irodsAccessObjectFactory, this.irodsAccount);
+
 	}
 
 	/**
@@ -66,6 +68,58 @@ public class TemporaryQueryServiceImpl extends AbstractJargonService implements
 		StringBuilder sb = new StringBuilder();
 		sb.append(System.currentTimeMillis());
 		return sb.toString();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.irods.jargon.vircoll.TemporaryQueryService#getTemporaryQueryByUniqueName
+	 * (java.lang.String,
+	 * org.irods.jargon.vircoll.VirtualCollectionMaintenanceService,
+	 * java.lang.String)
+	 */
+	@Override
+	public ConfigurableVirtualCollection getTemporaryQueryByUniqueName(
+			final String userName,
+			final VirtualCollectionMaintenanceService virtualCollectionMaintenanceService,
+			final String uniqueName) throws VirtualCollectionException {
+		log.info("getTemporaryQueryByUniqueName()");
+		if (userName == null || userName.isEmpty()) {
+			throw new IllegalArgumentException("null or empty userName");
+		}
+
+		if (virtualCollectionMaintenanceService == null) {
+			throw new IllegalArgumentException(
+					"null or empty virtualCollectionMaintenanceService");
+		}
+
+		if (uniqueName == null || uniqueName.isEmpty()) {
+			throw new IllegalArgumentException("null or empty uniqueName");
+		}
+
+		log.info("userName:{}", userName);
+		log.info("uniqueName:{}", uniqueName);
+		ConfigurableVirtualCollection configurableVirtualCollection = null;
+
+		try {
+			configurableVirtualCollection = virtualCollectionMaintenanceService
+					.retrieveVirtualCollectionGivenUniqueName(
+
+					uniqueName);
+		} catch (FileNotFoundException fnf) {
+			log.info("collection not found, returning null");
+			return null;
+		} catch (JargonException e) {
+			log.error("error retrieving virtual collection with name:{}",
+					uniqueName, e);
+			throw new VirtualCollectionException(
+					"error storing virtual collection", e);
+		}
+
+		log.info("found:{}", configurableVirtualCollection);
+		return configurableVirtualCollection;
+
 	}
 
 	/*
@@ -143,9 +197,9 @@ public class TemporaryQueryServiceImpl extends AbstractJargonService implements
 
 		for (int i = (tempQueries.length - 1); i >= oldestIndex; i--) {
 			try {
-				returnList.add(virtualCollectionMaintenanceService
-						.retrieveVirtualCollection(tempQueryDir,
-								tempQueries[i].getName()));
+				returnList
+						.add(retrieveVirtualCollectionGivenFile(tempQueries[i]
+								.getAbsolutePath()));
 			} catch (FileNotFoundException e) {
 				log.error("error reading temp query file:{}", tempQueries[i], e);
 				throw new VirtualCollectionException(
@@ -154,6 +208,25 @@ public class TemporaryQueryServiceImpl extends AbstractJargonService implements
 		}
 
 		return returnList;
+	}
+
+	private ConfigurableVirtualCollection retrieveVirtualCollectionGivenFile(
+			String absolutePath) throws FileNotFoundException,
+			VirtualCollectionException {
+
+		log.info("retrieveVirtualCollectionGivenFile()");
+
+		VirtualCollectionDiscoveryServiceImpl virtualCollectionDiscoveryService = new VirtualCollectionDiscoveryServiceImpl(
+				this.getIrodsAccessObjectFactory(), this.getIrodsAccount());
+		AbstractVirtualCollection coll = virtualCollectionDiscoveryService
+				.findVirtualCollectionBasedOnAbsolutePath(absolutePath);
+		if (!(coll instanceof ConfigurableVirtualCollection)) {
+			log.error("not a configurableVirtualCollection");
+			throw new VirtualCollectionException(
+					"Returned collection is not configurable");
+		}
+		return (ConfigurableVirtualCollection) coll;
+
 	}
 
 	/**

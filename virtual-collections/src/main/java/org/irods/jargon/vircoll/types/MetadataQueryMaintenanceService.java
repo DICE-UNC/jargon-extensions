@@ -1,213 +1,28 @@
 package org.irods.jargon.vircoll.types;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.irods.jargon.core.connection.IRODSAccount;
-import org.irods.jargon.core.exception.DuplicateDataException;
-import org.irods.jargon.core.exception.FileNotFoundException;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
-import org.irods.jargon.core.pub.domain.AvuData;
 import org.irods.jargon.core.pub.domain.Collection;
 import org.irods.jargon.core.pub.io.IRODSFile;
-import org.irods.jargon.core.pub.io.IRODSFileInputStream;
-import org.irods.jargon.core.pub.io.IRODSFileOutputStream;
-import org.irods.jargon.core.service.AbstractJargonService;
 import org.irods.jargon.extensions.dotirods.DotIrodsCollection;
-import org.irods.jargon.extensions.dotirods.DotIrodsConstants;
-import org.irods.jargon.extensions.dotirods.DotIrodsService;
-import org.irods.jargon.extensions.dotirods.DotIrodsServiceImpl;
-import org.irods.jargon.vircoll.AbstractVirtualCollection;
-import org.irods.jargon.vircoll.ConfigurableVirtualCollection;
 import org.irods.jargon.vircoll.GeneralParameterConstants;
 import org.irods.jargon.vircoll.VirtualCollectionMaintenanceService;
-import org.irods.jargon.vircoll.VirtualCollectionMarshalingException;
-import org.irods.jargon.vircoll.exception.VirtualCollectionException;
 import org.irods.jargon.vircoll.exception.VirtualCollectionRuntimeException;
+import org.irods.jargon.vircoll.impl.AbstractVirtualCollectionMaintenanceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-public class MetadataQueryMaintenanceService extends AbstractJargonService
-		implements VirtualCollectionMaintenanceService{
-	private final DotIrodsService dotIrodsService;
-
-	private static Logger log = LoggerFactory
+public class MetadataQueryMaintenanceService extends
+		AbstractVirtualCollectionMaintenanceService implements
+		VirtualCollectionMaintenanceService {
+	static Logger log = LoggerFactory
 			.getLogger(MetadataQueryMaintenanceService.class);
-
-	private final ObjectMapper objectMapper = new ObjectMapper();
 
 	public MetadataQueryMaintenanceService(
 			final IRODSAccessObjectFactory irodsAccessObjectFactory,
 			final IRODSAccount irodsAccount) {
 		super(irodsAccessObjectFactory, irodsAccount);
-		dotIrodsService = new DotIrodsServiceImpl(irodsAccessObjectFactory,
-				irodsAccount);
-	}
-
-	@Override
-	public void addVirtualCollection(
-			ConfigurableVirtualCollection configurableVirtualCollection,
-			String collection, String uniqueName)
-			throws DuplicateDataException, JargonException {
-		log.info("addVirtualCollection()");
-
-		if (collection == null || collection.isEmpty()) {
-			throw new IllegalArgumentException("null or empty collection");
-		}
-
-		if (uniqueName == null || uniqueName.isEmpty()) {
-			throw new IllegalArgumentException("null or empty collection");
-		}
-
-		String path = collection + "/" + uniqueName;
-
-		IRODSFile vcFile = getPathAsIrodsFile(path);
-
-		if (vcFile != null && vcFile.exists()) {
-			log.error("File already exists: " + path);
-			throw new DuplicateDataException("File already exists: " + path);
-		}
-
-		try {
-			saveJsonStringToFile(
-					serializeVirtualCollectionToJson(configurableVirtualCollection),
-					path);
-			addVcTypeAVUToFile(path);
-			addUniqueNameAVUToFile(path, uniqueName);
-		} catch (IOException e) {
-			log.error("IOException saving JSON to file", e);
-			throw new FileNotFoundException("IOException saving JSON to file",
-					e);
-		}
-	}
-
-	@Override
-	public void storeVirtualCollection(
-			ConfigurableVirtualCollection configurableVirtualCollection,
-			String collection, String uniqueName) throws JargonException {
-		log.info("storeVirtualCollection()");
-
-		if (collection == null || collection.isEmpty()) {
-			throw new IllegalArgumentException("null or empty collection");
-		}
-
-		if (uniqueName == null || uniqueName.isEmpty()) {
-			throw new IllegalArgumentException("null or empty collection");
-		}
-
-		String path = collection + "/" + uniqueName;
-
-		try {
-			saveJsonStringToFile(
-					serializeVirtualCollectionToJson(configurableVirtualCollection),
-					path);
-			addVcTypeAVUToFile(path);
-			addUniqueNameAVUToFile(path, uniqueName);
-		} catch (IOException e) {
-			log.error("IOException saving JSON to file", e);
-			throw new FileNotFoundException("IOException saving JSON to file",
-					e);
-		}
-	}
-
-	@Override
-	public String serializeVirtualCollectionToJson(
-			ConfigurableVirtualCollection configurableVirtualCollection)
-			throws VirtualCollectionException {
-		log.info("serializeVirtualCollectionToJson");
-		if (configurableVirtualCollection == null) {
-			throw new IllegalArgumentException(
-					"null configurableVirtualCollection");
-		}
-
-		try {
-			return objectMapper
-					.writeValueAsString(configurableVirtualCollection);
-		} catch (JsonProcessingException e) {
-			log.error("error creating JSON from metadata query", e);
-			throw new VirtualCollectionMarshalingException(
-					"error creating JSON", e);
-		}
-	}
-
-	@Override
-	public ConfigurableVirtualCollection retrieveVirtualCollection(
-			final String collection, final String uniqueName)
-			throws FileNotFoundException, VirtualCollectionException {
-		log.info("retrieveVirtualCollection()");
-
-		if (collection == null || collection.isEmpty()) {
-			throw new IllegalArgumentException("null or empty collection");
-		}
-
-		if (uniqueName == null || uniqueName.isEmpty()) {
-			throw new IllegalArgumentException("null or empty collection");
-		}
-
-		IRODSFile vcFile = getPathAsIrodsFile(collection + "/" + uniqueName);
-
-		if (vcFile == null || !vcFile.exists()) {
-			log.error("Cannot find file: " + collection + "/" + uniqueName);
-			throw new FileNotFoundException("Cannot find file: " + collection
-					+ "/" + uniqueName);
-		}
-
-		IRODSFileInputStream irodsFileInputStream = null;
-		byte[] b = null;
-		try {
-			irodsFileInputStream = irodsAccessObjectFactory
-					.getIRODSFileFactory(irodsAccount)
-					.instanceIRODSFileInputStream(vcFile);
-			b = new byte[irodsFileInputStream.available()];
-			irodsFileInputStream.read(b);
-			String decoded = new String(b, "UTF-8");
-
-			return objectMapper.readValue(decoded,
-					MetadataQueryVirtualCollection.class);
-
-		} catch (JargonException e) {
-			log.error(
-					"JargonException reading virtual collection from irods file",
-					e);
-			throw new VirtualCollectionException(
-					"Cannot deserialize virtual collection from JSON", e);
-		} catch (IOException e) {
-			log.error("IOException reading virtual collection from irods file",
-					e);
-			throw new VirtualCollectionException(
-					"Cannot deserialize virtual collection from JSON", e);
-		}
-	}
-
-	@Override
-	public void deleteVirtualCollection(final String collection,
-			final String uniqueName) throws FileNotFoundException,
-			VirtualCollectionException {
-		log.info("deleteVirtualCollection()");
-
-		if (collection == null || collection.isEmpty()) {
-			throw new IllegalArgumentException("null or empty collection");
-		}
-
-		if (uniqueName == null || uniqueName.isEmpty()) {
-			throw new IllegalArgumentException("null or empty collection");
-		}
-
-		IRODSFile vcFile = getPathAsIrodsFile(collection + "/" + uniqueName);
-
-		if (vcFile == null || !vcFile.exists()) {
-			log.error("Cannot find file: " + collection + "/" + uniqueName);
-			throw new FileNotFoundException("Cannot find file: " + collection
-					+ "/" + uniqueName);
-		}
-
-		vcFile.delete();
 
 	}
 
@@ -233,7 +48,7 @@ public class MetadataQueryMaintenanceService extends AbstractJargonService
 		log.info("userName: {}", userName);
 
 		try {
-			DotIrodsCollection dotIrodsCollection = dotIrodsService
+			DotIrodsCollection dotIrodsCollection = getDotIrodsService()
 					.findOrCreateUserHomeCollection(userName);
 			StringBuilder sb = new StringBuilder();
 			sb.append(dotIrodsCollection.getAbsolutePath());
@@ -314,8 +129,8 @@ public class MetadataQueryMaintenanceService extends AbstractJargonService
 			log.info("{} exists", irodsAbsolutePathToParent);
 
 			// Create .irods subcollection
-			dotIrodsService
-					.createDotIrodsUnderParent(irodsAbsolutePathToParent);
+			getDotIrodsService().createDotIrodsUnderParent(
+					irodsAbsolutePathToParent);
 
 			// Make sure it was created
 			if (!this
@@ -346,36 +161,6 @@ public class MetadataQueryMaintenanceService extends AbstractJargonService
 				irodsAbsolutePathToCollection);
 
 		return irodsAbsolutePathToCollection;
-	}
-
-	boolean isDotIrodsCollectionPresentInCollection(String irodsAbsolutePath) {
-		log.info("isDotIrodsCollectionPresentInCollection()");
-
-		if (irodsAbsolutePath == null || irodsAbsolutePath.isEmpty()) {
-			throw new IllegalArgumentException(
-					"null or empty irodsAbsolutePath");
-		}
-
-		log.info("irodsAbsolutePath:{}", irodsAbsolutePath);
-
-		try {
-			@SuppressWarnings("unused")
-			Collection collection = irodsAccessObjectFactory.getCollectionAO(
-					irodsAccount).findByAbsolutePath(irodsAbsolutePath);
-		} catch (JargonException je) {
-			log.info(
-					"JargonException thrown by findByAbsolutePath, {} does not exist or {} does not have sufficient permissions",
-					computeDotIrodsPathUnderParent(irodsAbsolutePath),
-					irodsAccount);
-			return false;
-		}
-
-		log.info("{} exists", irodsAbsolutePath);
-
-		IRODSFile dotIrodsCollectionAsFile = this.getPathAsIrodsFile(this
-				.computeDotIrodsPathUnderParent(irodsAbsolutePath));
-
-		return (dotIrodsCollectionAsFile != null);
 	}
 
 	boolean isTempMetadataQueryCollectionPresentUnderDotIrodsCollection(
@@ -453,62 +238,6 @@ public class MetadataQueryMaintenanceService extends AbstractJargonService
 		return retVal;
 	}
 
-	boolean isDotIrodsCollection(String irodsAbsolutePath) {
-		log.info("isDotIrodsCollection()");
-
-		if (irodsAbsolutePath == null || irodsAbsolutePath.isEmpty()) {
-			throw new IllegalArgumentException(
-					"null or empty irodsAbsolutePath");
-		}
-
-		log.info("irodsAbsolutePath:{}", irodsAbsolutePath);
-
-		try {
-			@SuppressWarnings("unused")
-			Collection collection = irodsAccessObjectFactory.getCollectionAO(
-					irodsAccount).findByAbsolutePath(irodsAbsolutePath);
-		} catch (JargonException je) {
-			log.info(
-					"JargonException thrown by findByAbsolutePath, {} does not exist or {} does not have sufficient permissions",
-					computeDotIrodsPathUnderParent(irodsAbsolutePath),
-					irodsAccount);
-			return false;
-		}
-
-		log.info("{} exists", irodsAbsolutePath);
-
-		boolean retVal = false;
-
-		if (!irodsAbsolutePath.endsWith(DotIrodsConstants.DOT_IRODS_DIR)) {
-			retVal = false;
-		} else {
-			IRODSFile pathAsFile = this.getPathAsIrodsFile(irodsAbsolutePath);
-
-			if (pathAsFile == null) {
-				retVal = false;
-			} else {
-				retVal = pathAsFile.isDirectory();
-			}
-		}
-
-		return retVal;
-	}
-
-	String computeDotIrodsPathUnderParent(final String irodsAbsolutePathToParent) {
-		log.info("computeDotIrodsPathUnderParent");
-
-		if (irodsAbsolutePathToParent == null
-				|| irodsAbsolutePathToParent.isEmpty()) {
-			throw new IllegalArgumentException(
-					"irodsAbsolutePathToParent is null or empty");
-		}
-		StringBuilder sb = new StringBuilder();
-		sb.append(irodsAbsolutePathToParent);
-		sb.append("/");
-		sb.append(DotIrodsConstants.DOT_IRODS_DIR);
-		return sb.toString();
-	}
-
 	String computeTempMetadataQueryPathUnderParent(
 			final String irodsAbsolutePathToParent) {
 		log.info("computeMetadataQueryPathUnderParent");
@@ -567,76 +296,6 @@ public class MetadataQueryMaintenanceService extends AbstractJargonService
 		log.info("created");
 
 		return metadataQueryFile.mkdirs();
-	}
-
-	IRODSFile getPathAsIrodsFile(String irodsAbsolutePath) {
-		log.info("getPathAsIrodsFile()");
-
-		IRODSFile retFile = null;
-
-		try {
-			retFile = irodsAccessObjectFactory
-					.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-							irodsAbsolutePath);
-		} catch (JargonException je) {
-			log.error(
-					"JargonException thrown by instanceIRODSFile, {} does not exist",
-					irodsAbsolutePath, je);
-			retFile = null;
-		}
-
-		return retFile;
-	}
-
-	void saveJsonStringToFile(String json, String irodsAbsolutePath)
-			throws JargonException, IOException {
-		log.info("saveJsonStringToFile()");
-
-		if (json == null || json.isEmpty()) {
-			throw new IllegalArgumentException("json is null or empty");
-		}
-
-		if (irodsAbsolutePath == null || irodsAbsolutePath.isEmpty()) {
-			throw new IllegalArgumentException(
-					"irodsAbsolutePath is null or empty");
-		}
-
-		IRODSFile queryIrodsFile = irodsAccessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						irodsAbsolutePath);
-		IRODSFileOutputStream irodsFileOutputStream = irodsAccessObjectFactory
-				.getIRODSFileFactory(irodsAccount)
-				.instanceIRODSFileOutputStream(queryIrodsFile);
-
-		byte[] jsonByteArray = json.getBytes();
-
-		irodsFileOutputStream.write(jsonByteArray);
-
-		queryIrodsFile.close();
-	}
-
-	void addVcTypeAVUToFile(String path) throws JargonException {
-		log.info("addVcTypeAVUToFile()");
-		AvuData avuData = AvuData.instance(
-				GeneralParameterConstants.VCTYPE_AVU_ATTRIBUTE,
-				GeneralParameterConstants.MDQUERY_VCTYPE_VALUE_UNIT,
-				GeneralParameterConstants.VCTYPE_AVU_UNIT);
-		getIrodsAccessObjectFactory().getDataObjectAO(irodsAccount)
-				.deleteAVUMetadata(path, avuData);
-		getIrodsAccessObjectFactory().getDataObjectAO(irodsAccount)
-				.addAVUMetadata(path, avuData);
-	}
-
-	void addUniqueNameAVUToFile(String path, String name)
-			throws JargonException {
-		log.info("addUniqueNameAVUToFile()");
-		AvuData avuData = AvuData.instance(
-				GeneralParameterConstants.UNIQUE_NAME_AVU_ATTRIBUTE, name,
-				GeneralParameterConstants.UNIQUE_NAME_AVU_UNIT);
-		getIrodsAccessObjectFactory().getDataObjectAO(irodsAccount)
-				.deleteAVUMetadata(path, avuData);
-		getIrodsAccessObjectFactory().getDataObjectAO(irodsAccount)
-				.addAVUMetadata(path, avuData);
 	}
 
 }

@@ -10,8 +10,14 @@ import java.util.List;
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.FileNotFoundException;
 import org.irods.jargon.core.exception.JargonException;
+import org.irods.jargon.core.pub.DataObjectAO;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.core.pub.io.IRODSFile;
+import org.irods.jargon.core.query.AVUQueryElement;
+import org.irods.jargon.core.query.AVUQueryElement.AVUQueryPart;
+import org.irods.jargon.core.query.AVUQueryOperatorEnum;
+import org.irods.jargon.core.query.JargonQueryException;
+import org.irods.jargon.core.query.MetaDataAndDomainData;
 import org.irods.jargon.core.service.AbstractJargonService;
 import org.irods.jargon.core.utils.MiscIRODSUtils;
 import org.irods.jargon.extensions.dotirods.DotIrodsCollection;
@@ -29,8 +35,6 @@ import org.irods.jargon.vircoll.types.StarredFoldersVirtualCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 /**
  * Service for maintaining, discovering and listing virtual collections (as
  * opposed to listing their contents). This can discover them, and return lists
@@ -44,8 +48,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class VirtualCollectionDiscoveryServiceImpl extends
 		AbstractJargonService implements VirtualCollectionDiscoveryService {
-
-	private final ObjectMapper mapper = new ObjectMapper();
 
 	private static Logger log = LoggerFactory
 			.getLogger(VirtualCollectionDiscoveryServiceImpl.class);
@@ -138,9 +140,9 @@ public class VirtualCollectionDiscoveryServiceImpl extends
 
 		DotIrodsService dotIrodsService = new DotIrodsServiceImpl(
 				this.getIrodsAccessObjectFactory(), this.getIrodsAccount());
-		MetadataQueryMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
+		AbstractVirtualCollectionMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
 				this.getIrodsAccessObjectFactory(), this.getIrodsAccount());
-		
+
 		DotIrodsCollection userHomeDir = null;
 		try {
 			userHomeDir = dotIrodsService
@@ -166,13 +168,15 @@ public class VirtualCollectionDiscoveryServiceImpl extends
 
 		try {
 			for (File f : tempQueryDirAsIrodsFile.listFiles()) {
-				returnList.add(mdQueryService.retrieveVirtualCollection(
-						tempQueryDir, f.getName()));
+				try {
+					returnList.add(findVirtualCollectionBasedOnAbsolutePath(f
+							.getAbsolutePath()));
+				} catch (FileNotFoundException e) {
+					log.error("could not find vc with path:{}", f);
+					log.error("will log and ignore");
+				}
 			}
-		} catch (FileNotFoundException e) {
-			log.error("FileNotFoundException trying to read mdQuery VC file", e);
-			throw new VirtualCollectionProfileException(
-					"FileNotFoundException trying to read mdQuery VC file", e);
+
 		} catch (VirtualCollectionException e) {
 			log.error(
 					"VirtualCollectionException trying to read mdQuery VC file",
@@ -183,6 +187,58 @@ public class VirtualCollectionDiscoveryServiceImpl extends
 		}
 
 		return returnList;
+	}
+
+	/**
+	 * FIXME: update for other vc types via factory
+	 * 
+	 * @param absolutePath
+	 * @return
+	 */
+	AbstractVirtualCollection findVirtualCollectionBasedOnAbsolutePath(
+			String absolutePath) throws FileNotFoundException,
+			VirtualCollectionException {
+
+		log.info("findVirtualCollectionBasedOnAbsolutePath()");
+		log.info("absolutePath:{}", absolutePath);
+
+		List<MetaDataAndDomainData> result;
+		try {
+			List<AVUQueryElement> query = new ArrayList<AVUQueryElement>();
+			query.add(AVUQueryElement.instanceForValueQuery(AVUQueryPart.UNITS,
+					AVUQueryOperatorEnum.EQUAL,
+					GeneralParameterConstants.UNIQUE_NAME_AVU_UNIT));
+
+			DataObjectAO dataObjectAO = this.irodsAccessObjectFactory
+					.getDataObjectAO(irodsAccount);
+			result = dataObjectAO.findMetadataValuesForDataObjectUsingAVUQuery(
+					query, absolutePath);
+		} catch (FileNotFoundException fnf) {
+			log.error("file not found looking up vc with path:{}", absolutePath);
+			throw fnf;
+		} catch (JargonQueryException | JargonException e) {
+			log.error("exception querying for virtual collection:{}", e);
+			throw new VirtualCollectionException(
+					"error querying for virtual collection", e);
+		}
+
+		if (result.isEmpty()) {
+			log.error("no avu with unique name associated with vc at path:{}",
+					absolutePath);
+			throw new FileNotFoundException(
+					"virtual collection not found at path");
+		}
+		String vcName = result.get(0).getAvuValue();
+		log.info("retrieved unique name:{}", vcName);
+
+		// FIXME: shim assumes a metadata query for now
+
+		MetadataQueryMaintenanceService mdQueryMaintenanceService = new MetadataQueryMaintenanceService(
+				this.irodsAccessObjectFactory, this.irodsAccount);
+
+		return mdQueryMaintenanceService
+				.retrieveVirtualCollectionGivenUniqueName(vcName);
+
 	}
 
 	String computeTempMetadataQueryPathUnderDotIrods(
