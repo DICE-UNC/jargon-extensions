@@ -62,7 +62,7 @@ public class TemporaryQueryServiceImplTest {
 
 		TemporaryQueryService temporaryQueryService = new TemporaryQueryServiceImpl(
 				accessObjectFactory, irodsAccount);
-		String uniqueName = temporaryQueryService.nameAndStoreTemporaryQuery(
+		String uniqueName = temporaryQueryService.addOrUpdateTemporaryQuery(
 				cvc, irodsAccount.getUserName(), mdQueryService);
 		Assert.assertNotNull(uniqueName);
 
@@ -96,7 +96,7 @@ public class TemporaryQueryServiceImplTest {
 			cvc = new MetadataQueryVirtualCollection();
 			cvc.setQueryString("QueryStringTest" + i);
 
-			tempQueryService.nameAndStoreTemporaryQuery(cvc,
+			tempQueryService.addOrUpdateTemporaryQuery(cvc,
 					irodsAccount.getUserName(), mdQueryService);
 		}
 
@@ -125,15 +125,6 @@ public class TemporaryQueryServiceImplTest {
 		TemporaryQueryServiceImpl tempQueryService = new TemporaryQueryServiceImpl(
 				accessObjectFactory, irodsAccount);
 
-		IRODSFile targetCollectionAsFile = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						tempQueryService
-								.computeTempQueryPathUnderDotIrods(irodsAccount
-										.getUserName()));
-
-		targetCollectionAsFile.deleteWithForceOption();
-		targetCollectionAsFile.mkdirs();
-
 		MetadataQueryMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
 				accessObjectFactory, irodsAccount);
 
@@ -141,7 +132,7 @@ public class TemporaryQueryServiceImplTest {
 
 		cvc.setQueryString(uniqueName);
 		cvc.setUniqueName(uniqueName);
-		tempQueryService.nameAndStoreTemporaryQuery(cvc,
+		tempQueryService.addOrUpdateTemporaryQuery(cvc,
 				irodsAccount.getUserName(), mdQueryService);
 
 		// List<ConfigurableVirtualCollection> returnedList =
@@ -181,7 +172,7 @@ public class TemporaryQueryServiceImplTest {
 			cvc = new MetadataQueryVirtualCollection();
 			cvc.setQueryString("QueryStringTest" + i);
 
-			tempQueryService.nameAndStoreTemporaryQuery(cvc,
+			tempQueryService.addOrUpdateTemporaryQuery(cvc,
 					irodsAccount.getUserName(), mdQueryService);
 		}
 
@@ -225,7 +216,7 @@ public class TemporaryQueryServiceImplTest {
 			cvc = new MetadataQueryVirtualCollection();
 			cvc.setQueryString("QueryStringTest" + i);
 
-			String path = tempQueryService.nameAndStoreTemporaryQuery(cvc,
+			String path = tempQueryService.addOrUpdateTemporaryQuery(cvc,
 					irodsAccount.getUserName(), mdQueryService);
 			filenameList.add(path);
 		}

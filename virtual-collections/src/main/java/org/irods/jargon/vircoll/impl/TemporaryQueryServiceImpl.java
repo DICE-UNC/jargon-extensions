@@ -17,6 +17,7 @@ import org.irods.jargon.extensions.dotirods.DotIrodsCollection;
 import org.irods.jargon.extensions.dotirods.DotIrodsService;
 import org.irods.jargon.extensions.dotirods.DotIrodsServiceImpl;
 import org.irods.jargon.vircoll.AbstractVirtualCollection;
+import org.irods.jargon.vircoll.CollectionTypes;
 import org.irods.jargon.vircoll.ConfigurableVirtualCollection;
 import org.irods.jargon.vircoll.GeneralParameterConstants;
 import org.irods.jargon.vircoll.TemporaryQueryService;
@@ -130,7 +131,7 @@ public class TemporaryQueryServiceImpl extends AbstractJargonService implements
 	 * org.irods.jargon.vircoll.AbstractVirtualCollection, java.lang.String)
 	 */
 	@Override
-	public String nameAndStoreTemporaryQuery(
+	public String addOrUpdateTemporaryQuery(
 			final ConfigurableVirtualCollection virtualCollection,
 			final String userName,
 			final VirtualCollectionMaintenanceService virtualCollectionMaintenanceService)
@@ -145,25 +146,50 @@ public class TemporaryQueryServiceImpl extends AbstractJargonService implements
 			myUser = this.getIrodsAccount().getUserName();
 		}
 
+		// set display name to the unique id for starters
+		virtualCollection.setDescription(virtualCollection.getUniqueName());
+
+		log.info("see if the virtual collection has a unique id, and if it already exists");
+		ConfigurableVirtualCollection existingCollection = null;
+		boolean isNew = false;
 		if (virtualCollection.getUniqueName() == null
 				|| virtualCollection.getUniqueName().isEmpty()) {
 			virtualCollection.setUniqueName(generateTempUniqueName());
+			log.info("virtual collection has no unique name, treat as new");
+			isNew = true;
+		} else {
+			log.info("unique id provided, see if it already exits:{}",
+					virtualCollection.getUniqueName());
+			try {
+				existingCollection = virtualCollectionMaintenanceService
+						.retrieveVirtualCollectionGivenUniqueName(virtualCollection
+								.getUniqueName());
+				isNew = false;
+			} catch (FileNotFoundException e) {
+				log.info("vc not found");
+				isNew = true;
+			}
 		}
 
 		log.info("storing temp query:{}", virtualCollection);
 
 		String parentPath = computeTempQueryPathUnderDotIrods(myUser);
 
-		try {
-			virtualCollectionMaintenanceService.addVirtualCollection(
-					virtualCollection, parentPath,
-					virtualCollection.getUniqueName());
-			return virtualCollection.getUniqueName();
-		} catch (JargonException e) {
-			log.error("error storing virtual collection:{}", virtualCollection,
-					e);
-			throw new VirtualCollectionException(
-					"error storing virtual collection", e);
+		if (isNew) {
+			log.info("is new, do an add");
+			try {
+				virtualCollectionMaintenanceService.addVirtualCollection(
+						virtualCollection, CollectionTypes.TEMPORARY_QUERY,
+						virtualCollection.getUniqueName());
+				return virtualCollection.getUniqueName();
+			} catch (JargonException e) {
+				log.error("error storing virtual collection:{}",
+						virtualCollection, e);
+				throw new VirtualCollectionException(
+						"error storing virtual collection", e);
+			}
+		} else {
+			return null;
 		}
 
 	}

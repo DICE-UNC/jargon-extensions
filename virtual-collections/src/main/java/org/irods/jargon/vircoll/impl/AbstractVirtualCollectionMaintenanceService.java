@@ -8,6 +8,7 @@ import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.DuplicateDataException;
 import org.irods.jargon.core.exception.FileNotFoundException;
 import org.irods.jargon.core.exception.JargonException;
+import org.irods.jargon.core.packinstr.DataObjInp.OpenFlags;
 import org.irods.jargon.core.pub.DataObjectAO;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.core.pub.domain.AvuData;
@@ -24,11 +25,13 @@ import org.irods.jargon.core.service.AbstractJargonService;
 import org.irods.jargon.extensions.dotirods.DotIrodsConstants;
 import org.irods.jargon.extensions.dotirods.DotIrodsService;
 import org.irods.jargon.extensions.dotirods.DotIrodsServiceImpl;
+import org.irods.jargon.vircoll.CollectionTypes;
 import org.irods.jargon.vircoll.ConfigurableVirtualCollection;
 import org.irods.jargon.vircoll.GeneralParameterConstants;
 import org.irods.jargon.vircoll.VirtualCollectionMaintenanceService;
 import org.irods.jargon.vircoll.VirtualCollectionMarshalingException;
 import org.irods.jargon.vircoll.exception.VirtualCollectionException;
+import org.irods.jargon.vircoll.exception.VirtualCollectionRuntimeException;
 import org.irods.jargon.vircoll.types.MetadataQueryVirtualCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,13 +61,45 @@ public abstract class AbstractVirtualCollectionMaintenanceService extends
 	}
 
 	@Override
+	public void updateVirtualCollection(
+			ConfigurableVirtualCollection configurableVirtualCollection,
+			CollectionTypes collection) throws VirtualCollectionException {
+		log.info("updateVirtualCollection()");
+
+		if (collection == null) {
+			throw new IllegalArgumentException("null or empty collection");
+		}
+
+		if (configurableVirtualCollection.getUniqueName() == null
+				|| configurableVirtualCollection.getUniqueName().isEmpty()) {
+			throw new IllegalArgumentException(
+					"null or empty uniqueName in virtual collection");
+		}
+
+		String path = fileNameForCollectionTypeAndUniqueName(collection,
+				configurableVirtualCollection.getUniqueName());
+
+		IRODSFile vcFile = getPathAsIrodsFile(path);
+
+		try {
+			saveJsonStringToFile(
+					serializeVirtualCollectionToJson(configurableVirtualCollection),
+					path);
+		} catch (IOException | JargonException e) {
+			log.error("Exception saving JSON to file", e);
+			throw new VirtualCollectionException(
+					"Exception saving JSON to file", e);
+		}
+	}
+
+	@Override
 	public void addVirtualCollection(
 			ConfigurableVirtualCollection configurableVirtualCollection,
-			String collection, String uniqueName)
+			CollectionTypes collection, String uniqueName)
 			throws DuplicateDataException, JargonException {
 		log.info("addVirtualCollection()");
 
-		if (collection == null || collection.isEmpty()) {
+		if (collection == null) {
 			throw new IllegalArgumentException("null or empty collection");
 		}
 
@@ -72,7 +107,8 @@ public abstract class AbstractVirtualCollectionMaintenanceService extends
 			throw new IllegalArgumentException("null or empty uniqueName");
 		}
 
-		String path = collection + "/" + uniqueName;
+		String path = fileNameForCollectionTypeAndUniqueName(collection,
+				uniqueName);
 
 		IRODSFile vcFile = getPathAsIrodsFile(path);
 
@@ -94,33 +130,51 @@ public abstract class AbstractVirtualCollectionMaintenanceService extends
 		}
 	}
 
-	@Override
-	public void storeVirtualCollection(
-			ConfigurableVirtualCollection configurableVirtualCollection,
-			String collection, String uniqueName) throws JargonException {
-		log.info("storeVirtualCollection()");
+	private String fileNameForCollectionTypeAndUniqueName(
+			CollectionTypes collection, String uniqueName)
+			throws VirtualCollectionException {
 
-		if (collection == null || collection.isEmpty()) {
-			throw new IllegalArgumentException("null or empty collection");
+		StringBuilder sb = new StringBuilder();
+
+		switch (collection) {
+		case USER_HOME:
+			try {
+				sb.append(this.dotIrodsService.findUserHomeCollection(
+						this.irodsAccount.getUserName()).getAbsolutePath());
+			} catch (JargonException e) {
+				log.error("error resolving collection name", e);
+				throw new VirtualCollectionException(
+						"cannot resulve collection name", e);
+			}
+			sb.append("/");
+			sb.append(GeneralParameterConstants.USER_VC_SUBDIR);
+			break;
+
+		case TEMPORARY_QUERY:
+			try {
+				sb.append(this.dotIrodsService.findUserHomeCollection(
+						this.irodsAccount.getUserName()).getAbsolutePath());
+			} catch (JargonException e) {
+				log.error("error resolving collection name", e);
+				throw new VirtualCollectionException(
+						"cannot resulve collection name", e);
+			}
+			sb.append("/");
+			sb.append(GeneralParameterConstants.USER_VC_TEMP_RECENT_VC_QUERIES);
+			break;
+
+		default:
+			log.error("cannot currently process type:{}", collection);
+			throw new VirtualCollectionRuntimeException(
+					"Unable to process collection type");
 		}
 
-		if (uniqueName == null || uniqueName.isEmpty()) {
-			throw new IllegalArgumentException("null or empty collection");
-		}
+		sb.append("/");
+		sb.append(uniqueName);
+		String name = sb.toString();
+		log.info("resolved name:{}", name);
+		return name;
 
-		String path = collection + "/" + uniqueName;
-
-		try {
-			saveJsonStringToFile(
-					serializeVirtualCollectionToJson(configurableVirtualCollection),
-					path);
-			addVcTypeAVUToFile(path, configurableVirtualCollection.getType());
-			addUniqueNameAVUToFile(path, uniqueName);
-		} catch (IOException e) {
-			log.error("IOException saving JSON to file", e);
-			throw new FileNotFoundException("IOException saving JSON to file",
-					e);
-		}
 	}
 
 	@Override
@@ -238,12 +292,12 @@ public abstract class AbstractVirtualCollectionMaintenanceService extends
 	}
 
 	@Override
-	public void deleteVirtualCollection(final String collection,
+	public void deleteVirtualCollection(final CollectionTypes collection,
 			final String uniqueName) throws FileNotFoundException,
 			VirtualCollectionException {
 		log.info("deleteVirtualCollection()");
 
-		if (collection == null || collection.isEmpty()) {
+		if (collection == null) {
 			throw new IllegalArgumentException("null or empty collection");
 		}
 
@@ -251,14 +305,8 @@ public abstract class AbstractVirtualCollectionMaintenanceService extends
 			throw new IllegalArgumentException("null or empty collection");
 		}
 
-		IRODSFile vcFile = getPathAsIrodsFile(collection + "/" + uniqueName);
-
-		if (vcFile == null || !vcFile.exists()) {
-			log.error("Cannot find file: " + collection + "/" + uniqueName);
-			throw new FileNotFoundException("Cannot find file: " + collection
-					+ "/" + uniqueName);
-		}
-
+		IRODSFile vcFile = getPathAsIrodsFile(this
+				.fileNameForCollectionTypeAndUniqueName(collection, uniqueName));
 		vcFile.delete();
 
 	}
@@ -370,6 +418,17 @@ public abstract class AbstractVirtualCollectionMaintenanceService extends
 		return retFile;
 	}
 
+	/**
+	 * Save the JSON-ized virtual collection data as an iRODS file. Will
+	 * overwrite existing data
+	 * 
+	 * @param json
+	 *            <code>String</code> with the JSON
+	 * @param irodsAbsolutePath
+	 *            <code>String</code> with the iRODS absolute path
+	 * @throws JargonException
+	 * @throws IOException
+	 */
 	void saveJsonStringToFile(String json, String irodsAbsolutePath)
 			throws JargonException, IOException {
 		log.info("saveJsonStringToFile()");
@@ -388,7 +447,8 @@ public abstract class AbstractVirtualCollectionMaintenanceService extends
 						irodsAbsolutePath);
 		IRODSFileOutputStream irodsFileOutputStream = irodsAccessObjectFactory
 				.getIRODSFileFactory(irodsAccount)
-				.instanceIRODSFileOutputStream(queryIrodsFile);
+				.instanceIRODSFileOutputStream(queryIrodsFile,
+						OpenFlags.WRITE_TRUNCATE);
 
 		byte[] jsonByteArray = json.getBytes();
 

@@ -9,6 +9,7 @@ import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.core.pub.IRODSFileSystem;
 import org.irods.jargon.core.pub.io.IRODSFile;
 import org.irods.jargon.testutils.TestingPropertiesHelper;
+import org.irods.jargon.vircoll.CollectionTypes;
 import org.irods.jargon.vircoll.ConfigurableVirtualCollection;
 import org.irods.jargon.vircoll.UserVirtualCollectionProfile;
 import org.irods.jargon.vircoll.VirtualCollectionDiscoveryService;
@@ -188,9 +189,8 @@ public class VirtualCollectionDiscoveryServiceImplTest {
 		String queryName = "query1";
 		cvc.setUniqueName(queryName);
 
-		String savePath = targetCollectionAsFile.getAbsolutePath();
-
-		mdQueryService.storeVirtualCollection(cvc, savePath, queryName);
+		mdQueryService.addVirtualCollection(cvc,
+				CollectionTypes.TEMPORARY_QUERY, queryName);
 
 		UserVirtualCollectionProfile actual = virtualCollectionDiscoveryService
 				.userVirtualCollectionProfile(null);

@@ -22,6 +22,7 @@ import org.irods.jargon.mdquery.MetadataQuery.QueryType;
 import org.irods.jargon.mdquery.MetadataQueryElement;
 import org.irods.jargon.mdquery.serialization.MetadataQueryJsonService;
 import org.irods.jargon.testutils.TestingPropertiesHelper;
+import org.irods.jargon.vircoll.CollectionTypes;
 import org.irods.jargon.vircoll.ConfigurableVirtualCollection;
 import org.irods.jargon.vircoll.types.MetadataQueryMaintenanceService;
 import org.irods.jargon.vircoll.types.MetadataQueryVirtualCollection;
@@ -62,53 +63,33 @@ public class MetadataQueryVirtualCollectionTest {
 
 	@Test
 	public void testAddVirtualCollectionSuccess() throws Exception {
-		String testDirName = "testAddVirtualCollectionSuccess";
 
-		String targetIrodsCollection = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName);
+		String uniqueName = "testAddVirtualCollectionSuccess";
 
 		IRODSAccount irodsAccount = testingPropertiesHelper
 				.buildIRODSAccountFromTestProperties(testingProperties);
 
 		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
 				.getIRODSAccessObjectFactory();
-		IRODSFile targetCollectionAsFile = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection);
-
-		targetCollectionAsFile.mkdirs();
 
 		AbstractVirtualCollectionMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
 				accessObjectFactory, irodsAccount);
 
 		ConfigurableVirtualCollection cvc = new MetadataQueryVirtualCollection();
 		cvc.setQueryString("QueryStringTest42");
+		cvc.setUniqueName(uniqueName);
 
-		String queryName = "query1";
-		cvc.setUniqueName(queryName);
+		mdQueryService.deleteVirtualCollection(CollectionTypes.TEMPORARY_QUERY,
+				uniqueName);
+		mdQueryService.addVirtualCollection(cvc,
+				CollectionTypes.TEMPORARY_QUERY, uniqueName);
 
-		String savePath = targetIrodsCollection + "/" + queryName;
+		ConfigurableVirtualCollection actual = mdQueryService
+				.retrieveVirtualCollectionGivenUniqueName(uniqueName);
 
-		mdQueryService.addVirtualCollection(cvc, targetIrodsCollection,
-				queryName);
+		String fileJSON = actual.getQueryString();
+		Assert.assertNotNull(fileJSON);
 
-		IRODSFile mdQueryFile = getPathAsIrodsFile(accessObjectFactory,
-				irodsAccount, savePath);
-
-		Assert.assertNotNull("file not saved", mdQueryFile);
-
-		String fileJSON = getContentsOfFileAsString(accessObjectFactory,
-				irodsAccount, mdQueryFile);
-
-		ObjectMapper objectMapper = new ObjectMapper();
-		JsonNode node = objectMapper.readValue(fileJSON, JsonNode.class);
-
-		String compareString = node.get("queryString").asText();
-		boolean testVal = ("QueryStringTest42".equals(compareString));
-
-		Assert.assertTrue("object serialized incorrectly", testVal);
 	}
 
 	@Test(expected = DuplicateDataException.class)
@@ -140,32 +121,22 @@ public class MetadataQueryVirtualCollectionTest {
 		String queryName = "query1";
 		cvc.setUniqueName(queryName);
 
-		mdQueryService.addVirtualCollection(cvc, targetIrodsCollection,
-				queryName);
+		mdQueryService.addVirtualCollection(cvc,
+				CollectionTypes.TEMPORARY_QUERY, queryName);
 
-		mdQueryService.addVirtualCollection(cvc, targetIrodsCollection,
-				queryName);
+		mdQueryService.addVirtualCollection(cvc,
+				CollectionTypes.TEMPORARY_QUERY, queryName);
 	}
 
 	@Test
 	public void testStoreVirtualCollectionNoDuplicate() throws Exception {
-		String testDirName = "testStoreVirtualCollectionNoDuplicate";
-
-		String targetIrodsCollection = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName);
+		String uniqueName = "testStoreVirtualCollectionNoDuplicate";
 
 		IRODSAccount irodsAccount = testingPropertiesHelper
 				.buildIRODSAccountFromTestProperties(testingProperties);
 
 		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
 				.getIRODSAccessObjectFactory();
-		IRODSFile targetCollectionAsFile = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection);
-
-		targetCollectionAsFile.mkdirs();
 
 		AbstractVirtualCollectionMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
 				accessObjectFactory, irodsAccount);
@@ -173,99 +144,55 @@ public class MetadataQueryVirtualCollectionTest {
 		ConfigurableVirtualCollection cvc = new MetadataQueryVirtualCollection();
 		cvc.setQueryString("QueryStringTest42");
 
-		String queryName = "query1";
-		cvc.setUniqueName(queryName);
+		cvc.setUniqueName(uniqueName);
+		mdQueryService.deleteVirtualCollection(CollectionTypes.TEMPORARY_QUERY,
+				uniqueName);
 
-		String savePath = targetIrodsCollection + "/" + queryName;
+		mdQueryService.addVirtualCollection(cvc,
+				CollectionTypes.TEMPORARY_QUERY, uniqueName);
 
-		mdQueryService.storeVirtualCollection(cvc, targetIrodsCollection,
-				queryName);
+		ConfigurableVirtualCollection actual = mdQueryService
+				.retrieveVirtualCollectionGivenUniqueName(uniqueName);
+		Assert.assertNotNull("file not saved", actual);
 
-		IRODSFile mdQueryFile = getPathAsIrodsFile(accessObjectFactory,
-				irodsAccount, savePath);
+		String fileJSON = actual.getQueryString();
 
-		Assert.assertNotNull("file not saved", mdQueryFile);
-
-		String fileJSON = getContentsOfFileAsString(accessObjectFactory,
-				irodsAccount, mdQueryFile);
-
-		ObjectMapper objectMapper = new ObjectMapper();
-		JsonNode node = objectMapper.readValue(fileJSON, JsonNode.class);
-
-		String compareString = node.get("queryString").asText();
-		boolean testVal = ("QueryStringTest42".equals(compareString));
-
-		Assert.assertTrue("object serialized incorrectly", testVal);
+		Assert.assertNotNull(fileJSON);
 	}
 
 	@Test
-	public void testStoreVirtualCollectionDuplicate() throws Exception {
-		String testDirName = "testStoreVirtualCollectionDuplicate";
+	public void testUpdateVirtualCollection() throws Exception {
 
-		String targetIrodsCollection = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName);
-
+		String uniqueName = "testStoreVirtualCollectionDuplicate";
+		String query1 = "query1";
+		String query2 = "query2";
 		IRODSAccount irodsAccount = testingPropertiesHelper
 				.buildIRODSAccountFromTestProperties(testingProperties);
 
 		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
 				.getIRODSAccessObjectFactory();
-		IRODSFile targetCollectionAsFile = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection);
-
-		targetCollectionAsFile.mkdirs();
 
 		AbstractVirtualCollectionMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
 				accessObjectFactory, irodsAccount);
 
 		ConfigurableVirtualCollection cvc = new MetadataQueryVirtualCollection();
-		cvc.setQueryString("OriginalQueryString");
+		cvc.setQueryString(query1);
 
-		String queryName = "query1";
-		cvc.setUniqueName(queryName);
+		cvc.setUniqueName(uniqueName);
+		mdQueryService.deleteVirtualCollection(CollectionTypes.TEMPORARY_QUERY,
+				uniqueName);
+		mdQueryService.addVirtualCollection(cvc,
+				CollectionTypes.TEMPORARY_QUERY, uniqueName);
 
-		String savePath = targetIrodsCollection + "/" + queryName;
+		cvc.setQueryString(query2);
+		mdQueryService.updateVirtualCollection(cvc,
+				CollectionTypes.TEMPORARY_QUERY);
 
-		mdQueryService.storeVirtualCollection(cvc, targetIrodsCollection,
-				queryName);
+		ConfigurableVirtualCollection actual = mdQueryService
+				.retrieveVirtualCollectionGivenUniqueName(uniqueName);
+		Assert.assertEquals("did not update query string", query2,
+				actual.getQueryString());
 
-		IRODSFile mdQueryFile = getPathAsIrodsFile(accessObjectFactory,
-				irodsAccount, savePath);
-
-		Assert.assertNotNull("file not saved", mdQueryFile);
-
-		String fileJSON = getContentsOfFileAsString(accessObjectFactory,
-				irodsAccount, mdQueryFile);
-
-		ObjectMapper objectMapper = new ObjectMapper();
-		JsonNode node = objectMapper.readValue(fileJSON, JsonNode.class);
-
-		String compareString = node.get("queryString").asText();
-		boolean testVal = ("OriginalQueryString".equals(compareString));
-
-		Assert.assertTrue("object serialized incorrectly", testVal);
-
-		cvc.setQueryString("QueryStringTest42");
-
-		mdQueryService.storeVirtualCollection(cvc, targetIrodsCollection,
-				queryName);
-
-		mdQueryFile = getPathAsIrodsFile(accessObjectFactory, irodsAccount,
-				savePath);
-
-		Assert.assertNotNull("file not saved", mdQueryFile);
-
-		fileJSON = getContentsOfFileAsString(accessObjectFactory, irodsAccount,
-				mdQueryFile);
-		node = objectMapper.readValue(fileJSON, JsonNode.class);
-
-		compareString = node.get("queryString").asText();
-		testVal = ("QueryStringTest42".equals(compareString));
-
-		Assert.assertTrue("object not overwritten", testVal);
 	}
 
 	@Test
@@ -386,7 +313,8 @@ public class MetadataQueryVirtualCollectionTest {
 						.getUserName());
 
 		mdQueryMaintenanceService.addVirtualCollection(
-				metadataQueryVirtualCollection, parentCollPath, testVcName);
+				metadataQueryVirtualCollection,
+				CollectionTypes.TEMPORARY_QUERY, testVcName);
 
 		// now retrieve it
 		ConfigurableVirtualCollection returnedVc = mdQueryMaintenanceService
@@ -434,44 +362,39 @@ public class MetadataQueryVirtualCollectionTest {
 
 	@Test
 	public void testRetrieveVirtualCollectionSuccess() throws Exception {
-		String testDirName = "testRetrieveVirtualCollectionSuccess";
-
-		String targetIrodsCollection = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName);
+		String uniqueName = "testRetrieveVirtualCollectionSuccess";
 
 		IRODSAccount irodsAccount = testingPropertiesHelper
 				.buildIRODSAccountFromTestProperties(testingProperties);
 
 		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
 				.getIRODSAccessObjectFactory();
-		IRODSFile targetCollectionAsFile = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection);
-
-		targetCollectionAsFile.mkdirs();
 
 		AbstractVirtualCollectionMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
 				accessObjectFactory, irodsAccount);
 
 		ConfigurableVirtualCollection cvc = new MetadataQueryVirtualCollection();
 		cvc.setQueryString("QueryStringTest42");
+		cvc.setUniqueName(uniqueName);
+		mdQueryService.deleteVirtualCollection(CollectionTypes.TEMPORARY_QUERY,
+				uniqueName);
 
-		String queryName = "query1";
-		cvc.setUniqueName(queryName);
-
-		mdQueryService.storeVirtualCollection(cvc, targetIrodsCollection,
-				queryName);
+		mdQueryService.addVirtualCollection(cvc,
+				CollectionTypes.TEMPORARY_QUERY, uniqueName);
 
 		ConfigurableVirtualCollection cvcTest = mdQueryService
-				.retrieveVirtualCollectionGivenUniqueName(queryName);
+				.retrieveVirtualCollectionGivenUniqueName(uniqueName);
 
 		Assert.assertTrue("file not deserialized correctly", cvcTest
 				.getQueryString().equals("QueryStringTest42"));
 	}
 
-	@Test(expected = FileNotFoundException.class)
+	/**
+	 * Should be idempotent and silently ignore delete of missing file
+	 * 
+	 * @throws Exception
+	 */
+	@Test
 	public void testDeleteVirtualCollectionFileNotFound() throws Exception {
 		String testDirName = "testDeleteVirtualCollectionFileNotFound";
 
@@ -494,56 +417,8 @@ public class MetadataQueryVirtualCollectionTest {
 		AbstractVirtualCollectionMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
 				accessObjectFactory, irodsAccount);
 
-		mdQueryService.deleteVirtualCollection(targetIrodsCollection,
+		mdQueryService.deleteVirtualCollection(CollectionTypes.TEMPORARY_QUERY,
 				"junkFileName");
-	}
-
-	@Test
-	public void testDeleteVirtualCollectionSuccess() throws Exception {
-		String testDirName = "testDeleteVirtualCollectionSuccess";
-
-		String targetIrodsCollection = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName);
-
-		IRODSAccount irodsAccount = testingPropertiesHelper
-				.buildIRODSAccountFromTestProperties(testingProperties);
-
-		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
-				.getIRODSAccessObjectFactory();
-		IRODSFile targetCollectionAsFile = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection);
-
-		targetCollectionAsFile.mkdirs();
-
-		AbstractVirtualCollectionMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
-				accessObjectFactory, irodsAccount);
-
-		ConfigurableVirtualCollection cvc = new MetadataQueryVirtualCollection();
-		cvc.setQueryString("QueryStringTest42");
-
-		String queryName = "query1";
-		cvc.setUniqueName(queryName);
-
-		mdQueryService.storeVirtualCollection(cvc, targetIrodsCollection,
-				queryName);
-
-		String savePath = targetIrodsCollection + "/" + queryName;
-
-		IRODSFile mdQueryFile = getPathAsIrodsFile(accessObjectFactory,
-				irodsAccount, savePath);
-
-		Assert.assertTrue("file not saved by store", mdQueryFile.exists());
-
-		mdQueryService
-				.deleteVirtualCollection(targetIrodsCollection, queryName);
-
-		mdQueryFile = getPathAsIrodsFile(accessObjectFactory, irodsAccount,
-				savePath);
-
-		Assert.assertFalse("file not deleted", mdQueryFile.exists());
 	}
 
 	IRODSFile getPathAsIrodsFile(
