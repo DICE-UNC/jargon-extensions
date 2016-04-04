@@ -614,4 +614,59 @@ public abstract class AbstractVirtualCollectionMaintenanceService extends
 		}
 
 	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.irods.jargon.vircoll.VirtualCollectionMaintenanceService#
+	 * addOrUpdateVirtualCollection
+	 * (org.irods.jargon.vircoll.ConfigurableVirtualCollection,
+	 * org.irods.jargon.vircoll.CollectionTypes, java.lang.String)
+	 */
+	@Override
+	public void addOrUpdateVirtualCollection(
+			ConfigurableVirtualCollection configurableVirtualCollection,
+			CollectionTypes collection, String uniqueName)
+			throws JargonException {
+
+		log.info("addOrUpdateVirtualCollection()");
+
+		if (configurableVirtualCollection == null) {
+			throw new IllegalArgumentException(
+					"null configurableVirtualCollection");
+		}
+
+		if (collection == null) {
+			throw new IllegalArgumentException("null collection");
+		}
+
+		if (uniqueName == null || uniqueName.isEmpty()) {
+			throw new IllegalArgumentException("null or empty unique name");
+		}
+
+		log.info("configurableVirtualCollection:{}",
+				configurableVirtualCollection);
+		log.info("collection:{}", collection);
+		log.info("uniqueName:{}", uniqueName);
+
+		log.info("reading to see if this already exists...");
+		ConfigurableVirtualCollection existing = null;
+		try {
+			existing = this
+					.retrieveVirtualCollectionGivenUniqueName(uniqueName);
+		} catch (FileNotFoundException e) {
+			log.info("file not found, will leave as null");
+		}
+
+		if (existing == null) {
+			log.info("treat as new");
+			this.addVirtualCollection(configurableVirtualCollection,
+					collection, uniqueName);
+		} else {
+			this.updateVirtualCollection(configurableVirtualCollection);
+		}
+
+		log.info("update complete");
+
+	}
 }

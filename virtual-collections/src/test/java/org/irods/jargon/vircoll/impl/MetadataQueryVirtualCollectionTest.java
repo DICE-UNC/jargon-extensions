@@ -62,6 +62,36 @@ public class MetadataQueryVirtualCollectionTest {
 	}
 
 	@Test
+	public void testAddOrUpdateVirtualCollectionAsAdd() throws Exception {
+
+		String uniqueName = "testAddOrUpdateVirtualCollectionAsAdd";
+
+		IRODSAccount irodsAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
+				.getIRODSAccessObjectFactory();
+
+		AbstractVirtualCollectionMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
+				accessObjectFactory, irodsAccount);
+
+		ConfigurableVirtualCollection cvc = new MetadataQueryVirtualCollection();
+		cvc.setQueryString("QueryStringTest42");
+		cvc.setUniqueName(uniqueName);
+
+		mdQueryService.deleteVirtualCollection(uniqueName);
+		mdQueryService.addOrUpdateVirtualCollection(cvc,
+				CollectionTypes.TEMPORARY_QUERY, uniqueName);
+
+		ConfigurableVirtualCollection actual = mdQueryService
+				.retrieveVirtualCollectionGivenUniqueName(uniqueName);
+
+		String fileJSON = actual.getQueryString();
+		Assert.assertNotNull(fileJSON);
+
+	}
+
+	@Test
 	public void testAddVirtualCollectionSuccess() throws Exception {
 
 		String uniqueName = "testAddVirtualCollectionSuccess";
@@ -156,6 +186,39 @@ public class MetadataQueryVirtualCollectionTest {
 		String fileJSON = actual.getQueryString();
 
 		Assert.assertNotNull(fileJSON);
+	}
+
+	@Test
+	public void testAddOrUpdateVirtualCollectionAsUpdate() throws Exception {
+
+		String uniqueName = "testAddOrUpdateVirtualCollectionAsUpdate";
+		String query1 = "query1";
+		String query2 = "query2";
+		IRODSAccount irodsAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
+				.getIRODSAccessObjectFactory();
+
+		AbstractVirtualCollectionMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
+				accessObjectFactory, irodsAccount);
+
+		ConfigurableVirtualCollection cvc = new MetadataQueryVirtualCollection();
+		cvc.setQueryString(query1);
+
+		cvc.setUniqueName(uniqueName);
+		mdQueryService.deleteVirtualCollection(uniqueName);
+		mdQueryService.addVirtualCollection(cvc,
+				CollectionTypes.TEMPORARY_QUERY, uniqueName);
+
+		cvc.setQueryString(query2);
+		mdQueryService.addOrUpdateVirtualCollection(cvc,
+				CollectionTypes.TEMPORARY_QUERY, uniqueName);
+		ConfigurableVirtualCollection actual = mdQueryService
+				.retrieveVirtualCollectionGivenUniqueName(uniqueName);
+		Assert.assertEquals("did not update query string", query2,
+				actual.getQueryString());
+
 	}
 
 	@Test
