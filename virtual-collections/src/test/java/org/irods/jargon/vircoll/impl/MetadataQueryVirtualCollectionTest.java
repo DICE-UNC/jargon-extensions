@@ -79,8 +79,7 @@ public class MetadataQueryVirtualCollectionTest {
 		cvc.setQueryString("QueryStringTest42");
 		cvc.setUniqueName(uniqueName);
 
-		mdQueryService.deleteVirtualCollection(CollectionTypes.TEMPORARY_QUERY,
-				uniqueName);
+		mdQueryService.deleteVirtualCollection(uniqueName);
 		mdQueryService.addVirtualCollection(cvc,
 				CollectionTypes.TEMPORARY_QUERY, uniqueName);
 
@@ -145,8 +144,7 @@ public class MetadataQueryVirtualCollectionTest {
 		cvc.setQueryString("QueryStringTest42");
 
 		cvc.setUniqueName(uniqueName);
-		mdQueryService.deleteVirtualCollection(CollectionTypes.TEMPORARY_QUERY,
-				uniqueName);
+		mdQueryService.deleteVirtualCollection(uniqueName);
 
 		mdQueryService.addVirtualCollection(cvc,
 				CollectionTypes.TEMPORARY_QUERY, uniqueName);
@@ -179,14 +177,12 @@ public class MetadataQueryVirtualCollectionTest {
 		cvc.setQueryString(query1);
 
 		cvc.setUniqueName(uniqueName);
-		mdQueryService.deleteVirtualCollection(CollectionTypes.TEMPORARY_QUERY,
-				uniqueName);
+		mdQueryService.deleteVirtualCollection(uniqueName);
 		mdQueryService.addVirtualCollection(cvc,
 				CollectionTypes.TEMPORARY_QUERY, uniqueName);
 
 		cvc.setQueryString(query2);
-		mdQueryService.updateVirtualCollection(cvc,
-				CollectionTypes.TEMPORARY_QUERY);
+		mdQueryService.updateVirtualCollection(cvc);
 
 		ConfigurableVirtualCollection actual = mdQueryService
 				.retrieveVirtualCollectionGivenUniqueName(uniqueName);
@@ -214,8 +210,7 @@ public class MetadataQueryVirtualCollectionTest {
 		cvc.setQueryString(query1);
 
 		cvc.setUniqueName(uniqueName);
-		mdQueryService.deleteVirtualCollection(CollectionTypes.TEMPORARY_QUERY,
-				uniqueName);
+		mdQueryService.deleteVirtualCollection(uniqueName);
 		mdQueryService.addVirtualCollection(cvc,
 				CollectionTypes.TEMPORARY_QUERY, uniqueName);
 
@@ -404,8 +399,7 @@ public class MetadataQueryVirtualCollectionTest {
 		ConfigurableVirtualCollection cvc = new MetadataQueryVirtualCollection();
 		cvc.setQueryString("QueryStringTest42");
 		cvc.setUniqueName(uniqueName);
-		mdQueryService.deleteVirtualCollection(CollectionTypes.TEMPORARY_QUERY,
-				uniqueName);
+		mdQueryService.deleteVirtualCollection(uniqueName);
 
 		mdQueryService.addVirtualCollection(cvc,
 				CollectionTypes.TEMPORARY_QUERY, uniqueName);
@@ -445,8 +439,7 @@ public class MetadataQueryVirtualCollectionTest {
 		AbstractVirtualCollectionMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
 				accessObjectFactory, irodsAccount);
 
-		mdQueryService.deleteVirtualCollection(CollectionTypes.TEMPORARY_QUERY,
-				"junkFileName");
+		mdQueryService.deleteVirtualCollection("junkFileName");
 	}
 
 	IRODSFile getPathAsIrodsFile(

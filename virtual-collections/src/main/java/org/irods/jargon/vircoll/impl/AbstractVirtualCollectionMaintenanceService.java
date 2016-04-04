@@ -64,13 +64,9 @@ public abstract class AbstractVirtualCollectionMaintenanceService extends
 
 	@Override
 	public void updateVirtualCollection(
-			ConfigurableVirtualCollection configurableVirtualCollection,
-			CollectionTypes collection) throws VirtualCollectionException {
+			ConfigurableVirtualCollection configurableVirtualCollection)
+			throws FileNotFoundException, VirtualCollectionException {
 		log.info("updateVirtualCollection()");
-
-		if (collection == null) {
-			throw new IllegalArgumentException("null or empty collection");
-		}
 
 		if (configurableVirtualCollection.getUniqueName() == null
 				|| configurableVirtualCollection.getUniqueName().isEmpty()) {
@@ -78,8 +74,8 @@ public abstract class AbstractVirtualCollectionMaintenanceService extends
 					"null or empty uniqueName in virtual collection");
 		}
 
-		String path = fileNameForCollectionTypeAndUniqueName(collection,
-				configurableVirtualCollection.getUniqueName());
+		String path = absolutePathForUniqueName(configurableVirtualCollection
+				.getUniqueName());
 
 		try {
 			saveJsonStringToFile(
@@ -298,22 +294,23 @@ public abstract class AbstractVirtualCollectionMaintenanceService extends
 	}
 
 	@Override
-	public void deleteVirtualCollection(final CollectionTypes collection,
-			final String uniqueName) throws FileNotFoundException,
-			VirtualCollectionException {
+	public void deleteVirtualCollection(final String uniqueName)
+			throws FileNotFoundException, VirtualCollectionException {
 		log.info("deleteVirtualCollection()");
-
-		if (collection == null) {
-			throw new IllegalArgumentException("null or empty collection");
-		}
 
 		if (uniqueName == null || uniqueName.isEmpty()) {
 			throw new IllegalArgumentException("null or empty collection");
 		}
 
-		IRODSFile vcFile = getPathAsIrodsFile(this
-				.fileNameForCollectionTypeAndUniqueName(collection, uniqueName));
-		vcFile.delete();
+		IRODSFile vcFile;
+		try {
+			vcFile = getPathAsIrodsFile(this
+					.absolutePathForUniqueName(uniqueName));
+			vcFile.delete();
+
+		} catch (FileNotFoundException e) {
+			// ignore
+		}
 
 	}
 
