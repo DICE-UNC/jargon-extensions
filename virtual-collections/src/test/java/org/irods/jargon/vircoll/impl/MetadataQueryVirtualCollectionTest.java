@@ -196,6 +196,38 @@ public class MetadataQueryVirtualCollectionTest {
 	}
 
 	@Test
+	public void testReclassifyVirtualCollection() throws Exception {
+
+		String uniqueName = "testReclassifyVirtualCollection";
+		String query1 = "query1";
+
+		IRODSAccount irodsAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
+				.getIRODSAccessObjectFactory();
+
+		AbstractVirtualCollectionMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
+				accessObjectFactory, irodsAccount);
+
+		ConfigurableVirtualCollection cvc = new MetadataQueryVirtualCollection();
+		cvc.setQueryString(query1);
+
+		cvc.setUniqueName(uniqueName);
+		mdQueryService.deleteVirtualCollection(CollectionTypes.TEMPORARY_QUERY,
+				uniqueName);
+		mdQueryService.addVirtualCollection(cvc,
+				CollectionTypes.TEMPORARY_QUERY, uniqueName);
+
+		mdQueryService.reclassifyVirtualCollection(CollectionTypes.USER_HOME,
+				uniqueName);
+
+		ConfigurableVirtualCollection actual = mdQueryService
+				.retrieveVirtualCollectionGivenUniqueName(uniqueName);
+		Assert.assertNotNull("null virtual collection", actual);
+	}
+
+	@Test
 	public void testSerializeVirtualCollectionToJson() throws Exception {
 		String testDirName = "testSerializeVirtualCollectionToJson";
 
@@ -307,10 +339,6 @@ public class MetadataQueryVirtualCollectionTest {
 
 		MetadataQueryMaintenanceService mdQueryMaintenanceService = new MetadataQueryMaintenanceService(
 				accessObjectFactory, irodsAccount);
-
-		String parentCollPath = mdQueryMaintenanceService
-				.findOrCreateUserTempMetadataQueryCollection(irodsAccount
-						.getUserName());
 
 		mdQueryMaintenanceService.addVirtualCollection(
 				metadataQueryVirtualCollection,
@@ -437,6 +465,7 @@ public class MetadataQueryVirtualCollectionTest {
 		return retFile;
 	}
 
+	@SuppressWarnings("resource")
 	String getContentsOfFileAsString(
 			IRODSAccessObjectFactory irodsAccessObjectFactory,
 			IRODSAccount irodsAccount, IRODSFile irodsFile) {

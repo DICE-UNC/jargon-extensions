@@ -10,6 +10,7 @@ import org.irods.jargon.core.exception.FileNotFoundException;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.packinstr.DataObjInp.OpenFlags;
 import org.irods.jargon.core.pub.DataObjectAO;
+import org.irods.jargon.core.pub.DataTransferOperations;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.core.pub.domain.AvuData;
 import org.irods.jargon.core.pub.domain.Collection;
@@ -22,6 +23,7 @@ import org.irods.jargon.core.query.AVUQueryElement.AVUQueryPart;
 import org.irods.jargon.core.query.AVUQueryOperatorEnum;
 import org.irods.jargon.core.query.JargonQueryException;
 import org.irods.jargon.core.service.AbstractJargonService;
+import org.irods.jargon.core.utils.MiscIRODSUtils;
 import org.irods.jargon.extensions.dotirods.DotIrodsConstants;
 import org.irods.jargon.extensions.dotirods.DotIrodsService;
 import org.irods.jargon.extensions.dotirods.DotIrodsServiceImpl;
@@ -78,8 +80,6 @@ public abstract class AbstractVirtualCollectionMaintenanceService extends
 
 		String path = fileNameForCollectionTypeAndUniqueName(collection,
 				configurableVirtualCollection.getUniqueName());
-
-		IRODSFile vcFile = getPathAsIrodsFile(path);
 
 		try {
 			saveJsonStringToFile(
@@ -217,38 +217,7 @@ public abstract class AbstractVirtualCollectionMaintenanceService extends
 			throw new IllegalArgumentException("null or empty collection");
 		}
 
-		List<DataObject> vcsAsDataObject = null;
-		String vcAbsolutePath = "";
-		try {
-			DataObjectAO dataObjectAO = this.getIrodsAccessObjectFactory()
-					.getDataObjectAO(getIrodsAccount());
-			List<AVUQueryElement> query = new ArrayList<AVUQueryElement>();
-			query.add(AVUQueryElement.instanceForValueQuery(AVUQueryPart.UNITS,
-					AVUQueryOperatorEnum.EQUAL,
-					GeneralParameterConstants.UNIQUE_NAME_AVU_UNIT));
-			query.add(AVUQueryElement.instanceForValueQuery(AVUQueryPart.VALUE,
-					AVUQueryOperatorEnum.EQUAL, uniqueName));
-
-			vcsAsDataObject = dataObjectAO.findDomainByMetadataQuery(query);
-			if (vcsAsDataObject.isEmpty()) {
-				log.error("no vc found with unique name:{}", uniqueName);
-				throw new FileNotFoundException("unable to find vc");
-			} else if (vcsAsDataObject.size() > 1) {
-				log.warn(
-						"multiple vcs found with unique name: {}, returning first",
-						uniqueName);
-				vcAbsolutePath = vcsAsDataObject.get(0).getAbsolutePath();
-			} else {
-				log.info("found vc for unique name");
-				vcAbsolutePath = vcsAsDataObject.get(0).getAbsolutePath();
-			}
-
-		} catch (FileNotFoundException fnf) {
-			throw fnf;
-		} catch (JargonException | JargonQueryException e1) {
-			log.error("error querying for vc with unique name:{}", uniqueName);
-			throw new VirtualCollectionException(e1);
-		}
+		String vcAbsolutePath = absolutePathForUniqueName(uniqueName);
 
 		IRODSFile vcFile = getPathAsIrodsFile(vcAbsolutePath);
 
@@ -289,6 +258,43 @@ public abstract class AbstractVirtualCollectionMaintenanceService extends
 				// ignore
 			}
 		}
+	}
+
+	private String absolutePathForUniqueName(final String uniqueName)
+			throws FileNotFoundException, VirtualCollectionException {
+		List<DataObject> vcsAsDataObject = null;
+		String vcAbsolutePath = "";
+		try {
+			DataObjectAO dataObjectAO = this.getIrodsAccessObjectFactory()
+					.getDataObjectAO(getIrodsAccount());
+			List<AVUQueryElement> query = new ArrayList<AVUQueryElement>();
+			query.add(AVUQueryElement.instanceForValueQuery(AVUQueryPart.UNITS,
+					AVUQueryOperatorEnum.EQUAL,
+					GeneralParameterConstants.UNIQUE_NAME_AVU_UNIT));
+			query.add(AVUQueryElement.instanceForValueQuery(AVUQueryPart.VALUE,
+					AVUQueryOperatorEnum.EQUAL, uniqueName));
+
+			vcsAsDataObject = dataObjectAO.findDomainByMetadataQuery(query);
+			if (vcsAsDataObject.isEmpty()) {
+				log.error("no vc found with unique name:{}", uniqueName);
+				throw new FileNotFoundException("unable to find vc");
+			} else if (vcsAsDataObject.size() > 1) {
+				log.warn(
+						"multiple vcs found with unique name: {}, returning first",
+						uniqueName);
+				vcAbsolutePath = vcsAsDataObject.get(0).getAbsolutePath();
+			} else {
+				log.info("found vc for unique name");
+				vcAbsolutePath = vcsAsDataObject.get(0).getAbsolutePath();
+			}
+
+		} catch (FileNotFoundException fnf) {
+			throw fnf;
+		} catch (JargonException | JargonQueryException e1) {
+			log.error("error querying for vc with unique name:{}", uniqueName);
+			throw new VirtualCollectionException(e1);
+		}
+		return vcAbsolutePath;
 	}
 
 	@Override
@@ -492,6 +498,7 @@ public abstract class AbstractVirtualCollectionMaintenanceService extends
 				.deleteAVUMetadata(path, avuData);
 		getIrodsAccessObjectFactory().getDataObjectAO(irodsAccount)
 				.addAVUMetadata(path, avuData);
+
 	}
 
 	/**
@@ -524,4 +531,90 @@ public abstract class AbstractVirtualCollectionMaintenanceService extends
 		this.objectMapper = objectMapper;
 	}
 
+	private CollectionTypes collectionTypeForParentCollectionName(
+			final String parentCollectionName) {
+
+		log.info("collectionTypeForParentCollectionName()");
+
+		if (parentCollectionName
+				.equals(GeneralParameterConstants.USER_VC_TEMP_RECENT_VC_QUERIES)) {
+			return CollectionTypes.TEMPORARY_QUERY;
+		} else if (parentCollectionName
+				.equals(GeneralParameterConstants.USER_VC_SUBDIR)) {
+			return CollectionTypes.USER_HOME;
+		} else if (parentCollectionName
+				.equals(GeneralParameterConstants.USER_DISABLED_VC_SUBDIR)) {
+			return CollectionTypes.USER_HIDDEN;
+		} else {
+			return null;
+		}
+
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.irods.jargon.vircoll.VirtualCollectionMaintenanceService#
+	 * reclassifyVirtualCollection(org.irods.jargon.vircoll.CollectionTypes,
+	 * java.lang.Stringhttps://www.youtube.com/watch?v=ZFKYH_Cm7So)
+	 */
+	@Override
+	public void reclassifyVirtualCollection(CollectionTypes collection,
+			String uniqueName) throws FileNotFoundException,
+			VirtualCollectionException {
+
+		log.info("reclassifyVirtualCollection()");
+		if (collection == null) {
+			throw new IllegalArgumentException("null or empty collection");
+		}
+
+		if (uniqueName == null || uniqueName.isEmpty()) {
+			throw new IllegalArgumentException("null or empty uniqueName");
+		}
+
+		log.info("will move collection {}", uniqueName);
+		log.info("to class: {}", collection);
+
+		String vcAbsolutePath = absolutePathForUniqueName(uniqueName);
+
+		IRODSFile vcFile = getPathAsIrodsFile(vcAbsolutePath);
+		String parentPath = vcFile.getParent();
+		log.info("path of parent is:{}", parentPath);
+
+		// get the last bit of the path
+
+		String parentCollectionName = MiscIRODSUtils
+				.getLastPathComponentForGivenAbsolutePath(parentPath);
+
+		CollectionTypes typeForCurrent = this
+				.collectionTypeForParentCollectionName(parentCollectionName);
+		if (typeForCurrent == null) {
+			log.error(
+					"cannot resolve the vrtual collection type for the given path:{}",
+					parentCollectionName);
+			throw new FileNotFoundException("cannot find parent type");
+		}
+
+		String newPath = fileNameForCollectionTypeAndUniqueName(collection,
+				uniqueName);
+
+		IRODSFile newPathAsFile = this.getPathAsIrodsFile(newPath);
+		IRODSFile newPathParentFile = this.getPathAsIrodsFile(newPathAsFile
+				.getParent());
+		// make sure dest file is not htere
+		IRODSFile destFile = this.getPathAsIrodsFile(newPath);
+		destFile.delete();
+		newPathParentFile.mkdirs();
+		try {
+			DataTransferOperations dto = this.getIrodsAccessObjectFactory()
+					.getDataTransferOperations(getIrodsAccount());
+			log.info("moving:{}", vcAbsolutePath);
+			log.info("to:{}", newPath);
+			dto.move(vcAbsolutePath, newPath);
+		} catch (JargonException e) {
+			log.error("exception moving file", e);
+			throw new VirtualCollectionException("error moving file", e);
+		}
+
+	}
 }
