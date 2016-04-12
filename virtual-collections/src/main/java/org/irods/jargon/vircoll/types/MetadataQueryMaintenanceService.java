@@ -26,6 +26,10 @@ public class MetadataQueryMaintenanceService extends
 
 	}
 
+	public MetadataQueryMaintenanceService() {
+
+	}
+
 	/**
 	 * Finds the iRODS absolute path to the user home temp metadata query
 	 * collections, will create it if it does not exist. This is idempotent so

@@ -146,8 +146,11 @@ public class TemporaryQueryServiceImpl extends AbstractJargonService implements
 			myUser = this.getIrodsAccount().getUserName();
 		}
 
-		// set display name to the unique id for starters
-		virtualCollection.setDescription(virtualCollection.getUniqueName());
+		// set display name to the unique id if not defined
+		if (virtualCollection.getDescription() == null
+				|| virtualCollection.getDescription().isEmpty()) {
+			virtualCollection.setDescription(virtualCollection.getUniqueName());
+		}
 
 		log.info("see if the virtual collection has a unique id, and if it already exists");
 		ConfigurableVirtualCollection existingCollection = null;
