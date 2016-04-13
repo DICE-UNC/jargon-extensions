@@ -621,7 +621,8 @@ public abstract class AbstractVirtualCollectionMaintenanceService extends
 	 * @see org.irods.jargon.vircoll.VirtualCollectionMaintenanceService#
 	 * addOrUpdateVirtualCollection
 	 * (org.irods.jargon.vircoll.ConfigurableVirtualCollection,
-	 * org.irods.jargon.vircoll.CollectionTypes, java.lang.String)
+	 * org.irods.jargon.vircoll.CollectionTypes, java.lang.String) TODO: get rid
+	 * of redundant unique name
 	 */
 	@Override
 	public void addOrUpdateVirtualCollection(

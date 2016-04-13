@@ -146,53 +146,29 @@ public class TemporaryQueryServiceImpl extends AbstractJargonService implements
 			myUser = this.getIrodsAccount().getUserName();
 		}
 
+		if (virtualCollection.getUniqueName() == null
+				|| virtualCollection.getUniqueName().isEmpty()) {
+			virtualCollection.setUniqueName(this.generateTempUniqueName());
+		}
+
 		// set display name to the unique id if not defined
 		if (virtualCollection.getDescription() == null
 				|| virtualCollection.getDescription().isEmpty()) {
 			virtualCollection.setDescription(virtualCollection.getUniqueName());
 		}
 
-		log.info("see if the virtual collection has a unique id, and if it already exists");
-		ConfigurableVirtualCollection existingCollection = null;
-		boolean isNew = false;
-		if (virtualCollection.getUniqueName() == null
-				|| virtualCollection.getUniqueName().isEmpty()) {
-			virtualCollection.setUniqueName(generateTempUniqueName());
-			log.info("virtual collection has no unique name, treat as new");
-			isNew = true;
-		} else {
-			log.info("unique id provided, see if it already exits:{}",
+		try {
+			virtualCollectionMaintenanceService.addOrUpdateVirtualCollection(
+					virtualCollection, CollectionTypes.TEMPORARY_QUERY,
 					virtualCollection.getUniqueName());
-			try {
-				existingCollection = virtualCollectionMaintenanceService
-						.retrieveVirtualCollectionGivenUniqueName(virtualCollection
-								.getUniqueName());
-				isNew = false;
-			} catch (FileNotFoundException e) {
-				log.info("vc not found");
-				isNew = true;
-			}
-		}
+			return virtualCollection.getUniqueName();
 
-		log.info("storing temp query:{}", virtualCollection);
+		} catch (JargonException e) {
+			log.error("error storing virtual collection:{}", virtualCollection,
+					e);
+			throw new VirtualCollectionException(
+					"error storing virtual collection", e);
 
-		String parentPath = computeTempQueryPathUnderDotIrods(myUser);
-
-		if (isNew) {
-			log.info("is new, do an add");
-			try {
-				virtualCollectionMaintenanceService.addVirtualCollection(
-						virtualCollection, CollectionTypes.TEMPORARY_QUERY,
-						virtualCollection.getUniqueName());
-				return virtualCollection.getUniqueName();
-			} catch (JargonException e) {
-				log.error("error storing virtual collection:{}",
-						virtualCollection, e);
-				throw new VirtualCollectionException(
-						"error storing virtual collection", e);
-			}
-		} else {
-			return null;
 		}
 
 	}
