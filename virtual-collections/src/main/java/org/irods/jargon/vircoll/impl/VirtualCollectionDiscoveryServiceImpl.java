@@ -69,10 +69,11 @@ public class VirtualCollectionDiscoveryServiceImpl extends
 	 * (non-Javadoc)
 	 * 
 	 * @see org.irods.jargon.vircoll.impl.VirtualCollectionMaintenanceService#
-	 * listDefaultUserCollections()
+	 * listDefaultUserCollections() FIXME: add user name here and to interface
 	 */
 	@Override
-	public List<AbstractVirtualCollection> listDefaultUserCollections() {
+	public List<AbstractVirtualCollection> listDefaultUserCollections()
+			throws VirtualCollectionProfileException {
 		log.info("listDefaultUserCollections()");
 
 		List<AbstractVirtualCollection> virtualCollections = new ArrayList<AbstractVirtualCollection>();
@@ -87,6 +88,25 @@ public class VirtualCollectionDiscoveryServiceImpl extends
 								.computeHomeDirectoryForIRODSAccount(getIrodsAccount())));
 		// add starred folders
 		virtualCollections.add(new StarredFoldersVirtualCollection());
+
+		DotIrodsService dotIrodsService = new DotIrodsServiceImpl(
+				this.getIrodsAccessObjectFactory(), this.getIrodsAccount());
+		DotIrodsCollection userHomeDir = null;
+		try {
+			userHomeDir = dotIrodsService
+					.findOrCreateUserHomeCollection(irodsAccount.getUserName());
+		} catch (JargonException e) {
+			log.error(
+					"JargonException trying to find user home .irods collection",
+					e);
+			throw new VirtualCollectionProfileException(
+					"JargonException trying to find user home .irods collection",
+					e);
+		}
+
+		String queryDir = computeUserHomePathUnderDotIrods(userHomeDir
+				.getAbsolutePath());
+		virtualCollections.addAll(findListOfCollsUnderPath(queryDir));
 
 		log.info("done...");
 		return virtualCollections;
@@ -140,9 +160,6 @@ public class VirtualCollectionDiscoveryServiceImpl extends
 
 		DotIrodsService dotIrodsService = new DotIrodsServiceImpl(
 				this.getIrodsAccessObjectFactory(), this.getIrodsAccount());
-		AbstractVirtualCollectionMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
-				this.getIrodsAccessObjectFactory(), this.getIrodsAccount());
-
 		DotIrodsCollection userHomeDir = null;
 		try {
 			userHomeDir = dotIrodsService
@@ -156,18 +173,23 @@ public class VirtualCollectionDiscoveryServiceImpl extends
 					e);
 		}
 
-		String tempQueryDir = computeTempMetadataQueryPathUnderDotIrods(userHomeDir
+		String tempQueryDir = computeTempQueryPathUnderDotIrods(userHomeDir
 				.getAbsolutePath());
-		IRODSFile tempQueryDirAsIrodsFile = getPathAsIrodsFile(tempQueryDir);
+		return findListOfCollsUnderPath(tempQueryDir);
+	}
 
-		if (tempQueryDirAsIrodsFile == null | !tempQueryDirAsIrodsFile.exists()) {
-			tempQueryDirAsIrodsFile.mkdirs();
+	private List<AbstractVirtualCollection> findListOfCollsUnderPath(
+			String collsAbsolutePath) throws VirtualCollectionProfileException {
+		IRODSFile queryDirAsIrodsFile = getPathAsIrodsFile(collsAbsolutePath);
+
+		if (queryDirAsIrodsFile == null | !queryDirAsIrodsFile.exists()) {
+			queryDirAsIrodsFile.mkdirs();
 		}
 
 		List<AbstractVirtualCollection> returnList = new ArrayList<AbstractVirtualCollection>();
 
 		try {
-			for (File f : tempQueryDirAsIrodsFile.listFiles()) {
+			for (File f : queryDirAsIrodsFile.listFiles()) {
 				try {
 					returnList.add(findVirtualCollectionBasedOnAbsolutePath(f
 							.getAbsolutePath()));
@@ -241,9 +263,25 @@ public class VirtualCollectionDiscoveryServiceImpl extends
 
 	}
 
-	String computeTempMetadataQueryPathUnderDotIrods(
+	String computeUserHomePathUnderDotIrods(
 			final String irodsAbsolutePathToDotIrods) {
-		log.info("computeMetadataQueryPathUnderDotIrods");
+		log.info("computeUserHomePathUnderDotIrods");
+
+		if (irodsAbsolutePathToDotIrods == null
+				|| irodsAbsolutePathToDotIrods.isEmpty()) {
+			throw new IllegalArgumentException(
+					"irodsAbsolutePathToParent is null or empty");
+		}
+		StringBuilder sb = new StringBuilder();
+		sb.append(irodsAbsolutePathToDotIrods);
+		sb.append("/");
+		sb.append(GeneralParameterConstants.USER_VC_SUBDIR);
+		return sb.toString();
+	}
+
+	String computeTempQueryPathUnderDotIrods(
+			final String irodsAbsolutePathToDotIrods) {
+		log.info("computeTempQueryPathUnderDotIrods");
 
 		if (irodsAbsolutePathToDotIrods == null
 				|| irodsAbsolutePathToDotIrods.isEmpty()) {
