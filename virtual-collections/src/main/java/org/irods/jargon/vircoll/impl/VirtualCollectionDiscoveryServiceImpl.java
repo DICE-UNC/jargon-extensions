@@ -75,17 +75,20 @@ public class VirtualCollectionDiscoveryServiceImpl extends
 	public List<AbstractVirtualCollection> listDefaultUserCollections()
 			throws VirtualCollectionProfileException {
 		log.info("listDefaultUserCollections()");
+		AbstractVirtualCollection vc;
 
 		List<AbstractVirtualCollection> virtualCollections = new ArrayList<AbstractVirtualCollection>();
 		// add root
-		virtualCollections
-				.add(new CollectionBasedVirtualCollection("root", "/"));
+
+		vc = new CollectionBasedVirtualCollection("root", "/");
+		vc.setDescription("root");
+		virtualCollections.add(vc);
 		// add user dir
-		virtualCollections
-				.add(new CollectionBasedVirtualCollection(
-						"My Home",
-						MiscIRODSUtils
-								.computeHomeDirectoryForIRODSAccount(getIrodsAccount())));
+		vc = new CollectionBasedVirtualCollection("My Home",
+				MiscIRODSUtils
+						.computeHomeDirectoryForIRODSAccount(getIrodsAccount()));
+		vc.setDescription("home");
+		virtualCollections.add(vc);
 		// add starred folders
 		virtualCollections.add(new StarredFoldersVirtualCollection());
 
@@ -207,6 +210,8 @@ public class VirtualCollectionDiscoveryServiceImpl extends
 					"VirtualCollectionException trying to read mdQuery VC file",
 					e);
 		}
+
+		log.error("found vcs:{}", returnList);
 
 		return returnList;
 	}
