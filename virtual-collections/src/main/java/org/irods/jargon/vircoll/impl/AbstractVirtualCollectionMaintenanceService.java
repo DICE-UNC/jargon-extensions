@@ -581,7 +581,7 @@ public abstract class AbstractVirtualCollectionMaintenanceService extends
 		// get the last bit of the path
 
 		String parentCollectionName = MiscIRODSUtils
-				.getLastPathComponentForGiveAbsolutePath(parentPath);
+				.getLastPathComponentForGivenAbsolutePath(parentPath);
 
 		CollectionTypes typeForCurrent = this
 				.collectionTypeForParentCollectionName(parentCollectionName);
