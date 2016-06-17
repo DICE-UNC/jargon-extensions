@@ -20,8 +20,8 @@ import org.irods.jargon.core.pub.io.IRODSFileInputStream;
 import org.irods.jargon.core.pub.io.IRODSFileOutputStream;
 import org.irods.jargon.core.query.AVUQueryElement;
 import org.irods.jargon.core.query.AVUQueryElement.AVUQueryPart;
-import org.irods.jargon.core.query.AVUQueryOperatorEnum;
 import org.irods.jargon.core.query.JargonQueryException;
+import org.irods.jargon.core.query.QueryConditionOperators;
 import org.irods.jargon.core.service.AbstractJargonService;
 import org.irods.jargon.core.utils.MiscIRODSUtils;
 import org.irods.jargon.extensions.dotirods.DotIrodsConstants;
@@ -265,10 +265,10 @@ public abstract class AbstractVirtualCollectionMaintenanceService extends
 					.getDataObjectAO(getIrodsAccount());
 			List<AVUQueryElement> query = new ArrayList<AVUQueryElement>();
 			query.add(AVUQueryElement.instanceForValueQuery(AVUQueryPart.UNITS,
-					AVUQueryOperatorEnum.EQUAL,
+					QueryConditionOperators.EQUAL,
 					GeneralParameterConstants.UNIQUE_NAME_AVU_UNIT));
 			query.add(AVUQueryElement.instanceForValueQuery(AVUQueryPart.VALUE,
-					AVUQueryOperatorEnum.EQUAL, uniqueName));
+					QueryConditionOperators.EQUAL, uniqueName));
 
 			vcsAsDataObject = dataObjectAO.findDomainByMetadataQuery(query);
 			if (vcsAsDataObject.isEmpty()) {

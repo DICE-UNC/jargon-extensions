@@ -15,8 +15,8 @@ import org.irods.jargon.core.pub.IRODSFileSystem;
 import org.irods.jargon.core.pub.domain.AvuData;
 import org.irods.jargon.core.pub.io.IRODSFile;
 import org.irods.jargon.core.pub.io.IRODSFileInputStream;
-import org.irods.jargon.core.query.AVUQueryOperatorEnum;
 import org.irods.jargon.core.query.PagingAwareCollectionListing;
+import org.irods.jargon.core.query.QueryConditionOperators;
 import org.irods.jargon.mdquery.MetadataQuery;
 import org.irods.jargon.mdquery.MetadataQuery.QueryType;
 import org.irods.jargon.mdquery.MetadataQueryElement;
@@ -370,7 +370,7 @@ public class MetadataQueryVirtualCollectionTest {
 		MetadataQuery metadataQuery = new MetadataQuery();
 		MetadataQueryElement element = new MetadataQueryElement();
 		element.setAttributeName(expectedAttribName);
-		element.setOperator(AVUQueryOperatorEnum.EQUAL);
+		element.setOperator(QueryConditionOperators.EQUAL);
 		@SuppressWarnings("serial")
 		List<String> vals = new ArrayList<String>() {
 			{

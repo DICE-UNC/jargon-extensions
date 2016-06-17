@@ -15,9 +15,9 @@ import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.core.pub.io.IRODSFile;
 import org.irods.jargon.core.query.AVUQueryElement;
 import org.irods.jargon.core.query.AVUQueryElement.AVUQueryPart;
-import org.irods.jargon.core.query.AVUQueryOperatorEnum;
 import org.irods.jargon.core.query.JargonQueryException;
 import org.irods.jargon.core.query.MetaDataAndDomainData;
+import org.irods.jargon.core.query.QueryConditionOperators;
 import org.irods.jargon.core.service.AbstractJargonService;
 import org.irods.jargon.core.utils.MiscIRODSUtils;
 import org.irods.jargon.extensions.dotirods.DotIrodsCollection;
@@ -233,7 +233,7 @@ public class VirtualCollectionDiscoveryServiceImpl extends
 		try {
 			List<AVUQueryElement> query = new ArrayList<AVUQueryElement>();
 			query.add(AVUQueryElement.instanceForValueQuery(AVUQueryPart.UNITS,
-					AVUQueryOperatorEnum.EQUAL,
+					QueryConditionOperators.EQUAL,
 					GeneralParameterConstants.UNIQUE_NAME_AVU_UNIT));
 
 			DataObjectAO dataObjectAO = this.irodsAccessObjectFactory
