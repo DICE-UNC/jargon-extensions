@@ -9,6 +9,7 @@ import org.irods.jargon.core.pub.CollectionPagerAO;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.core.query.PagingAwareCollectionListing;
 import org.irods.jargon.vircoll.AbstractVirtualCollectionExecutor;
+import org.irods.jargon.vircoll.exception.VirtualCollectionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,7 +81,7 @@ public class CollectionBasedVirtualCollectionExecutor extends
 	 */
 	@Override
 	public PagingAwareCollectionListing queryAll(String path, int offset)
-			throws JargonException {
+			throws VirtualCollectionException {
 		log.info("queryAll() with path and offset");
 
 		if (path == null) {
@@ -96,7 +97,7 @@ public class CollectionBasedVirtualCollectionExecutor extends
 			myPath = getCollection().getRootPath();
 		} else if (path.indexOf(getCollection().getRootPath()) != 0) {
 			log.error("my given path is not under the root path");
-			throw new JargonException(
+			throw new VirtualCollectionException(
 					"given path is not under root path of virtual collection");
 		} else {
 			myPath = path;
@@ -104,8 +105,13 @@ public class CollectionBasedVirtualCollectionExecutor extends
 
 		log.info("using myPath:{}", myPath);
 
-		CollectionPagerAO collectionPager = getIrodsAccessObjectFactory()
-				.getCollectionPagerAO(irodsAccount);
-		return collectionPager.retrieveFirstPageUnderParent(myPath);
+		try {
+			CollectionPagerAO collectionPager = getIrodsAccessObjectFactory()
+					.getCollectionPagerAO(irodsAccount);
+			return collectionPager.retrieveFirstPageUnderParent(myPath);
+		} catch (JargonException e) {
+			log.error("exception in collection query", e);
+			throw new VirtualCollectionException("error in jargon query", e);
+		}
 	}
 }

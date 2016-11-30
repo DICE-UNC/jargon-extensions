@@ -5,14 +5,15 @@
 	<groupId>org.irods.jargon</groupId>
 	<artifactId>jargon-extensions</artifactId>
 	<packaging>pom</packaging>
-	<version>4.0.3.1-SNAPSHOT</version>
+	<version>4.2.1.0-SNAPSHOT</version>
 	<name>jargon-extensions</name>
 	<description>Jargon Extensions - higher level general services built on top of jargon core to support indexing and general interface supporting abstractions</description>
 	<url>https://github.com/DICE-UNC/jargon-extensions</url>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<jargon.version>4.0.3.1-SNAPSHOT</jargon.version>
-		<java.version>1.7</java.version>
+		<jargon.version>4.2.1.0-SNAPSHOT</jargon.version>
+		<java.version>1.8</java.version>
+		<jargon.extensions.version>4.2.1.0-SNAPSHOT</jargon.extensions.version>
 	</properties>
 	<issueManagement>
 		<system>GitHub</system>
@@ -165,6 +166,16 @@
 				<groupId>org.irods.jargon</groupId>
 				<artifactId>jargon-user-tagging</artifactId>
 				<version>${jargon.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.irods.jargon</groupId>
+				<artifactId>jargon-mdquery</artifactId>
+				<version>${jargon.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.irods.jargon</groupId>
+				<artifactId>jargon-extensions-if</artifactId>
+				<version>${jargon.extensions.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>junit</groupId>

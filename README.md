@@ -4,7 +4,7 @@ Jargon Extensions API
 
 # Project: Jargon Extensions API
 ### Date:
-### Release Version: 4.0.3.1-SNAPSHOT
+### Release Version: 4.2.1.0-SNAPSHOT
 ### git tag: 
 
 ## News

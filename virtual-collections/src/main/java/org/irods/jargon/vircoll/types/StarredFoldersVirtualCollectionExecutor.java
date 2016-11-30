@@ -16,6 +16,8 @@ import org.irods.jargon.core.utils.CollectionAndPath;
 import org.irods.jargon.core.utils.MiscIRODSUtils;
 import org.irods.jargon.usertagging.domain.IRODSStarredFileOrCollection;
 import org.irods.jargon.usertagging.starring.IRODSStarringService;
+import org.irods.jargon.vircoll.exception.VirtualCollectionException;
+import org.irods.jargon.vircoll.exception.VirtualCollectionRuntimeException;
 import org.irods.jargon.vircoll.impl.VirtualCollectionExecutorImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,9 +76,18 @@ public class StarredFoldersVirtualCollectionExecutor extends
 	 */
 	@Override
 	public PagingAwareCollectionListing queryAll(final int offset)
-			throws JargonException {
+			throws VirtualCollectionException {
 
-		PagingAwareCollectionListing listing = buildInitialPagingAwareCollectionListing();
+		PagingAwareCollectionListing listing;
+		try {
+			listing = buildInitialPagingAwareCollectionListing();
+		} catch (JargonException e) {
+			log.error(
+					"error building paging aware collection listing template",
+					e);
+			throw new VirtualCollectionRuntimeException(
+					"unable to build collection listing template", e);
+		}
 		log.info("queryAll()");
 		log.info("adding colls");
 		this.addAndCharacterizeCollectionListingForSplitListing(listing,
@@ -89,10 +100,16 @@ public class StarredFoldersVirtualCollectionExecutor extends
 	}
 
 	private List<CollectionAndDataObjectListingEntry> queryCollections(
-			final int offset) throws JargonException {
+			final int offset) throws VirtualCollectionException {
 
-		List<IRODSStarredFileOrCollection> starred = irodsStarringService
-				.listStarredCollections(offset);
+		List<IRODSStarredFileOrCollection> starred;
+		try {
+			starred = irodsStarringService.listStarredCollections(offset);
+		} catch (JargonException e) {
+			log.error("error listing starred collections", e);
+			throw new VirtualCollectionRuntimeException(
+					"underlying irods genquery error", e);
+		}
 
 		List<CollectionAndDataObjectListingEntry> entries = new ArrayList<CollectionAndDataObjectListingEntry>();
 
@@ -122,10 +139,16 @@ public class StarredFoldersVirtualCollectionExecutor extends
 	}
 
 	private List<CollectionAndDataObjectListingEntry> queryDataObjects(
-			final int offset) throws JargonException {
+			final int offset) throws VirtualCollectionException {
 
-		List<IRODSStarredFileOrCollection> starred = irodsStarringService
-				.listStarredDataObjects(offset);
+		List<IRODSStarredFileOrCollection> starred;
+		try {
+			starred = irodsStarringService.listStarredDataObjects(offset);
+		} catch (JargonException e) {
+			log.error("error listing starred collections", e);
+			throw new VirtualCollectionRuntimeException(
+					"underlying irods genquery error", e);
+		}
 
 		List<CollectionAndDataObjectListingEntry> entries = new ArrayList<CollectionAndDataObjectListingEntry>();
 

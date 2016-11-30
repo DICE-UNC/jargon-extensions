@@ -2,3 +2,5 @@
 HelloWorld { 
   writeLine("stdout", "Hello, from jargon file templates!"); 
 }
+INPUT  *DelayInfo="<PLUSET>1m</PLUSET><EF>24h</EF>"
+OUTPUT ruleExecOut

@@ -15,7 +15,7 @@ import org.irods.jargon.vircoll.AbstractVirtualCollection;
 public class StarredFoldersVirtualCollection extends AbstractVirtualCollection {
 
 	public static final String DESCRIPTION_KEY = "virtual.collection.description.starred";
-	public static final String DESCRIPTION = "Files and folders marked as starred in iRODS";
+	public static final String DESCRIPTION = "Starred";
 	public static final String NAME = "Starred Files";
 	public static final String NAME_KEY = "virtual.collection.name.starred";
 	public static final String ICON_KEY = "virtual.collection.icon.starred";
