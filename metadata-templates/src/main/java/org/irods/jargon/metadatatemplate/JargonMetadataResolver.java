@@ -23,6 +23,7 @@ import org.irods.jargon.core.pub.io.IRODSFileOutputStream;
 import org.irods.jargon.core.query.AVUQueryElement;
 import org.irods.jargon.core.query.JargonQueryException;
 import org.irods.jargon.core.query.MetaDataAndDomainData;
+import org.irods.jargon.core.query.QueryConditionOperators;
 import org.irods.jargon.core.utils.LocalFileUtils;
 import org.irods.jargon.extensions.dotirods.DotIrodsConstants;
 import org.irods.jargon.extensions.dotirods.DotIrodsService;
@@ -399,7 +400,7 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 		try {
 			queryElements.add(AVUQueryElement.instanceForValueQuery(
 					AVUQueryElement.AVUQueryPart.VALUE,
-					AVUQueryOperatorEnum.EQUAL, uuid.toString()));
+					QueryConditionOperators.EQUAL, uuid.toString()));
 
 			queryResult = irodsAccessObjectFactory
 					.getDataObjectAO(irodsAccount)
@@ -1620,7 +1621,7 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 		List<MetaDataAndDomainData> queryResult = new ArrayList<MetaDataAndDomainData>();
 
 		queryElements.add(AVUQueryElement.instanceForValueQuery(
-				AVUQueryElement.AVUQueryPart.UNITS, AVUQueryOperatorEnum.EQUAL,
+				AVUQueryElement.AVUQueryPart.UNITS, QueryConditionOperators.EQUAL,
 				JargonMetadataTemplateConstants.MD_TEMPLATE_UNIT));
 
 		queryResult = irodsAccessObjectFactory.getDataObjectAO(irodsAccount)
@@ -1639,7 +1640,7 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 		List<MetaDataAndDomainData> queryResult = new ArrayList<MetaDataAndDomainData>();
 
 		queryElements.add(AVUQueryElement.instanceForValueQuery(
-				AVUQueryElement.AVUQueryPart.UNITS, AVUQueryOperatorEnum.EQUAL,
+				AVUQueryElement.AVUQueryPart.UNITS, QueryConditionOperators.EQUAL,
 				JargonMetadataTemplateConstants.MD_ELEMENT_UNIT));
 
 		queryResult = irodsAccessObjectFactory.getDataObjectAO(irodsAccount)
