@@ -8,9 +8,9 @@
     <version>4.2.1.0-SNAPSHOT</version>
   </parent>
   <groupId>org.irods.jargon</groupId>
-  <artifactId>dot-irods-utilities</artifactId>
-  <name>dot-irods-utilities</name>
-  <description>Utilities and general services for the maintenance and discovery of .irods collections.  These are special configuration and internal data collections in the user home, or in particular points in n iRODS file hierachy providing a standard way to represent configuration and customizaion, such as virtual collections, custom rules, metadata templates, and other profiel information used by API and interfaces.</description>
+  <artifactId>file-template</artifactId>
+  <name>file-template</name>
+  <description>Default reference implementation of file-templates, that describe and allow creation of iRODS files based on a default layout</description>
 <build>
 		<plugins>
 			<plugin>

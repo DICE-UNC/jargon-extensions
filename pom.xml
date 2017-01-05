@@ -4,14 +4,15 @@
 	<groupId>org.irods.jargon</groupId>
 	<artifactId>jargon-extensions</artifactId>
 	<packaging>pom</packaging>
-	<version>4.0.3.1-SNAPSHOT</version>
+	<version>4.2.1.0-SNAPSHOT</version>
 	<name>jargon-extensions</name>
 	<description>Jargon Extensions - higher level general services built on top of jargon core to support indexing and general interface supporting abstractions</description>
 	<url>https://github.com/DICE-UNC/jargon-extensions</url>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<jargon.version>4.0.3.1-SNAPSHOT</jargon.version>
-		<java.version>1.7</java.version>
+		<jargon.version>4.2.1.0-SNAPSHOT</jargon.version>
+		<java.version>1.8</java.version>
+		<jargon.extensions.version>4.2.1.0-SNAPSHOT</jargon.extensions.version>
 	</properties>
 	<issueManagement>
 		<system>GitHub</system>
@@ -39,19 +40,6 @@
 		</developer>
 	</developers>
 	<repositories>
-		<repository>
-			<id>ibiblio.repository</id>
-			<name>ibiblio.repository</name>
-			<url>http://mirrors.ibiblio.org/pub/mirrors/maven2</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-				<updatePolicy>never</updatePolicy>
-				<checksumPolicy>fail</checksumPolicy>
-			</snapshots>
-		</repository>
 		<repository>
 			<id>dice.repository snaps</id>
 			<name>dice.repository.snapshots</name>
@@ -179,6 +167,16 @@
 				<version>${jargon.version}</version>
 			</dependency>
 			<dependency>
+				<groupId>org.irods.jargon</groupId>
+				<artifactId>jargon-mdquery</artifactId>
+				<version>${jargon.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.irods.jargon</groupId>
+				<artifactId>jargon-extensions-if</artifactId>
+				<version>${jargon.extensions.version}</version>
+			</dependency>
+			<dependency>
 				<groupId>junit</groupId>
 				<artifactId>junit</artifactId>
 				<version>4.8.2</version>
@@ -215,6 +213,11 @@
 				<artifactId>jackson-databind</artifactId>
 				<version>2.3.3</version>
 			</dependency>
+			<dependency>
+				<groupId>org.irods.jargon</groupId>
+				<artifactId>jargon-extensions-if</artifactId>
+				<version>${jargon.version}</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 	<dependencies>
@@ -248,6 +251,10 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.irods.jargon</groupId>
+			<artifactId>jargon-extensions-if</artifactId>
 		</dependency>
 	</dependencies>
 	<build>
@@ -315,6 +322,7 @@
 	<modules>
 		<module>dot-irods-utilities</module>
 		<module>virtual-collections</module>
-    <module>metadata-templates</module>
-  </modules>
+                <module>metadata-templates</module>
+	        <module>file-template</module>
+        </modules>
 </project>

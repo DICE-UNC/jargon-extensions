@@ -1,0 +1,14 @@
+PREFIX irods:       <http://www.irods.org/ontologies/2013/2/iRODS.owl#> 
+PREFIX skos:    <http://www.w3.org/2004/02/skos/core#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+SELECT ?x ?absPath ?size ?created 
+WHERE { 
+
+?x  irods:correspondingConcept <http://purl.org/astronomy/uat#T1754> .
+?x irods:absolutePath ?absPath .
+?x irods:createDate ?created .
+
+OPTIONAL { 
+?x irods:hasSizeInBytes ?size
+}
+}

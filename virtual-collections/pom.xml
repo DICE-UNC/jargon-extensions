@@ -6,13 +6,12 @@
 	<parent>
 		<artifactId>jargon-extensions</artifactId>
 		<groupId>org.irods.jargon</groupId>
-		<version>4.0.3.1-SNAPSHOT</version>
+		<version>4.2.1.0-SNAPSHOT</version>
 	</parent>
 	<artifactId>virtual-collections</artifactId>
 	<name>virtual-collections</name>
-
 	<dependencies>
-	<dependency>
+		<dependency>
 			<groupId>org.irods.jargon</groupId>
 			<artifactId>dot-irods-utilities</artifactId>
 			<version>${project.version}</version>
@@ -28,6 +27,10 @@
 		<dependency>
 			<groupId>org.irods.jargon</groupId>
 			<artifactId>jargon-user-tagging</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.irods.jargon</groupId>
+			<artifactId>jargon-mdquery</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.irods.jargon</groupId>
@@ -53,6 +56,12 @@
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>4.3.2</version>
+		</dependency>
+
 	</dependencies>
 	<description>Support for virtual collections, which represent alternative means of generating 'ils' listings based on any arbitrary query, rule, or procedure.</description>
 <build>
