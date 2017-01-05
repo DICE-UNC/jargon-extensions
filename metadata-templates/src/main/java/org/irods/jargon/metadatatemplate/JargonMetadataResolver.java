@@ -21,7 +21,6 @@ import org.irods.jargon.core.pub.io.IRODSFileImpl;
 import org.irods.jargon.core.pub.io.IRODSFileInputStream;
 import org.irods.jargon.core.pub.io.IRODSFileOutputStream;
 import org.irods.jargon.core.query.AVUQueryElement;
-import org.irods.jargon.core.query.AVUQueryOperatorEnum;
 import org.irods.jargon.core.query.JargonQueryException;
 import org.irods.jargon.core.query.MetaDataAndDomainData;
 import org.irods.jargon.core.utils.LocalFileUtils;
@@ -150,7 +149,7 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 			templateFiles = dotIrodsService
 					.listFilesOfTypeInDirectoryHierarchyDotIrodsSubDir(
 							absolutePath,
-							DotIrodsConstants.METADATA_TEMPLATES_SUBDIR,
+							DotIrodsConstants.METADATA_TEMPLATES_SUBDIR,  
 							new MetadataTemplateFileFilter());
 		} catch (JargonException je) {
 			log.error("JargonException when listing files in directory", je);
