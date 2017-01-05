@@ -1,0 +1,26 @@
+{
+	"name" : "test1",
+	"description" : "First test metadata template",
+	"author" : "Rick Skarbez",
+	"required" : "true",
+	"elements" : [
+		{
+			"name" : "attribute1",
+			"description" : "First attribute",
+			"required" : "true",
+			"type" : "STRING"
+		},
+		{
+			"name" : "attribute2",
+			"description" : "Second attribute",
+			"required" : "true",
+			"type" : "INT"
+		},
+		{
+			"name" : "optional1",
+			"description" : "Optional attribute",
+			"required" : "false",
+			"type" : "STRING"
+		}
+	]
+}

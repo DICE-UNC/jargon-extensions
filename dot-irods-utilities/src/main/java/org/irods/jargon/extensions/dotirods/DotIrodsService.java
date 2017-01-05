@@ -2,6 +2,7 @@ package org.irods.jargon.extensions.dotirods;
 
 import java.io.File;
 import java.io.FilenameFilter;
+
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -331,6 +332,14 @@ public interface DotIrodsService {
 			FilenameFilter filter) throws FileNotFoundException,
 			JargonException;
 
+
+	/**
+	 * TODO: add comment
+	 * @param irodsAbsolutePath
+	 * @param dotIrodsSubdir
+	 * @return
+	 * @throws JargonException
+	 */
 	public abstract List<String> listStringifiedFilesInDotIrodsCollection(
 			final String irodsAbsolutePath, final String dotIrodsSubdir) throws JargonException;
 }

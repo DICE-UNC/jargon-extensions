@@ -471,6 +471,7 @@ public class DotIrodsServiceImpl extends AbstractJargonService implements
 				.getIRODSFileFactory(getIrodsAccount())
 				.instanceIRODSFile(collection.getAbsolutePath());
 
+
 		@SuppressWarnings("unused")
 		IRODSFile dotIrodsFile = null;
 
@@ -568,12 +569,12 @@ public class DotIrodsServiceImpl extends AbstractJargonService implements
 	 * (non-Javadoc)
 	 * 
 	 * @see org.irods.jargon.extensions.dotirods.DotIrodsService#
-	 * listFilesInDirectoryHierarchyDotIrods (java.lang.String, boolean)
+	 * listFilesInDirectoryHierarchyDotIrods (java.lang.String,
+	 * boolean)
 	 */
 	@Override
-	public File[] listFilesInDirectoryHierarchyDotIrods(
-			final String irodsAbsolutePath, boolean resolveConflicts)
-			throws FileNotFoundException, JargonException {
+	public File[] listFilesInDirectoryHierarchyDotIrods(final String irodsAbsolutePath, boolean resolveConflicts) throws FileNotFoundException, JargonException {
+
 		log.info("listFilesInDirectoryHierarchyDotIrods()");
 
 		if (irodsAbsolutePath == null || irodsAbsolutePath.isEmpty()) {
@@ -581,9 +582,9 @@ public class DotIrodsServiceImpl extends AbstractJargonService implements
 					"null or empty irodsAbsolutePath");
 		}
 
-		return listFilesInDirectoryHierarchyDotIrods(irodsAbsolutePath, null,
-				null, resolveConflicts);
+		return listFilesInDirectoryHierarchyDotIrods(irodsAbsolutePath, null, null, resolveConflicts);
 	}
+	
 
 	/*
 	 * (non-Javadoc)
@@ -592,19 +593,19 @@ public class DotIrodsServiceImpl extends AbstractJargonService implements
 	 * listFilesInDirectoryHierarchyDotIrods (java.lang.String)
 	 */
 	@Override
-	public File[] listFilesInDirectoryHierarchyDotIrods(
-			final String irodsAbsolutePath) throws FileNotFoundException,
-			JargonException {
+
+	public File[] listFilesInDirectoryHierarchyDotIrods(final String irodsAbsolutePath) throws FileNotFoundException, JargonException {
+
 		log.info("listFilesInDirectoryHierarchyDotIrods()");
 
 		if (irodsAbsolutePath == null || irodsAbsolutePath.isEmpty()) {
 			throw new IllegalArgumentException(
 					"null or empty irodsAbsolutePath");
-		}
-
-		return listFilesInDirectoryHierarchyDotIrods(irodsAbsolutePath, null,
-				null, true);
+		}		
+		
+		return listFilesInDirectoryHierarchyDotIrods(irodsAbsolutePath, null, null, true);
 	}
+	
 
 	/*
 	 * (non-Javadoc)
@@ -614,10 +615,8 @@ public class DotIrodsServiceImpl extends AbstractJargonService implements
 	 * java.io.FilenameFilter, boolean)
 	 */
 	@Override
-	public File[] listFilesOfTypeInDirectoryHierarchyDotIrods(
-			final String irodsAbsolutePath, FilenameFilter filter,
-			boolean resolveConflicts) throws FileNotFoundException,
-			JargonException {
+	public File[] listFilesOfTypeInDirectoryHierarchyDotIrods(final String irodsAbsolutePath, FilenameFilter filter, boolean resolveConflicts) throws FileNotFoundException, JargonException {
+
 		log.info("listFilesOfTypeInDirectoryHierarchyDotIrods()");
 
 		if (irodsAbsolutePath == null || irodsAbsolutePath.isEmpty()) {
@@ -629,9 +628,10 @@ public class DotIrodsServiceImpl extends AbstractJargonService implements
 			throw new IllegalArgumentException("null filter");
 		}
 
-		return listFilesInDirectoryHierarchyDotIrods(irodsAbsolutePath, null,
-				filter, resolveConflicts);
+		
+		return listFilesInDirectoryHierarchyDotIrods(irodsAbsolutePath, null, filter, resolveConflicts);
 	}
+	
 
 	/*
 	 * (non-Javadoc)
@@ -641,9 +641,8 @@ public class DotIrodsServiceImpl extends AbstractJargonService implements
 	 * java.io.FilenameFilter, boolean)
 	 */
 	@Override
-	public File[] listFilesOfTypeInDirectoryHierarchyDotIrods(
-			final String irodsAbsolutePath, FilenameFilter filter)
-			throws FileNotFoundException, JargonException {
+	public File[] listFilesOfTypeInDirectoryHierarchyDotIrods(final String irodsAbsolutePath, FilenameFilter filter) throws FileNotFoundException, JargonException {
+
 		log.info("listFilesOfTypeInDirectoryHierarchyDotIrods()");
 
 		if (irodsAbsolutePath == null || irodsAbsolutePath.isEmpty()) {
@@ -653,11 +652,12 @@ public class DotIrodsServiceImpl extends AbstractJargonService implements
 
 		if (filter == null) {
 			throw new IllegalArgumentException("null filter");
-		}
 
-		return listFilesInDirectoryHierarchyDotIrods(irodsAbsolutePath, null,
-				null, true);
+		}		
+		
+		return listFilesInDirectoryHierarchyDotIrods(irodsAbsolutePath, null, null, true);
 	}
+	
 
 	/*
 	 * (non-Javadoc)
@@ -667,10 +667,8 @@ public class DotIrodsServiceImpl extends AbstractJargonService implements
 	 * java.lang.String, java.io.FilenameFilter, boolean)
 	 */
 	@Override
-	public File[] listFilesOfTypeInDirectoryHierarchyDotIrodsSubDir(
-			final String irodsAbsolutePath, final String subDir,
-			FilenameFilter filter, boolean resolveConflicts)
-			throws FileNotFoundException, JargonException {
+	public File[] listFilesOfTypeInDirectoryHierarchyDotIrodsSubDir(final String irodsAbsolutePath, final String subDir, FilenameFilter filter, boolean resolveConflicts) throws FileNotFoundException, JargonException {
+
 		log.info("listFilesOfTypeInDirectoryHierarchyDotIrodsSubDir()");
 
 		if (irodsAbsolutePath == null || irodsAbsolutePath.isEmpty()) {
@@ -685,13 +683,12 @@ public class DotIrodsServiceImpl extends AbstractJargonService implements
 
 		if (filter == null) {
 			throw new IllegalArgumentException("null filter");
-		}
-
-		return listFilesInDirectoryHierarchyDotIrods(irodsAbsolutePath, subDir,
-				filter, resolveConflicts);
+		}	
+		
+		return listFilesInDirectoryHierarchyDotIrods(irodsAbsolutePath, subDir, filter, resolveConflicts);
 	}
-
-	/*
+	
+		/*
 	 * (non-Javadoc)
 	 * 
 	 * @see org.irods.jargon.extensions.dotirods.DotIrodsService#
@@ -699,10 +696,8 @@ public class DotIrodsServiceImpl extends AbstractJargonService implements
 	 * java.lang.String, java.io.FilenameFilter)
 	 */
 	@Override
-	public File[] listFilesOfTypeInDirectoryHierarchyDotIrodsSubDir(
-			final String irodsAbsolutePath, final String subDir,
-			FilenameFilter filter) throws FileNotFoundException,
-			JargonException {
+	public File[] listFilesOfTypeInDirectoryHierarchyDotIrodsSubDir(final String irodsAbsolutePath, final String subDir, FilenameFilter filter) throws FileNotFoundException, JargonException {
+
 		log.info("listFilesOfTypeInDirectoryHierarchyDotIrodsSubDir()");
 
 		if (irodsAbsolutePath == null || irodsAbsolutePath.isEmpty()) {
@@ -719,8 +714,8 @@ public class DotIrodsServiceImpl extends AbstractJargonService implements
 			throw new IllegalArgumentException("null filter");
 		}
 
-		return listFilesInDirectoryHierarchyDotIrods(irodsAbsolutePath, subDir,
-				filter, true);
+		
+		return listFilesInDirectoryHierarchyDotIrods(irodsAbsolutePath, subDir, filter, true);
 
 	}
 }

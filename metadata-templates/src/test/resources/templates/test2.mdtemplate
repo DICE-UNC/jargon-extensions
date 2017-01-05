@@ -1,0 +1,26 @@
+{
+	"name" : "test2",
+	"description" : "Second test metadata template",
+	"author" : "Rick Skarbez",
+	"required" : "true",
+	"elements" : [
+		{
+			"name" : "attribute3",
+			"description" : "Third attribute",
+			"required" : "true",
+			"type" : "STRING"
+		},
+		{
+			"name" : "attribute4",
+			"description" : "Fourth attribute",
+			"required" : "true",
+			"type" : "BOOLEAN"
+		},
+		{
+			"name" : "optional2",
+			"description" : "Another optional attribute",
+			"required" : "false",
+			"type" : "INT"
+		}
+	]
+}
