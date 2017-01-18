@@ -1031,7 +1031,7 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 	 * <p>
 	 * If the file does not already have a UUID associated with it, this
 	 * function will generate one and add an AVU containing it to the file as a
-	 * side effect.</p
+	 * side effect.</p>
 	 * 
 	 * @param inFile
 	 *            {@link File}
