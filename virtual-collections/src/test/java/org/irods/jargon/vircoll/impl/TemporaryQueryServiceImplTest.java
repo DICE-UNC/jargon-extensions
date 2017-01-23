@@ -84,7 +84,9 @@ public class TemporaryQueryServiceImplTest {
 								.computeTempQueryPathUnderDotIrods(irodsAccount
 										.getUserName()));
 
-		targetCollectionAsFile.deleteWithForceOption();
+		// FIXME: temporarily remove force
+		// targetCollectionAsFile.deleteWithForceOption();
+		targetCollectionAsFile.delete();
 		targetCollectionAsFile.mkdirs();
 
 		MetadataQueryMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
@@ -160,7 +162,9 @@ public class TemporaryQueryServiceImplTest {
 						tempQueryService
 								.computeTempQueryPathUnderDotIrods(irodsAccount
 										.getUserName()));
-		targetCollectionAsFile.deleteWithForceOption();
+		// FIXME: temporarily remove force
+		// targetCollectionAsFile.deleteWithForceOption();
+		targetCollectionAsFile.delete();
 		targetCollectionAsFile.mkdirs();
 
 		MetadataQueryMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
@@ -202,7 +206,9 @@ public class TemporaryQueryServiceImplTest {
 								.computeTempQueryPathUnderDotIrods(irodsAccount
 										.getUserName()));
 
-		targetCollectionAsFile.deleteWithForceOption();
+		// FIXME: temporarily remove force
+		// targetCollectionAsFile.deleteWithForceOption();
+		targetCollectionAsFile.delete();
 		targetCollectionAsFile.mkdirs();
 
 		MetadataQueryMaintenanceService mdQueryService = new MetadataQueryMaintenanceService(
