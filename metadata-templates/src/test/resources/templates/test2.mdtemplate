@@ -8,19 +8,19 @@
 			"name" : "attribute3",
 			"description" : "Third attribute",
 			"required" : "true",
-			"type" : "STRING"
+			"type" : "RAW_STRING"
 		},
 		{
 			"name" : "attribute4",
 			"description" : "Fourth attribute",
 			"required" : "true",
-			"type" : "BOOLEAN"
+			"type" : "RAW_BOOLEAN"
 		},
 		{
 			"name" : "optional2",
 			"description" : "Another optional attribute",
 			"required" : "false",
-			"type" : "INT"
+			"type" : "RAW_INT"
 		}
 	]
 }

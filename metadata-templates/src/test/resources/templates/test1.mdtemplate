@@ -8,19 +8,19 @@
 			"name" : "attribute1",
 			"description" : "First attribute",
 			"required" : "true",
-			"type" : "STRING"
+			"type" : "RAW_STRING"
 		},
 		{
 			"name" : "attribute2",
 			"description" : "Second attribute",
 			"required" : "true",
-			"type" : "INT"
+			"type" : "RAW_INT"
 		},
 		{
 			"name" : "optional1",
 			"description" : "Optional attribute",
 			"required" : "false",
-			"type" : "STRING"
+			"type" : "RAW_STRING"
 		}
 	]
 }

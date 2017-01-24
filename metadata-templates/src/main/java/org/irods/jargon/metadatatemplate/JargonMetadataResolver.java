@@ -1045,7 +1045,7 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 			MetadataTemplateParsingException {
 		log.info("processFileToMetadataTemplate()");
 
-		FormBasedMetadataTemplate returnTemplate = null;
+		MetadataTemplate returnTemplate = null;
 		IRODSFileInputStream fis = null;
 		byte[] b = null;
 

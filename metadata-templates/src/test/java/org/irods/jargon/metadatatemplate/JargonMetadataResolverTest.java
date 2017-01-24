@@ -1635,7 +1635,7 @@ public class JargonMetadataResolverTest {
 
 		MetadataElement me = new MetadataElement();
 		me.setElementName("addedElement");
-		me.setType(TypeEnum.INT);
+		me.setType(TypeEnum.RAW_INT);
 		me.setDefaultValue("42");
 
 		template.setDescription("TemplateModified");
@@ -1721,7 +1721,7 @@ public class JargonMetadataResolverTest {
 
 		MetadataElement me = new MetadataElement();
 		me.setElementName("addedElement");
-		me.setType(TypeEnum.INT);
+		me.setType(TypeEnum.RAW_INT);
 		me.setDefaultValue("42");
 
 		template.setDescription("TemplateModified");
@@ -1832,7 +1832,7 @@ public class JargonMetadataResolverTest {
 
 		MetadataElement me = new MetadataElement();
 		me.setElementName("addedElement");
-		me.setType(TypeEnum.INT);
+		me.setType(TypeEnum.RAW_INT);
 		me.setDefaultValue("42");
 
 		template.setDescription("TemplateModified");
