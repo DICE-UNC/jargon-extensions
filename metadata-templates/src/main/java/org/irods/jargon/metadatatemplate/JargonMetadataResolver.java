@@ -854,7 +854,7 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 		ObjStat pathObjStat = irodsAccessObjectFactory.getIRODSFileSystemAO(
 				irodsAccount).getObjStat(irodsAbsolutePath);
 
-		Map<String, FormBasedMetadataTemplate> templateMap = new HashMap<String, FormBasedMetadataTemplate>();
+		Map<String, MetadataTemplate> templateMap = new HashMap<String, MetadataTemplate>();
 
 		String templateSearchPath = pathObjStat.isSomeTypeOfCollection() ? irodsAbsolutePath
 				: this.getPathFromFqName(irodsAbsolutePath);
@@ -866,9 +866,7 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 			// nameUUID would be more general
 			// i.e. dublinCore01234567-0123-0123-0123-0123456789ab
 			String hashKey = mt.getUuid().toString();
-			// TODO Need to address different kinds of templates
-			// XXX FormBasedMetadataTemplate typecast
-			templateMap.put(hashKey, (FormBasedMetadataTemplate) mt);
+			templateMap.put(hashKey, mt);
 		}
 
 		List<MetaDataAndDomainData> avuList;
@@ -884,7 +882,7 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 	}
 
 	MetadataMergeResult mergeTemplateListAndAVUs(
-			Map<String, FormBasedMetadataTemplate> templateMap,
+			Map<String, MetadataTemplate> templateMap,
 			List<MetaDataAndDomainData> avuList) throws FileNotFoundException,
 			IOException, JargonException {
 		log.info("mergeTemplateListAndAVUs()");
@@ -892,7 +890,7 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 		List<MetaDataAndDomainData> orphans = new ArrayList<MetaDataAndDomainData>();
 
 		boolean matched = false;
-		FormBasedMetadataTemplate tempMt = null;
+		MetadataTemplate tempMt = null;
 		int unitIndex = 0;
 		int uuidStart = 0;
 
@@ -915,14 +913,23 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 					log.info("avu belongs to a template already in the map");
 					tempMt = templateMap.get(uuid);
 
-					for (MetadataElement me : tempMt.getElements()) {
-						if (avu.getAvuAttribute()
-								.equalsIgnoreCase(me.getName())) {
-							me.setCurrentValue(avu.getAvuValue());
-							matched = true;
-							break;
+					if (tempMt.getType() == TemplateTypeEnum.FORM_BASED) {
+						FormBasedMetadataTemplate tempFbmt = (FormBasedMetadataTemplate) tempMt;
+						for (MetadataElement me : tempFbmt.getElements()) {
+							if (avu.getAvuAttribute()
+									.equalsIgnoreCase(me.getName())) {
+								if (me.getType() == ElementTypeEnum.REF_IRODS_QUERY) {
+									me.setCurrentValue(getValueFromRefQuery(avu.getAvuValue()));
+								} else {
+									// Not a REF_IRODS_QUERY type, set current value to raw value
+									me.setCurrentValue(avu.getAvuValue());
+								}
+								
+								matched = true;
+								break;
+							}
 						}
-					}
+					} // XXX else if (tempMt is a different kind of template)
 
 					if (!matched) {
 						log.info(
@@ -936,21 +943,26 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 					}
 				} else {
 					log.info("avu belongs to a template not in the map");
-					// XXX FormBasedMetadataTemplate typecast
-					tempMt = (FormBasedMetadataTemplate) this
-							.findTemplateByUUID(uuid);
+					tempMt = this.findTemplateByUUID(uuid);
 					if (tempMt == null) {
 						log.info("no template found for UUID {}", uuid);
-					} else {
-						for (MetadataElement me : tempMt.getElements()) {
+					} else if (tempMt.getType() == TemplateTypeEnum.FORM_BASED) {
+						FormBasedMetadataTemplate tempFbmt = (FormBasedMetadataTemplate) tempMt;
+						for (MetadataElement me : tempFbmt.getElements()) {
 							if (avu.getAvuAttribute().equalsIgnoreCase(
 									me.getName())) {
-								me.setCurrentValue(avu.getAvuValue());
+								if (me.getType() == ElementTypeEnum.REF_IRODS_QUERY) {
+									me.setCurrentValue(getValueFromRefQuery(avu.getAvuValue()));
+								} else {
+									// Not a REF_IRODS_QUERY type, set current value to raw value
+									me.setCurrentValue(avu.getAvuValue());
+								}
+								
 								matched = true;
 								break;
 							}
 						}
-					}
+					} // XXX else if (tempMt is a different kind of template)
 
 					if (!matched) {
 						log.info(
@@ -984,6 +996,11 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 		returnList.addAll(templateMap.values());
 
 		return new MetadataMergeResult(returnList, orphans);
+	}
+	
+	String getValueFromRefQuery(String refQuery) {
+		// XXX Not implemented
+		return "";
 	}
 
 	/**
