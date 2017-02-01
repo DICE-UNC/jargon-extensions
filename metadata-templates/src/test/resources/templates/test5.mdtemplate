@@ -1,0 +1,22 @@
+{
+	"name" : "test5",
+	"description" : "Fifth test metadata template",
+	"author" : "Rick Skarbez",
+	"required" : "true",
+	"elements" : [
+		{
+			"name" : "coll_owner",
+			"description" : "First attribute",
+			"required" : "true",
+			"type" : "REF_IRODS_QUERY",
+			"currentValue" : "coll.owner"
+		},
+		{
+			"name" : "coll_owner_zone",
+			"description" : "Second attribute",
+			"required" : "true",
+			"type" : "REF_IRODS_QUERY",
+			"currentValue" : "coll.owner_zone"
+		}
+	]
+}

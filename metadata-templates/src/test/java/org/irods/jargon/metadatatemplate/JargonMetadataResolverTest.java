@@ -15,6 +15,7 @@ import org.irods.jargon.core.pub.IRODSFileSystem;
 import org.irods.jargon.core.pub.domain.AvuData;
 import org.irods.jargon.core.pub.io.IRODSFile;
 import org.irods.jargon.core.query.MetaDataAndDomainData;
+import org.irods.jargon.dataprofile.accessor.DataProfileAccessorServiceImpl;
 import org.irods.jargon.testutils.TestingPropertiesHelper;
 import org.junit.After;
 import org.junit.BeforeClass;
@@ -29,11 +30,15 @@ public class JargonMetadataResolverTest {
 	private static final String TEMPLATE_FILE_NAME1 = "src/test/resources/templates/test1.mdtemplate";
 	private static final String TEMPLATE_FILE_NAME2 = "src/test/resources/templates/test2.mdtemplate";
 	private static final String TEMPLATE_FILE_NAME3 = "src/test/resources/templates/test3.mdtemplate";
+	private static final String TEMPLATE_FILE_NAME4 = "src/test/resources/templates/test4.mdtemplate";
+	private static final String TEMPLATE_FILE_NAME5 = "src/test/resources/templates/test5.mdtemplate";
 	private static final String TEST_FILE_NAME = "src/test/resources/testFile.txt";
 
 	private static final String TEMPLATE_NOPATH1 = "test1.mdtemplate";
 	private static final String TEMPLATE_NOPATH2 = "test2.mdtemplate";
 	private static final String TEMPLATE_NOPATH3 = "test3.mdtemplate";
+	private static final String TEMPLATE_NOPATH4 = "test4.mdtemplate";
+	private static final String TEMPLATE_NOPATH5 = "test5.mdtemplate";
 	private static final String TEST_FILE_NOPATH = "testFile.txt";
 
 	public static final String IRODS_TEST_SUBDIR_PATH = "JargonMetadataResolverTest";
@@ -2082,7 +2087,7 @@ public class JargonMetadataResolverTest {
 		Assert.assertEquals("Templates not instantiated", "test_value",
 				template.getElements().get(0).getCurrentValue());
 	}
-	
+
 	@Test
 	public void getAndMergeTemplateListForCollection() throws Exception {
 		String testDirName1 = "getAndMergeTemplateListForCollectionDir1";
@@ -2158,7 +2163,7 @@ public class JargonMetadataResolverTest {
 				JargonMetadataTemplateConstants.MD_TEMPLATE_UNIT);
 		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(
 				templateFqName3, avuData);
-		
+
 		String irodsCollectionString = targetIrodsCollection1;
 
 		avuData = AvuData.instance(
@@ -2217,4 +2222,166 @@ public class JargonMetadataResolverTest {
 		Assert.assertEquals("Templates not instantiated", "test_value",
 				template.getElements().get(0).getCurrentValue());
 	}
+
+	@Test
+	public void getAndMergeTemplateWithRefIrodsQueryForFile() throws Exception {
+		String testDirName1 = "getAndMergeTemplateWithRefIrodsQueryForFileDir1";
+
+		String targetIrodsCollection1 = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
+								+ testDirName1);
+
+		IRODSAccount irodsAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
+				.getIRODSAccessObjectFactory();
+
+		IRODSFile targetCollectionAsFile1 = accessObjectFactory
+				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
+						targetIrodsCollection1);
+
+		targetCollectionAsFile1.mkdirs();
+
+		JargonMetadataResolver resolver = new JargonMetadataResolver(
+				irodsAccount, accessObjectFactory);
+
+		String mdTemplatePath1 = resolver
+				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection1);
+
+		DataTransferOperations dataTransferOperations = irodsFileSystem
+				.getIRODSAccessObjectFactory().getDataTransferOperations(
+						irodsAccount);
+
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME4,
+				mdTemplatePath1, irodsAccount.getDefaultStorageResource(),
+				null, null);
+
+		String templateFqName1 = mdTemplatePath1 + '/' + TEMPLATE_NOPATH4;
+
+		UUID uuid1 = UUID.randomUUID();
+		AvuData avuData = AvuData.instance("test4", uuid1.toString(),
+				JargonMetadataTemplateConstants.MD_TEMPLATE_UNIT);
+		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(
+				templateFqName1, avuData);
+
+		// Create a file in targetIrodsCollection1
+		dataTransferOperations.putOperation(TEST_FILE_NAME,
+				targetIrodsCollection1,
+				irodsAccount.getDefaultStorageResource(), null, null);
+		String testFileNameFQ = targetIrodsCollection1 + '/' + TEST_FILE_NOPATH;
+
+		MetadataMergeResult result = resolver
+				.getAndMergeTemplateListForPath(testFileNameFQ);
+
+		FormBasedMetadataTemplate template = (FormBasedMetadataTemplate) result
+				.getTemplates().get(0);
+
+		for (MetadataElement me : template.getElements()) {
+			if (me.getName().equalsIgnoreCase("data_name")) {
+				Assert.assertEquals("data.name not in currentValue",
+						"data.name", me.getCurrentValue());
+				Assert.assertEquals("data.name not populated",
+						TEST_FILE_NOPATH, me.getDisplayValue());
+			} else if (me.getName().equalsIgnoreCase("data_owner_name")) {
+				Assert.assertEquals("data.owner_name not in currentValue",
+						"data.owner_name", me.getCurrentValue());
+				Assert.assertEquals(
+						"data.owner_name not populated",
+						testingPropertiesHelper.getTestProperties()
+								.getProperty(
+										TestingPropertiesHelper.IRODS_USER_KEY),
+						me.getDisplayValue());
+			} else if (me.getName().equalsIgnoreCase("data_owner_zone")) {
+				Assert.assertEquals("data.owner_zone not in currentValue",
+						"data.owner_zone", me.getCurrentValue());
+				Assert.assertEquals(
+						"data.owner_zone not populated",
+						testingPropertiesHelper.getTestProperties()
+								.getProperty(
+										TestingPropertiesHelper.IRODS_ZONE_KEY),
+						me.getDisplayValue());
+			} else if (me.getName().equalsIgnoreCase("user_type")) {
+				Assert.assertEquals("user.type not in currentValue",
+						"user.type", me.getCurrentValue());
+				Assert.assertEquals("user.type not populated",
+						"rodsuser", me.getDisplayValue());
+			}
+		}
+	}
+	
+	@Test
+	public void getAndMergeTemplateWithRefIrodsQueryForCollection() throws Exception {
+		String testDirName1 = "getAndMergeTemplateWithRefIrodsQueryForCollectionDir1";
+
+		String targetIrodsCollection1 = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
+								+ testDirName1);
+
+		IRODSAccount irodsAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
+				.getIRODSAccessObjectFactory();
+
+		IRODSFile targetCollectionAsFile1 = accessObjectFactory
+				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
+						targetIrodsCollection1);
+
+		targetCollectionAsFile1.mkdirs();
+
+		JargonMetadataResolver resolver = new JargonMetadataResolver(
+				irodsAccount, accessObjectFactory);
+
+		String mdTemplatePath1 = resolver
+				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection1);
+
+		DataTransferOperations dataTransferOperations = irodsFileSystem
+				.getIRODSAccessObjectFactory().getDataTransferOperations(
+						irodsAccount);
+
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME5,
+				mdTemplatePath1, irodsAccount.getDefaultStorageResource(),
+				null, null);
+
+		String templateFqName1 = mdTemplatePath1 + '/' + TEMPLATE_NOPATH5;
+
+		UUID uuid1 = UUID.randomUUID();
+		AvuData avuData = AvuData.instance("test5", uuid1.toString(),
+				JargonMetadataTemplateConstants.MD_TEMPLATE_UNIT);
+		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(
+				templateFqName1, avuData);
+
+		MetadataMergeResult result = resolver
+				.getAndMergeTemplateListForPath(targetIrodsCollection1);
+
+		FormBasedMetadataTemplate template = (FormBasedMetadataTemplate) result
+				.getTemplates().get(0);
+
+		for (MetadataElement me : template.getElements()) {
+			if (me.getName().equalsIgnoreCase("coll_owner")) {
+				Assert.assertEquals("coll.owner not in currentValue",
+						"coll.owner", me.getCurrentValue());
+				Assert.assertEquals(
+						"coll.owner not populated",
+						testingPropertiesHelper.getTestProperties()
+								.getProperty(
+										TestingPropertiesHelper.IRODS_USER_KEY),
+						me.getDisplayValue());
+			} else if (me.getName().equalsIgnoreCase("coll_owner_zone")) {
+				Assert.assertEquals("coll.owner_zone not in currentValue",
+						"coll.owner_zone", me.getCurrentValue());
+				Assert.assertEquals(
+						"coll.owner_zone not populated",
+						testingPropertiesHelper.getTestProperties()
+								.getProperty(
+										TestingPropertiesHelper.IRODS_ZONE_KEY),
+						me.getDisplayValue());
+			}
+		}
+	}
+
+
 }
