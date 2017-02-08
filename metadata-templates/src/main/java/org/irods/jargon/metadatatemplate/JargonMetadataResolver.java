@@ -1067,14 +1067,10 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 		returnList.addAll(templateMap.values());
 
 		for (MetadataTemplate mt : returnList) {
-			log.info("XXXXX In returnList loop, mt.getType() = {}",
-					mt.getType());
 			if (mt.getType() == TemplateTypeEnum.FORM_BASED) {
 				for (MetadataElement me : ((FormBasedMetadataTemplate) mt)
 						.getElements()) {
 					if (me.getType() == ElementTypeEnum.REF_IRODS_QUERY) {
-						log.info("XXXXX In REF_IRODS_QUERY, avuValue = {}",
-								me.getCurrentValue());
 						me.setDisplayValue(getValueFromRefQuery(
 								me.getCurrentValue(), irodsAbsolutePath));
 					}
