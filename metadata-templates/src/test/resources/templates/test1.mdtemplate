@@ -7,7 +7,7 @@
 		{
 			"name" : "attribute1",
 			"description" : "First attribute",
-			"required" : "true",
+			"required" : true,
 			"type" : "RAW_STRING"
 		},
 		{

@@ -11,6 +11,9 @@ import java.util.UUID;
 
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.JargonException;
+import org.irods.jargon.core.pub.DataObjectAO;
+import org.irods.jargon.core.pub.CollectionAO;
+import org.irods.jargon.core.pub.FileCatalogObjectAO;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.core.pub.domain.AvuData;
 import org.irods.jargon.core.pub.domain.Collection;
@@ -828,6 +831,72 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 		}
 
 		return inFile.delete();
+	}
+
+	/**
+	 * Save the values in the MetadataTemplate onto the object in the system
+	 * metadata table.
+	 * 
+	 * 
+	 * @param metadataTemplate
+	 * @param pathToObject
+	 * 
+	 * @throws FileNotFoundException
+	 * @throws JargonException
+	 * 
+	 */
+	public void saveTemplateToSystemMetadataOnObject(
+			MetadataTemplate metadataTemplate, String pathToObject)
+			throws FileNotFoundException, JargonException {
+		log.info("saveTemplateToSystemMetadataOnObject()");
+
+		if (pathToObject == null || pathToObject.isEmpty()) {
+			throw new IllegalArgumentException("pathToObject is null or empty");
+		}
+
+		if (metadataTemplate == null) {
+			throw new IllegalArgumentException("metadataTemplate is null");
+		}
+
+		IRODSFile irodsObject = irodsAccessObjectFactory.getIRODSFileFactory(
+				irodsAccount).instanceIRODSFile(pathToObject);
+
+		if (!irodsObject.exists()) {
+			throw new FileNotFoundException(
+					"pathToObject does not resolve to an iRODS object");
+		}
+
+		FileCatalogObjectAO objectAO = null;
+
+		if (irodsObject.isFile()) {
+			objectAO = irodsAccessObjectFactory.getDataObjectAO(irodsAccount);
+		} else if (irodsObject.isDirectory()) {
+			objectAO = irodsAccessObjectFactory.getCollectionAO(irodsAccount);
+		} else {
+			throw new IllegalArgumentException(
+					"object at "
+							+ pathToObject
+							+ " is neither a data object nor a collection - the JargonMetadataResolver currently only supports these types of objects");
+		}
+
+		if (metadataTemplate.getType() == TemplateTypeEnum.FORM_BASED) {
+			for (MetadataElement me : ((FormBasedMetadataTemplate) metadataTemplate)
+					.getElements()) {
+				if (!me.getCurrentValue().isEmpty()) {
+					AvuData avuData = AvuData.instance(me.getName(),
+							me.getCurrentValue(),
+							JargonMetadataTemplateConstants.AVU_UNIT_PREFIX
+									+ metadataTemplate.getUuid().toString());
+					if (irodsObject.isFile()) {
+						((DataObjectAO) objectAO).addAVUMetadata(pathToObject,
+								avuData);
+					} else if (irodsObject.isDirectory()) {
+						((CollectionAO) objectAO).addAVUMetadata(pathToObject,
+								avuData);
+					}
+				}
+			}
+		} // TODO else if for different TemplateTypeEnum types
 	}
 
 	/**
