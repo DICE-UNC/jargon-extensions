@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.irods.jargon</groupId>
 	<artifactId>jargon-extensions</artifactId>
+	<parent>
+		<groupId>org.irods</groupId>
+		<artifactId>jargon-pom</artifactId>
+		<version>4.2.1.0-SNAPSHOT</version>
+	</parent>
 	<packaging>pom</packaging>
-	<version>4.2.1.0-SNAPSHOT</version>
 	<name>jargon-extensions</name>
 	<description>Jargon Extensions - higher level general services built on top of jargon core to support indexing and general interface supporting abstractions</description>
 	<url>https://github.com/DICE-UNC/jargon-extensions</url>
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<jargon.version>4.2.1.0-SNAPSHOT</jargon.version>
-		<java.version>1.8</java.version>
-		<jargon.extensions.version>4.2.1.0-SNAPSHOT</jargon.extensions.version>
-	</properties>
+
 	<issueManagement>
 		<system>GitHub</system>
 		<url>https://github.com/DICE-UNC/jargon-extensions/issues</url>
@@ -39,187 +39,6 @@
 			</roles>
 		</developer>
 	</developers>
-	<repositories>
-		<repository>
-			<id>dice.repository snaps</id>
-			<name>dice.repository.snapshots</name>
-			<url>https://raw.github.com/DICE-UNC/DICE-Maven/master/snapshots</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-				<updatePolicy>always</updatePolicy>
-				<checksumPolicy>warn</checksumPolicy>
-			</snapshots>
-		</repository>
-		<repository>
-			<id>dice.repository</id>
-			<name>dice.repository</name>
-			<url>https://raw.github.com/DICE-UNC/DICE-Maven/master/releases</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>false</enabled>
-				<updatePolicy>always</updatePolicy>
-				<checksumPolicy>warn</checksumPolicy>
-			</snapshots>
-		</repository>
-		<repository>
-			<id>netbeans.repository</id>
-			<name>netbeans.repository</name>
-			<url>http://bits.netbeans.org/maven2</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-				<updatePolicy>never</updatePolicy>
-				<checksumPolicy>fail</checksumPolicy>
-			</snapshots>
-		</repository>
-		<repository>
-			<id>jboss</id>
-			<name>jboss.repository</name>
-			<url>http://repository.jboss.com/maven2/</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-				<updatePolicy>never</updatePolicy>
-				<checksumPolicy>fail</checksumPolicy>
-			</snapshots>
-		</repository>
-	</repositories>
-	<distributionManagement>
-		<repository>
-			<id>internal.repo</id>
-			<name>internal.repo</name>
-			<url>file://${git.repo.root}/releases</url>
-		</repository>
-		<snapshotRepository>
-			<id>internal.repo.snapshot</id>
-			<name>internal.repo.snapshot</name>
-			<url>file://${git.repo.root}/snapshots</url>
-		</snapshotRepository>
-	</distributionManagement>
-	<reporting>
-		<plugins>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>taglist-maven-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>jxr-maven-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<artifactId>maven-surefire-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-report-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<configuration>
-					<links>
-						<link>http://java.sun.com/javase/6/docs/api/</link>
-						<link>http://java.sun.com/javaee/5/docs/api/</link>
-						<link>http://commons.apache.org/logging/apidocs/</link>
-						<link>http://commons.apache.org/io/apidocs/</link>
-						<link>http://commons.apache.org/lang/apidocs/</link>
-						<link>http://www.junit.org/junit/javadoc/</link>
-						<link>http://logging.apache.org/log4j/docs/api/</link>
-						<link>http://velocity.apache.org/engine/devel/apidocs/</link>
-					</links>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-changelog-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>cobertura-maven-plugin</artifactId>
-				<version>2.4</version>
-			</plugin>
-		</plugins>
-	</reporting>
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>org.irods.jargon</groupId>
-				<artifactId>jargon-core</artifactId>
-				<version>${jargon.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.irods.jargon</groupId>
-				<artifactId>jargon-data-utils</artifactId>
-				<version>${jargon.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.irods.jargon</groupId>
-				<artifactId>jargon-user-tagging</artifactId>
-				<version>${jargon.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.irods.jargon</groupId>
-				<artifactId>jargon-mdquery</artifactId>
-				<version>${jargon.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.irods.jargon</groupId>
-				<artifactId>jargon-extensions-if</artifactId>
-				<version>${jargon.extensions.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>junit</groupId>
-				<artifactId>junit</artifactId>
-				<version>4.8.2</version>
-				<scope>test</scope>
-			</dependency>
-			<dependency>
-				<groupId>commons-logging</groupId>
-				<artifactId>commons-logging</artifactId>
-				<version>1.1.1</version>
-			</dependency>
-                        <dependency>
-                                <groupId>org.slf4j</groupId>
-                                <artifactId>slf4j-api</artifactId>
-                                <version>1.7.22</version>
-                        </dependency>
-                        <dependency>
-                                <groupId>log4j</groupId>
-                                <artifactId>log4j</artifactId>
-                                <version>1.2.17</version>
-                        </dependency>
-                        <dependency>
-                                <groupId>org.slf4j</groupId>
-                                <artifactId>slf4j-log4j12</artifactId>
-                                <version>1.7.22</version>
-                        </dependency>
-			<dependency>
-				<groupId>org.mockito</groupId>
-				<artifactId>mockito-all</artifactId>
-				<version>1.8.1</version>
-				<scope>test</scope>
-			</dependency>
-			<dependency>
-				<groupId>com.fasterxml.jackson.core</groupId>
-				<artifactId>jackson-databind</artifactId>
-				<version>2.3.3</version>
-			</dependency>
-			<dependency>
-				<groupId>org.irods.jargon</groupId>
-				<artifactId>jargon-extensions-if</artifactId>
-				<version>${jargon.version}</version>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
 	<dependencies>
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -246,6 +65,7 @@
 		<dependency>
 			<groupId>org.irods.jargon</groupId>
 			<artifactId>jargon-core</artifactId>
+			<version>${project.version}</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
@@ -255,6 +75,7 @@
 		<dependency>
 			<groupId>org.irods.jargon</groupId>
 			<artifactId>jargon-extensions-if</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 	</dependencies>
 	<build>
@@ -322,7 +143,7 @@
 	<modules>
 		<module>dot-irods-utilities</module>
 		<module>virtual-collections</module>
-                <module>metadata-templates</module>
-	        <module>file-template</module>
-        </modules>
+		<module>metadata-templates</module>
+		<module>file-template</module>
+	</modules>
 </project>
