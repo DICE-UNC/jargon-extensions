@@ -883,16 +883,21 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 			for (MetadataElement me : ((FormBasedMetadataTemplate) metadataTemplate)
 					.getElements()) {
 				if (!me.getCurrentValue().isEmpty()) {
-					AvuData avuData = AvuData.instance(me.getName(),
-							me.getCurrentValue(),
-							JargonMetadataTemplateConstants.AVU_UNIT_PREFIX
-									+ metadataTemplate.getUuid().toString());
-					if (irodsObject.isFile()) {
-						((DataObjectAO) objectAO).addAVUMetadata(pathToObject,
-								avuData);
-					} else if (irodsObject.isDirectory()) {
-						((CollectionAO) objectAO).addAVUMetadata(pathToObject,
-								avuData);
+					for (String s : me.getCurrentValue()) {
+						AvuData avuData = AvuData
+								.instance(
+										me.getName(),
+										s,
+										JargonMetadataTemplateConstants.AVU_UNIT_PREFIX
+												+ metadataTemplate.getUuid()
+														.toString());
+						if (irodsObject.isFile()) {
+							((DataObjectAO) objectAO).addAVUMetadata(
+									pathToObject, avuData);
+						} else if (irodsObject.isDirectory()) {
+							((CollectionAO) objectAO).addAVUMetadata(
+									pathToObject, avuData);
+						}
 					}
 				}
 			}
@@ -995,8 +1000,8 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 									me.getName())) {
 								// Not a REF_IRODS_QUERY type, set current
 								// value to raw value
-								me.setCurrentValue(avu.getAvuValue());
-								me.setDisplayValue(avu.getAvuValue());
+								me.getCurrentValue().add(avu.getAvuValue());
+								me.getDisplayValue().add(avu.getAvuValue());
 
 								matched = true;
 								break;
@@ -1026,8 +1031,8 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 									me.getName())) {
 								// Not a REF_IRODS_QUERY type, set current
 								// value to raw value
-								me.setCurrentValue(avu.getAvuValue());
-								me.setDisplayValue(avu.getAvuValue());
+								me.getCurrentValue().add(avu.getAvuValue());
+								me.getDisplayValue().add(avu.getAvuValue());
 
 								matched = true;
 								break;
@@ -1071,8 +1076,8 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 				for (MetadataElement me : ((FormBasedMetadataTemplate) mt)
 						.getElements()) {
 					if (me.getType() == ElementTypeEnum.REF_IRODS_QUERY) {
-						me.setDisplayValue(getValueFromRefQuery(
-								me.getCurrentValue(), irodsAbsolutePath));
+						me.getDisplayValue().add(getValueFromRefQuery(
+								me.getCurrentValue().get(0), irodsAbsolutePath));
 					}
 				}
 			}

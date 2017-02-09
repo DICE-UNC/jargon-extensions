@@ -1644,7 +1644,7 @@ public class JargonMetadataResolverTest {
 		MetadataElement me = new MetadataElement();
 		me.setElementName("addedElement");
 		me.setType(ElementTypeEnum.RAW_INT);
-		me.setDefaultValue("42");
+		me.getDefaultValue().add("42");
 
 		template.setDescription("TemplateModified");
 		template.getElements().add(me);
@@ -1730,7 +1730,7 @@ public class JargonMetadataResolverTest {
 		MetadataElement me = new MetadataElement();
 		me.setElementName("addedElement");
 		me.setType(ElementTypeEnum.RAW_INT);
-		me.setDefaultValue("42");
+		me.getDefaultValue().add("42");
 
 		template.setDescription("TemplateModified");
 		template.getElements().add(me);
@@ -1841,7 +1841,7 @@ public class JargonMetadataResolverTest {
 		MetadataElement me = new MetadataElement();
 		me.setElementName("addedElement");
 		me.setType(ElementTypeEnum.RAW_INT);
-		me.setDefaultValue("42");
+		me.getDefaultValue().add("42");
 
 		template.setDescription("TemplateModified");
 		template.getElements().add(me);
@@ -2088,7 +2088,7 @@ public class JargonMetadataResolverTest {
 		}
 
 		Assert.assertEquals("Templates not instantiated", "test_value",
-				template.getElements().get(0).getCurrentValue());
+				template.getElements().get(0).getCurrentValue().get(0));
 	}
 
 	@Test
@@ -2223,7 +2223,7 @@ public class JargonMetadataResolverTest {
 		}
 
 		Assert.assertEquals("Templates not instantiated", "test_value",
-				template.getElements().get(0).getCurrentValue());
+				template.getElements().get(0).getCurrentValue().get(0));
 	}
 
 	@Test
@@ -2284,32 +2284,32 @@ public class JargonMetadataResolverTest {
 		for (MetadataElement me : template.getElements()) {
 			if (me.getName().equalsIgnoreCase("data_name")) {
 				Assert.assertEquals("data.name not in currentValue",
-						"data.name", me.getCurrentValue());
+						"data.name", me.getCurrentValue().get(0));
 				Assert.assertEquals("data.name not populated",
-						TEST_FILE_NOPATH, me.getDisplayValue());
+						TEST_FILE_NOPATH, me.getDisplayValue().get(0));
 			} else if (me.getName().equalsIgnoreCase("data_owner_name")) {
 				Assert.assertEquals("data.owner_name not in currentValue",
-						"data.owner_name", me.getCurrentValue());
+						"data.owner_name", me.getCurrentValue().get(0));
 				Assert.assertEquals(
 						"data.owner_name not populated",
 						testingPropertiesHelper.getTestProperties()
 								.getProperty(
 										TestingPropertiesHelper.IRODS_USER_KEY),
-						me.getDisplayValue());
+						me.getDisplayValue().get(0));
 			} else if (me.getName().equalsIgnoreCase("data_owner_zone")) {
 				Assert.assertEquals("data.owner_zone not in currentValue",
-						"data.owner_zone", me.getCurrentValue());
+						"data.owner_zone", me.getCurrentValue().get(0));
 				Assert.assertEquals(
 						"data.owner_zone not populated",
 						testingPropertiesHelper.getTestProperties()
 								.getProperty(
 										TestingPropertiesHelper.IRODS_ZONE_KEY),
-						me.getDisplayValue());
+						me.getDisplayValue().get(0));
 			} else if (me.getName().equalsIgnoreCase("user_type")) {
 				Assert.assertEquals("user.type not in currentValue",
-						"user.type", me.getCurrentValue());
+						"user.type", me.getCurrentValue().get(0));
 				Assert.assertEquals("user.type not populated", "rodsuser",
-						me.getDisplayValue());
+						me.getDisplayValue().get(0));
 			}
 		}
 	}
@@ -2367,22 +2367,22 @@ public class JargonMetadataResolverTest {
 		for (MetadataElement me : template.getElements()) {
 			if (me.getName().equalsIgnoreCase("coll_owner")) {
 				Assert.assertEquals("coll.owner not in currentValue",
-						"coll.owner", me.getCurrentValue());
+						"coll.owner", me.getCurrentValue().get(0));
 				Assert.assertEquals(
 						"coll.owner not populated",
 						testingPropertiesHelper.getTestProperties()
 								.getProperty(
 										TestingPropertiesHelper.IRODS_USER_KEY),
-						me.getDisplayValue());
+						me.getDisplayValue().get(0));
 			} else if (me.getName().equalsIgnoreCase("coll_owner_zone")) {
 				Assert.assertEquals("coll.owner_zone not in currentValue",
-						"coll.owner_zone", me.getCurrentValue());
+						"coll.owner_zone", me.getCurrentValue().get(0));
 				Assert.assertEquals(
 						"coll.owner_zone not populated",
 						testingPropertiesHelper.getTestProperties()
 								.getProperty(
 										TestingPropertiesHelper.IRODS_ZONE_KEY),
-						me.getDisplayValue());
+						me.getDisplayValue().get(0));
 			}
 		}
 	}
@@ -2446,11 +2446,11 @@ public class JargonMetadataResolverTest {
 
 		for (MetadataElement me : fbmt.getElements()) {
 			if (me.getName().equalsIgnoreCase("attribute1")) {
-				me.setCurrentValue("value1");
+				me.getCurrentValue().add("value1");
 			} else if (me.getName().equalsIgnoreCase("attribute2")) {
-				me.setCurrentValue("42");
+				me.getCurrentValue().add("42");
 			} else if (me.getName().equalsIgnoreCase("optional1")) {
-				me.setCurrentValue("optional_value1");
+				me.getCurrentValue().add("optional_value1");
 			}
 		}
 
@@ -2574,11 +2574,11 @@ public class JargonMetadataResolverTest {
 
 		for (MetadataElement me : fbmt.getElements()) {
 			if (me.getName().equalsIgnoreCase("attribute1")) {
-				me.setCurrentValue("value1");
+				me.getCurrentValue().add("value1");
 			} else if (me.getName().equalsIgnoreCase("attribute2")) {
-				me.setCurrentValue("42");
+				me.getCurrentValue().add("42");
 			} else if (me.getName().equalsIgnoreCase("optional1")) {
-				me.setCurrentValue("optional_value1");
+				me.getCurrentValue().add("optional_value1");
 			}
 		}
 

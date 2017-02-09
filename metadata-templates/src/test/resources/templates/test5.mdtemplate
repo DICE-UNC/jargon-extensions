@@ -9,14 +9,14 @@
 			"description" : "First attribute",
 			"required" : "true",
 			"type" : "REF_IRODS_QUERY",
-			"currentValue" : "coll.owner"
+			"currentValue" : ["coll.owner"]
 		},
 		{
 			"name" : "coll_owner_zone",
 			"description" : "Second attribute",
 			"required" : "true",
 			"type" : "REF_IRODS_QUERY",
-			"currentValue" : "coll.owner_zone"
+			"currentValue" : ["coll.owner_zone"]
 		}
 	]
 }
