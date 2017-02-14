@@ -145,5 +145,6 @@
 		<module>virtual-collections</module>
 		<module>metadata-templates</module>
 		<module>file-template</module>
+		<module>pidservice-handle</module>
 	</modules>
 </project>
