@@ -18,7 +18,6 @@ import org.irods.jargon.core.pub.io.IRODSFile;
 import org.irods.jargon.core.query.AVUQueryElement;
 import org.irods.jargon.core.query.MetaDataAndDomainData;
 import org.irods.jargon.core.query.QueryConditionOperators;
-import org.irods.jargon.dataprofile.accessor.DataProfileAccessorServiceImpl;
 import org.irods.jargon.testutils.TestingPropertiesHelper;
 import org.junit.After;
 import org.junit.BeforeClass;
@@ -2286,7 +2285,7 @@ public class JargonMetadataResolverTest {
 				Assert.assertEquals("data.name not in currentValue",
 						"data.name", me.getCurrentValue());
 				Assert.assertEquals("data.name not populated",
-						TEST_FILE_NOPATH, me.getDisplayValue());
+						TEST_FILE_NOPATH, me.getName());
 			} else if (me.getName().equalsIgnoreCase("data_owner_name")) {
 				Assert.assertEquals("data.owner_name not in currentValue",
 						"data.owner_name", me.getCurrentValue());
@@ -2295,7 +2294,7 @@ public class JargonMetadataResolverTest {
 						testingPropertiesHelper.getTestProperties()
 								.getProperty(
 										TestingPropertiesHelper.IRODS_USER_KEY),
-						me.getDisplayValue());
+						me.getName());
 			} else if (me.getName().equalsIgnoreCase("data_owner_zone")) {
 				Assert.assertEquals("data.owner_zone not in currentValue",
 						"data.owner_zone", me.getCurrentValue());
@@ -2304,12 +2303,12 @@ public class JargonMetadataResolverTest {
 						testingPropertiesHelper.getTestProperties()
 								.getProperty(
 										TestingPropertiesHelper.IRODS_ZONE_KEY),
-						me.getDisplayValue());
+						me.getName());
 			} else if (me.getName().equalsIgnoreCase("user_type")) {
 				Assert.assertEquals("user.type not in currentValue",
 						"user.type", me.getCurrentValue());
 				Assert.assertEquals("user.type not populated", "rodsuser",
-						me.getDisplayValue());
+						me.getName());
 			}
 		}
 	}
@@ -2373,7 +2372,7 @@ public class JargonMetadataResolverTest {
 						testingPropertiesHelper.getTestProperties()
 								.getProperty(
 										TestingPropertiesHelper.IRODS_USER_KEY),
-						me.getDisplayValue());
+						me.getName());
 			} else if (me.getName().equalsIgnoreCase("coll_owner_zone")) {
 				Assert.assertEquals("coll.owner_zone not in currentValue",
 						"coll.owner_zone", me.getCurrentValue());
@@ -2382,7 +2381,7 @@ public class JargonMetadataResolverTest {
 						testingPropertiesHelper.getTestProperties()
 								.getProperty(
 										TestingPropertiesHelper.IRODS_ZONE_KEY),
-						me.getDisplayValue());
+						me.getName());
 			}
 		}
 	}
