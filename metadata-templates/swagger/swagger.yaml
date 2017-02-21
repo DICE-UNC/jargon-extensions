@@ -1,0 +1,259 @@
+swagger: "2.0"
+info:
+  description: |
+    This is a FormBot server
+  version: "1.0.0"
+  title: Swagger FormBot
+  #termsOfService: http://helloreverb.com/terms/
+  #contact:
+  #  name: apiteam@swagger.io
+  #license:
+  #  name: Apache 2.0
+  #  url: http://www.apache.org/licenses/LICENSE-2.0.html
+#host: petstore.swagger.io
+basePath: /v1
+schemes:
+  - https
+securityDefinitions:
+  basicAuth:
+    type: basic
+    description: HTTP Basic Authentication. Works over `HTTP` and `HTTPS`
+security:
+  - basicAuth: []
+paths:
+  /buildForm:
+    post:
+      tags:
+        - FormBot
+        - build
+        - form
+      summary: Retrieve a FormBot form (as JSON) for the specified MetadataTemplate
+      description: ""
+      operationId: buildForm
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: JSON object that can be used to retrieve a MetadataTemplate
+          required: true
+          schema:
+            type: string
+            format: byte
+      responses:
+        "200":
+          description: Form found
+          schema:
+            type: file
+          examples:
+            application/json:
+              uniqueId: 01234567-0123-0123-0123-0123456789ab
+              name: test1
+              description: Test metadata template
+              fields:
+                - name: attribute1
+                  uniqueId: 01234567-0123-0123-0123-0123456789abattribute1
+                  type: RAW_STRING
+                  formElement: TEXT
+                  currentValue: 
+                    - value1
+                  defaultValue:
+                  displayValue:
+                    - value1
+                  paramList: 
+                    - value1
+                    - value2
+                    - value3
+                - name: attribute2
+                  uniqueId: 01234567-0123-0123-0123-0123456789abattribute2
+                  description: Second attribute
+                  type: RAW_INT
+                  formElement: NUMBER
+                  currentValue: 
+                    - 5
+                  paramList: 
+                    - 1
+                    - 10
+        "400":
+          description: Ill-formed request
+        "404":
+          description: MetadataTemplate could not be found
+  /validateField:
+    post:
+      tags:
+        - FormBot
+        - validate
+        - field
+      summary: Validate the specified field (MetadataElement)
+      description: ""
+      operationId: validateField
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: JSON object representing a FormBotField
+          required: true
+          schema:
+            type: string
+            format: byte
+      responses:
+        "200":
+          description: Form found, validation performed
+          schema:
+            type: file
+          examples:
+            application/json:
+            - code: SUCCESS
+              message: SUCCESS
+            - code: FAILURE
+              message: BAD_TYPE
+            - code: ERROR
+              message: Field not found
+        "400":
+          description: Ill-formed request
+        "404":
+          description: MetadataTemplate could not be found
+  /validateForm:
+    post:
+      tags:
+        - FormBot
+        - validate
+        - form
+      summary: Validate the specified form (MetadataTemplate)
+      description: ""
+      operationId: validateForm
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: JSON object representing a FormBotForm
+          required: true
+          schema:
+            type: string
+            format: byte
+      responses:
+        "200":
+          description: Form found, validation performed
+          schema:
+            type: file
+          examples:
+            application/json:
+            - - code: SUCCESS
+                message: All fields passed validation
+              - code: SUCCESS
+                message: SUCCESS
+              - code: FAILURE
+                message: BAD_TYPE
+              - code: SUCCESS
+                message: SUCCESS
+            - - code: FAILURE
+                message: At least one field failed validation
+              - code: SUCCESS
+                message: SUCCESS
+              - code: FAILURE
+                message: BAD_TYPE
+              - code: SUCCESS
+                message: SUCCESS
+            - code: ERROR
+              message: Bad JSON
+        "400":
+          description: Ill-formed request
+        "404":
+          description: MetadataTemplate could not be found
+  /executeField:
+    post:
+      tags:
+        - FormBot
+        - execute
+        - field
+      summary: Execute the specified field (MetadataElement)
+      description: ""
+      operationId: executeField
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: JSON object representing a FormBotField
+          required: true
+          schema:
+            type: string
+            format: byte
+      responses:
+        "200":
+          description: Form found, execution performed
+          schema:
+            type: file
+          examples:
+            application/json:
+            - code: SUCCESS
+              message: Metadata added to iRODS object
+            - code: VALIDATION_FAILED
+              message: Validation failed for field attribute2 with value [badValue]
+            - code: ERROR
+              message: JargonException when trying to save metadata to iRODS object
+        "400":
+          description: Ill-formed request
+        "404":
+          description: MetadataTemplate could not be found
+  /executeForm:
+    post:
+      tags:
+        - FormBot
+        - execute
+        - form
+      summary: Execute the specified form (MetadataTemplate)
+      description: ""
+      operationId: executeForm
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: JSON object representing a FormBotForm
+          required: true
+          schema:
+            type: string
+            format: byte
+      responses:
+        "200":
+          description: Form found, validation performed
+          schema:
+            type: file
+          examples:
+            application/json:
+            - - code: SUCCESS
+                message: Metadata added to iRODS object
+              - code: SUCCESS
+                message: SUCCESS
+              - code: FAILURE
+                message: BAD_TYPE
+              - code: SUCCESS
+                message: SUCCESS
+            - - code: VALIDATION_FAILED
+                message: At least one field failed validation
+              - code: SUCCESS
+                message: SUCCESS
+              - code: VALIDATION_FAILED
+                message: BAD_TYPE
+              - code: SUCCESS
+                message: SUCCESS
+            - code: ERROR
+              message: Bad JSON
+        "400":
+          description: Ill-formed request
+        "404":
+          description: MetadataTemplate could not be found
+ 

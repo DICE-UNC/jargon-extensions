@@ -845,6 +845,7 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 	 * @throws JargonException
 	 * 
 	 */
+/*	
 	public void saveTemplateToSystemMetadataOnObject(
 			MetadataTemplate metadataTemplate, String pathToObject)
 			throws FileNotFoundException, JargonException {
@@ -903,7 +904,7 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 			}
 		} // TODO else if for different TemplateTypeEnum types
 	}
-
+*/
 	/**
 	 * Populate metadata templates from a list of AVUs
 	 * 
@@ -1215,6 +1216,8 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 		} else {
 			log.info("MDTemplate AVU present. continuing...");
 		}
+		
+		UUID uuid = UUID.fromString(queryResult.get(0).getAvuValue());
 
 		b = new byte[fis.available()];
 
@@ -1234,8 +1237,14 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 		returnTemplate.setFqName(inFile.getAbsolutePath());
 
 		// UUID
-		returnTemplate.setUuid(UUID
-				.fromString(queryResult.get(0).getAvuValue()));
+		returnTemplate.setUuid(uuid);
+		
+		if (returnTemplate.getType() == TemplateTypeEnum.FORM_BASED) {
+			FormBasedMetadataTemplate fbmt = (FormBasedMetadataTemplate) returnTemplate;
+			for (MetadataElement me : fbmt.getElements()) {
+				me.setTemplateUuid(uuid);
+			}
+		}
 
 		// Date created, dateModified
 		irodsAccessObjectFactory.getIRODSFileSystemAO(irodsAccount);
