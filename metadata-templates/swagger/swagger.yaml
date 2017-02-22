@@ -45,7 +45,7 @@ paths:
         "200":
           description: Form found
           schema:
-            "$ref": "#/definitions/FormBotForm"
+            "$ref": "#/definitions/Form"
           examples:
             application/json:
               uniqueId: 01234567-0123-0123-0123-0123456789ab
@@ -98,7 +98,7 @@ paths:
           description: JSON object representing a FormBotField
           required: true
           schema:
-            "$ref": "#/definitions/FormBotField"
+            "$ref": "#/definitions/Field"
       responses:
         "200":
           description: Form found, validation performed
@@ -135,7 +135,7 @@ paths:
           description: JSON object representing a FormBotForm
           required: true
           schema:
-            "$ref": "#/definitions/FormBotForm"
+            "$ref": "#/definitions/Form"
       responses:
         "200":
           description: Form found, validation performed
@@ -186,7 +186,7 @@ paths:
           description: JSON object representing a FormBotField
           required: true
           schema:
-            "$ref": "#/definitions/FormBotField"
+            "$ref": "#/definitions/Field"
       responses:
         "200":
           description: Form found, execution performed
@@ -223,7 +223,7 @@ paths:
           description: JSON object representing a FormBotForm
           required: true
           schema:
-            "$ref": "#/definitions/FormBotForm"
+            "$ref": "#/definitions/Form"
       responses:
         "200":
           description: Form found, validation performed
@@ -267,7 +267,7 @@ definitions:
         type: string
       activeDir:
         type: string
-  FormBotField:
+  Field:
     type: object
     properties:
       name:
@@ -296,7 +296,7 @@ definitions:
         type: array
         items:
           type: string
-  FormBotForm:
+  Form:
     type: object
     properties:
       name:
@@ -308,7 +308,7 @@ definitions:
       fields:
         type: array
         items:
-          "$ref": "#/definitions/FormBotField"
+          "$ref": "#/definitions/Field"
   ValidationResult:
     type: object
     properties:
