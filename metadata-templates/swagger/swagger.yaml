@@ -40,13 +40,12 @@ paths:
           description: JSON object that can be used to retrieve a MetadataTemplate
           required: true
           schema:
-            type: string
-            format: byte
+            "$ref": "#/definitions/MetadataTemplateRequest"
       responses:
         "200":
           description: Form found
           schema:
-            type: file
+            "$ref": "#/definitions/FormBotForm"
           examples:
             application/json:
               uniqueId: 01234567-0123-0123-0123-0123456789ab
@@ -99,13 +98,12 @@ paths:
           description: JSON object representing a FormBotField
           required: true
           schema:
-            type: string
-            format: byte
+            "$ref": "#/definitions/FormBotField"
       responses:
         "200":
           description: Form found, validation performed
           schema:
-            type: file
+            "$ref": "#/definitions/ValidationResult"
           examples:
             application/json:
             - code: SUCCESS
@@ -137,13 +135,14 @@ paths:
           description: JSON object representing a FormBotForm
           required: true
           schema:
-            type: string
-            format: byte
+            "$ref": "#/definitions/FormBotForm"
       responses:
         "200":
           description: Form found, validation performed
           schema:
-            type: file
+            type: array
+            items:
+              "$ref": "#/definitions/ValidationResult"
           examples:
             application/json:
             - - code: SUCCESS
@@ -187,13 +186,12 @@ paths:
           description: JSON object representing a FormBotField
           required: true
           schema:
-            type: string
-            format: byte
+            "$ref": "#/definitions/FormBotField"
       responses:
         "200":
           description: Form found, execution performed
           schema:
-            type: file
+            "$ref": "#/definitions/ExecutionResult"
           examples:
             application/json:
             - code: SUCCESS
@@ -225,13 +223,14 @@ paths:
           description: JSON object representing a FormBotForm
           required: true
           schema:
-            type: string
-            format: byte
+            "$ref": "#/definitions/FormBotForm"
       responses:
         "200":
           description: Form found, validation performed
           schema:
-            type: file
+            type: array
+            items:
+              "$ref": "#/definitions/ExecutionResult"
           examples:
             application/json:
             - - code: SUCCESS
@@ -256,4 +255,78 @@ paths:
           description: Ill-formed request
         "404":
           description: MetadataTemplate could not be found
+definitions:
+  MetadataTemplateRequest:
+    type: object
+    properties:
+      uuid:
+        type: string
+      fqName:
+        type: string
+      name:
+        type: string
+      activeDir:
+        type: string
+  FormBotField:
+    type: object
+    properties:
+      name:
+        type: string
+      uniqueId:
+        type: string
+      description:
+        type: string
+      type:
+        type: string
+      formElement:
+        type: string
+      currentValue:
+        type: array
+        items:
+          type: string
+      defaultValue:
+        type: array
+        items:
+          type: string
+      displayValue:
+        type: array
+        items:
+          type: string
+      paramList:
+        type: array
+        items:
+          type: string
+  FormBotForm:
+    type: object
+    properties:
+      name:
+        type: string
+      uniqueId:
+        type: string
+      description:
+        type: string
+      fields:
+        type: array
+        items:
+          "$ref": "#/definitions/FormBotField"
+  ValidationResult:
+    type: object
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+  ExecutionResult:
+    type: object
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+    
+          
+    
+      
+        
+      
  
