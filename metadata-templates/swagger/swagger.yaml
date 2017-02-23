@@ -27,7 +27,7 @@ paths:
         - status
       summary: Get a ping back from the server
       description: 'Call iRODS as an authorized user and get back a simple ping response'
-      operationId: server
+      operationId: ping
       produces:
         - application/json
         - application/xml
