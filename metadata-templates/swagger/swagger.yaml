@@ -21,6 +21,28 @@ securityDefinitions:
 security:
   - basicAuth: []
 paths:
+  /ping:
+    get:
+      tags:
+        - status
+      summary: Get a ping back from the server
+      description: 'Call iRODS as an authorized user and get back a simple ping response'
+      operationId: server
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - name: midTierOnly
+          in: query
+          description: causes ping to only reach the REST mid tier and not query the back-end, provides a simple heartbeat of the mid-tier.  By default a ping will talk to the back end iRODS server
+          required: false
+          default: false
+          type: boolean
+      responses:
+          200:
+            description: 'Successful ping, containing info on how long it too the REST backend to connect to iRODS'
+            schema:
+              $ref: '#/definitions/Ping'
   /buildForm:
     post:
       tags:
@@ -186,11 +208,16 @@ paths:
         - application/json
       parameters:
         - in: body
-          name: body
+          name: field
           description: JSON object representing a FormBotField
           required: true
           schema:
-            "$ref": "#/definitions/FieldAndPath"
+            "$ref": "#/definitions/Field"
+        - in: query
+          name: path
+          description: Path to an iRODS object that will receive metadata
+          required: true
+          type: string
       responses:
         "200":
           description: Form found, execution performed
@@ -223,11 +250,16 @@ paths:
         - application/json
       parameters:
         - in: body
-          name: body
+          name: form
           description: JSON object representing a FormBotForm
           required: true
           schema:
-            "$ref": "#/definitions/FormAndPath"
+            "$ref": "#/definitions/Form"
+        - in: query
+          name: path
+          description: Path to an iRODS object that will receive metadata
+          required: true
+          type: string
       responses:
         "200":
           description: Form found, validation performed
@@ -313,20 +345,6 @@ definitions:
         type: array
         items:
           "$ref": "#/definitions/Field"
-  FieldAndPath:
-    type: object
-    properties:
-      field:
-        "$ref": "#/definitions/Field"
-      path:
-        type: string
-  FormAndPath:
-    type: object
-    properties:
-      form:
-        "$ref": "#/definitions/Form"
-      path:
-        type: string        
   ValidationResult:
     type: object
     properties:
@@ -341,6 +359,13 @@ definitions:
         type: string
       message:
         type: string
+  Ping:
+    type: object
+    properties:
+      pingTime:
+        type: number
+        format: float
+        description: milliseconds to connect to iRODS and get a response from the perspective of the mid-tier service
     
           
     
