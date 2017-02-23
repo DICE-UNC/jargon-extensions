@@ -39,7 +39,7 @@ public class JargonMetadataResolverTest {
 	private static final String TEMPLATE_NOPATH4 = "test4.mdtemplate";
 	private static final String TEMPLATE_NOPATH5 = "test5.mdtemplate";
 	private static final String TEST_FILE_NOPATH = "testFile.txt";
-
+	
 	public static final String IRODS_TEST_SUBDIR_PATH = "JargonMetadataResolverTest";
 	private static org.irods.jargon.testutils.IRODSTestSetupUtilities irodsTestSetupUtilities = null;
 

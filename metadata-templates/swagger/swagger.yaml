@@ -114,8 +114,12 @@ paths:
               message: Field not found
         "400":
           description: Ill-formed request
+          schema:
+            "$ref": "#/definitions/ValidationResult"
         "404":
           description: MetadataTemplate could not be found
+          schema:
+            "$ref": "#/definitions/ValidationResult"
   /validateForm:
     post:
       tags:
@@ -186,7 +190,7 @@ paths:
           description: JSON object representing a FormBotField
           required: true
           schema:
-            "$ref": "#/definitions/Field"
+            "$ref": "#/definitions/FieldAndPath"
       responses:
         "200":
           description: Form found, execution performed
@@ -223,7 +227,7 @@ paths:
           description: JSON object representing a FormBotForm
           required: true
           schema:
-            "$ref": "#/definitions/Form"
+            "$ref": "#/definitions/FormAndPath"
       responses:
         "200":
           description: Form found, validation performed
@@ -309,6 +313,20 @@ definitions:
         type: array
         items:
           "$ref": "#/definitions/Field"
+  FieldAndPath:
+    type: object
+    properties:
+      field:
+        "$ref": "#/definitions/Field"
+      path:
+        type: string
+  FormAndPath:
+    type: object
+    properties:
+      form:
+        "$ref": "#/definitions/Form"
+      path:
+        type: string        
   ValidationResult:
     type: object
     properties:
