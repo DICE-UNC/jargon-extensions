@@ -11,9 +11,6 @@ import java.util.UUID;
 
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.JargonException;
-import org.irods.jargon.core.pub.DataObjectAO;
-import org.irods.jargon.core.pub.CollectionAO;
-import org.irods.jargon.core.pub.FileCatalogObjectAO;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.core.pub.domain.AvuData;
 import org.irods.jargon.core.pub.domain.Collection;
@@ -28,20 +25,9 @@ import org.irods.jargon.core.query.JargonQueryException;
 import org.irods.jargon.core.query.MetaDataAndDomainData;
 import org.irods.jargon.core.query.QueryConditionOperators;
 import org.irods.jargon.core.utils.LocalFileUtils;
-import org.irods.jargon.dataprofile.accessor.DataProfileAccessorService;
-import org.irods.jargon.dataprofile.accessor.DataProfileAccessorServiceImpl;
-import org.irods.jargon.dataprofile.accessor.exception.AttributeNotFoundException;
-import org.irods.jargon.dataprofile.accessor.exception.ObjectNotFoundException;
-import org.irods.jargon.dataprofile.accessor.exception.WrongDataProfileTypeException;
 import org.irods.jargon.extensions.dotirods.DotIrodsConstants;
 import org.irods.jargon.extensions.dotirods.DotIrodsService;
 import org.irods.jargon.extensions.dotirods.DotIrodsServiceImpl;
-import org.irods.jargon.metadatatemplate.AbstractMetadataResolver;
-import org.irods.jargon.metadatatemplate.FormBasedMetadataTemplate;
-import org.irods.jargon.metadatatemplate.MetadataElement;
-import org.irods.jargon.metadatatemplate.MetadataTemplate;
-import org.irods.jargon.metadatatemplate.MetadataTemplateFileFilter;
-import org.irods.jargon.metadatatemplate.TemplateParserSingleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,7 +40,8 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 	private final IRODSAccount irodsAccount;
 	private final DotIrodsService dotIrodsService;
 	private final IRODSAccessObjectFactory irodsAccessObjectFactory;
-	private DataProfileAccessorServiceImpl dataProfileAccessor = null;
+
+	// private DataProfileAccessorServiceImpl dataProfileAccessor = null;
 
 	/**
 	 * Constructor for a JargonMetadataResolver. JargonMetadataResolver must be
@@ -845,66 +832,44 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 	 * @throws JargonException
 	 * 
 	 */
-/*	
-	public void saveTemplateToSystemMetadataOnObject(
-			MetadataTemplate metadataTemplate, String pathToObject)
-			throws FileNotFoundException, JargonException {
-		log.info("saveTemplateToSystemMetadataOnObject()");
-
-		if (pathToObject == null || pathToObject.isEmpty()) {
-			throw new IllegalArgumentException("pathToObject is null or empty");
-		}
-
-		if (metadataTemplate == null) {
-			throw new IllegalArgumentException("metadataTemplate is null");
-		}
-
-		IRODSFile irodsObject = irodsAccessObjectFactory.getIRODSFileFactory(
-				irodsAccount).instanceIRODSFile(pathToObject);
-
-		if (!irodsObject.exists()) {
-			throw new FileNotFoundException(
-					"pathToObject does not resolve to an iRODS object");
-		}
-
-		FileCatalogObjectAO objectAO = null;
-
-		if (irodsObject.isFile()) {
-			objectAO = irodsAccessObjectFactory.getDataObjectAO(irodsAccount);
-		} else if (irodsObject.isDirectory()) {
-			objectAO = irodsAccessObjectFactory.getCollectionAO(irodsAccount);
-		} else {
-			throw new IllegalArgumentException(
-					"object at "
-							+ pathToObject
-							+ " is neither a data object nor a collection - the JargonMetadataResolver currently only supports these types of objects");
-		}
-
-		if (metadataTemplate.getType() == TemplateTypeEnum.FORM_BASED) {
-			for (MetadataElement me : ((FormBasedMetadataTemplate) metadataTemplate)
-					.getElements()) {
-				if (!me.getCurrentValue().isEmpty()) {
-					for (String s : me.getCurrentValue()) {
-						AvuData avuData = AvuData
-								.instance(
-										me.getName(),
-										s,
-										JargonMetadataTemplateConstants.AVU_UNIT_PREFIX
-												+ metadataTemplate.getUuid()
-														.toString());
-						if (irodsObject.isFile()) {
-							((DataObjectAO) objectAO).addAVUMetadata(
-									pathToObject, avuData);
-						} else if (irodsObject.isDirectory()) {
-							((CollectionAO) objectAO).addAVUMetadata(
-									pathToObject, avuData);
-						}
-					}
-				}
-			}
-		} // TODO else if for different TemplateTypeEnum types
-	}
-*/
+	/*
+	 * public void saveTemplateToSystemMetadataOnObject( MetadataTemplate
+	 * metadataTemplate, String pathToObject) throws FileNotFoundException,
+	 * JargonException { log.info("saveTemplateToSystemMetadataOnObject()");
+	 * 
+	 * if (pathToObject == null || pathToObject.isEmpty()) { throw new
+	 * IllegalArgumentException("pathToObject is null or empty"); }
+	 * 
+	 * if (metadataTemplate == null) { throw new
+	 * IllegalArgumentException("metadataTemplate is null"); }
+	 * 
+	 * IRODSFile irodsObject = irodsAccessObjectFactory.getIRODSFileFactory(
+	 * irodsAccount).instanceIRODSFile(pathToObject);
+	 * 
+	 * if (!irodsObject.exists()) { throw new FileNotFoundException(
+	 * "pathToObject does not resolve to an iRODS object"); }
+	 * 
+	 * FileCatalogObjectAO objectAO = null;
+	 * 
+	 * if (irodsObject.isFile()) { objectAO =
+	 * irodsAccessObjectFactory.getDataObjectAO(irodsAccount); } else if
+	 * (irodsObject.isDirectory()) { objectAO =
+	 * irodsAccessObjectFactory.getCollectionAO(irodsAccount); } else { throw
+	 * new IllegalArgumentException( "object at " + pathToObject +
+	 * " is neither a data object nor a collection - the JargonMetadataResolver currently only supports these types of objects"
+	 * ); }
+	 * 
+	 * if (metadataTemplate.getType() == TemplateTypeEnum.FORM_BASED) { for
+	 * (MetadataElement me : ((FormBasedMetadataTemplate) metadataTemplate)
+	 * .getElements()) { if (!me.getCurrentValue().isEmpty()) { for (String s :
+	 * me.getCurrentValue()) { AvuData avuData = AvuData .instance(
+	 * me.getName(), s, JargonMetadataTemplateConstants.AVU_UNIT_PREFIX +
+	 * metadataTemplate.getUuid() .toString()); if (irodsObject.isFile()) {
+	 * ((DataObjectAO) objectAO).addAVUMetadata( pathToObject, avuData); } else
+	 * if (irodsObject.isDirectory()) { ((CollectionAO)
+	 * objectAO).addAVUMetadata( pathToObject, avuData); } } } } } // TODO else
+	 * if for different TemplateTypeEnum types }
+	 */
 	/**
 	 * Populate metadata templates from a list of AVUs
 	 * 
@@ -1077,8 +1042,9 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 				for (MetadataElement me : ((FormBasedMetadataTemplate) mt)
 						.getElements()) {
 					if (me.getType() == ElementTypeEnum.REF_IRODS_QUERY) {
-						me.getDisplayValue().add(getValueFromRefQuery(
-								me.getCurrentValue().get(0), irodsAbsolutePath));
+						me.getDisplayValue().add(
+								getValueFromRefQuery(me.getCurrentValue()
+										.get(0), irodsAbsolutePath));
 					}
 				}
 			}
@@ -1089,28 +1055,25 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 
 	String getValueFromRefQuery(String refQuery, String irodsAbsolutePath) {
 		String returnString = "";
-		try {
-			// Check if need to reinitialize dataProfileAccessor
-			if (dataProfileAccessor == null
-					|| !dataProfileAccessor.getIrodsAbsolutePath()
-							.equalsIgnoreCase(irodsAbsolutePath)
-					|| !dataProfileAccessor.getIrodsUserName()
-							.equalsIgnoreCase(irodsAccount.getUserName())) {
-				log.info("XXXXX Initializing dataProfileAccessor");
-				dataProfileAccessor = new DataProfileAccessorServiceImpl(
-						irodsAccount, irodsAccessObjectFactory,
-						irodsAbsolutePath);
-			}
-			returnString = dataProfileAccessor.retrieveValueFromKey(refQuery);
-		} catch (ObjectNotFoundException e) {
-			returnString = "OBJECT_OR_COLLECTION_NOT_FOUND";
-		} catch (WrongDataProfileTypeException e) {
-			returnString = "WRONG_DATA_PROFILE_TYPE";
-		} catch (AttributeNotFoundException e) {
-			returnString = "DATA_OR_COLLECTION_ATTRIBUTE_NOT_FOUND";
-		} catch (JargonException e) {
-			returnString = "ERROR_CREATING_DATA_PROFILE_ACCESSOR";
-		}
+		/*
+		 * try { // Check if need to reinitialize dataProfileAccessor if
+		 * (dataProfileAccessor == null ||
+		 * !dataProfileAccessor.getIrodsAbsolutePath()
+		 * .equalsIgnoreCase(irodsAbsolutePath) ||
+		 * !dataProfileAccessor.getIrodsUserName()
+		 * .equalsIgnoreCase(irodsAccount.getUserName())) {
+		 * log.info("XXXXX Initializing dataProfileAccessor");
+		 * dataProfileAccessor = new DataProfileAccessorServiceImpl(
+		 * irodsAccount, irodsAccessObjectFactory, irodsAbsolutePath); }
+		 * returnString = dataProfileAccessor.retrieveValueFromKey(refQuery); }
+		 * catch (ObjectNotFoundException e) { returnString =
+		 * "OBJECT_OR_COLLECTION_NOT_FOUND"; } catch
+		 * (WrongDataProfileTypeException e) { returnString =
+		 * "WRONG_DATA_PROFILE_TYPE"; } catch (AttributeNotFoundException e) {
+		 * returnString = "DATA_OR_COLLECTION_ATTRIBUTE_NOT_FOUND"; } catch
+		 * (JargonException e) { returnString =
+		 * "ERROR_CREATING_DATA_PROFILE_ACCESSOR"; }
+		 */
 
 		return returnString;
 	}
@@ -1216,7 +1179,7 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 		} else {
 			log.info("MDTemplate AVU present. continuing...");
 		}
-		
+
 		UUID uuid = UUID.fromString(queryResult.get(0).getAvuValue());
 
 		b = new byte[fis.available()];
@@ -1238,7 +1201,7 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 
 		// UUID
 		returnTemplate.setUuid(uuid);
-		
+
 		if (returnTemplate.getType() == TemplateTypeEnum.FORM_BASED) {
 			FormBasedMetadataTemplate fbmt = (FormBasedMetadataTemplate) returnTemplate;
 			for (MetadataElement me : fbmt.getElements()) {
