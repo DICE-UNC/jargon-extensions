@@ -11,9 +11,6 @@ import java.util.UUID;
 
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.JargonException;
-import org.irods.jargon.core.pub.CollectionAO;
-import org.irods.jargon.core.pub.DataObjectAO;
-import org.irods.jargon.core.pub.FileCatalogObjectAO;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.core.pub.domain.AvuData;
 import org.irods.jargon.core.pub.domain.Collection;
@@ -835,60 +832,44 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 	 * @throws JargonException
 	 * 
 	 */
-	public void saveTemplateToSystemMetadataOnObject(
-			MetadataTemplate metadataTemplate, String pathToObject)
-			throws FileNotFoundException, JargonException {
-		log.info("saveTemplateToSystemMetadataOnObject()");
-
-		if (pathToObject == null || pathToObject.isEmpty()) {
-			throw new IllegalArgumentException("pathToObject is null or empty");
-		}
-
-		if (metadataTemplate == null) {
-			throw new IllegalArgumentException("metadataTemplate is null");
-		}
-
-		IRODSFile irodsObject = irodsAccessObjectFactory.getIRODSFileFactory(
-				irodsAccount).instanceIRODSFile(pathToObject);
-
-		if (!irodsObject.exists()) {
-			throw new FileNotFoundException(
-					"pathToObject does not resolve to an iRODS object");
-		}
-
-		FileCatalogObjectAO objectAO = null;
-
-		if (irodsObject.isFile()) {
-			objectAO = irodsAccessObjectFactory.getDataObjectAO(irodsAccount);
-		} else if (irodsObject.isDirectory()) {
-			objectAO = irodsAccessObjectFactory.getCollectionAO(irodsAccount);
-		} else {
-			throw new IllegalArgumentException(
-					"object at "
-							+ pathToObject
-							+ " is neither a data object nor a collection - the JargonMetadataResolver currently only supports these types of objects");
-		}
-
-		if (metadataTemplate.getType() == TemplateTypeEnum.FORM_BASED) {
-			for (MetadataElement me : ((FormBasedMetadataTemplate) metadataTemplate)
-					.getElements()) {
-				if (!me.getCurrentValue().isEmpty()) {
-					AvuData avuData = AvuData.instance(me.getName(),
-							me.getCurrentValue(),
-							JargonMetadataTemplateConstants.AVU_UNIT_PREFIX
-									+ metadataTemplate.getUuid().toString());
-					if (irodsObject.isFile()) {
-						((DataObjectAO) objectAO).addAVUMetadata(pathToObject,
-								avuData);
-					} else if (irodsObject.isDirectory()) {
-						((CollectionAO) objectAO).addAVUMetadata(pathToObject,
-								avuData);
-					}
-				}
-			}
-		} // TODO else if for different TemplateTypeEnum types
-	}
-
+	/*
+	 * public void saveTemplateToSystemMetadataOnObject( MetadataTemplate
+	 * metadataTemplate, String pathToObject) throws FileNotFoundException,
+	 * JargonException { log.info("saveTemplateToSystemMetadataOnObject()");
+	 * 
+	 * if (pathToObject == null || pathToObject.isEmpty()) { throw new
+	 * IllegalArgumentException("pathToObject is null or empty"); }
+	 * 
+	 * if (metadataTemplate == null) { throw new
+	 * IllegalArgumentException("metadataTemplate is null"); }
+	 * 
+	 * IRODSFile irodsObject = irodsAccessObjectFactory.getIRODSFileFactory(
+	 * irodsAccount).instanceIRODSFile(pathToObject);
+	 * 
+	 * if (!irodsObject.exists()) { throw new FileNotFoundException(
+	 * "pathToObject does not resolve to an iRODS object"); }
+	 * 
+	 * FileCatalogObjectAO objectAO = null;
+	 * 
+	 * if (irodsObject.isFile()) { objectAO =
+	 * irodsAccessObjectFactory.getDataObjectAO(irodsAccount); } else if
+	 * (irodsObject.isDirectory()) { objectAO =
+	 * irodsAccessObjectFactory.getCollectionAO(irodsAccount); } else { throw
+	 * new IllegalArgumentException( "object at " + pathToObject +
+	 * " is neither a data object nor a collection - the JargonMetadataResolver currently only supports these types of objects"
+	 * ); }
+	 * 
+	 * if (metadataTemplate.getType() == TemplateTypeEnum.FORM_BASED) { for
+	 * (MetadataElement me : ((FormBasedMetadataTemplate) metadataTemplate)
+	 * .getElements()) { if (!me.getCurrentValue().isEmpty()) { for (String s :
+	 * me.getCurrentValue()) { AvuData avuData = AvuData .instance(
+	 * me.getName(), s, JargonMetadataTemplateConstants.AVU_UNIT_PREFIX +
+	 * metadataTemplate.getUuid() .toString()); if (irodsObject.isFile()) {
+	 * ((DataObjectAO) objectAO).addAVUMetadata( pathToObject, avuData); } else
+	 * if (irodsObject.isDirectory()) { ((CollectionAO)
+	 * objectAO).addAVUMetadata( pathToObject, avuData); } } } } } // TODO else
+	 * if for different TemplateTypeEnum types }
+	 */
 	/**
 	 * Populate metadata templates from a list of AVUs
 	 * 
@@ -959,82 +940,117 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 		int unitIndex = 0;
 		int uuidStart = 0;
 
-		/*
-		 * 
-		 * for (MetaDataAndDomainData avu : avuList) { if
-		 * (avu.getAvuUnit().contains(
-		 * JargonMetadataTemplateConstants.AVU_UNIT_PREFIX)) {
-		 * log.info("unit contains a template UUID"); unitIndex =
-		 * avu.getAvuUnit().indexOf(
-		 * JargonMetadataTemplateConstants.AVU_UNIT_PREFIX); uuidStart =
-		 * unitIndex + JargonMetadataTemplateConstants.AVU_UNIT_PREFIX
-		 * .length();
-		 * 
-		 * // The unit string might contain, e.g., //
-		 * "fromTemplate:01234567-01234-01234-01234-0123456789ab" String uuid =
-		 * avu.getAvuUnit().substring(uuidStart);
-		 * 
-		 * // See if the template is already in the hash map if
-		 * (templateMap.containsKey(uuid)) {
-		 * log.info("avu belongs to a template already in the map"); tempMt =
-		 * templateMap.get(uuid);
-		 * 
-		 * if (tempMt.getType() == TemplateTypeEnum.FORM_BASED) {
-		 * FormBasedMetadataTemplate tempFbmt = (FormBasedMetadataTemplate)
-		 * tempMt; for (MetadataElement me : tempFbmt.getElements()) { if
-		 * (avu.getAvuAttribute().equalsIgnoreCase( me.getName())) { // Not a
-		 * REF_IRODS_QUERY type, set current // value to raw value
-		 * me.setCurrentValue(avu.getAvuValue());
-		 * me.setDisplayValue(avu.getAvuValue());
-		 * 
-		 * matched = true; break; } } } // XXX else if (tempMt is a different
-		 * kind of template)
-		 * 
-		 * if (!matched) { log.info(
-		 * "AVU claims to be from template {}, but name not matched", uuid);
-		 * log.info( "AVU: {}", avu.getAvuAttribute() + ", " + avu.getAvuValue()
-		 * + ", " + avu.getAvuUnit()); } } else {
-		 * log.info("avu belongs to a template not in the map"); tempMt =
-		 * this.findTemplateByUUID(uuid); if (tempMt == null) {
-		 * log.info("no template found for UUID {}", uuid); } else if
-		 * (tempMt.getType() == TemplateTypeEnum.FORM_BASED) {
-		 * FormBasedMetadataTemplate tempFbmt = (FormBasedMetadataTemplate)
-		 * tempMt; for (MetadataElement me : tempFbmt.getElements()) { if
-		 * (avu.getAvuAttribute().equalsIgnoreCase( me.getName())) { // Not a
-		 * REF_IRODS_QUERY type, set current // value to raw value
-		 * me.setCurrentValue(avu.getAvuValue());
-		 * me.setDisplayValue(avu.getAvuValue());
-		 * 
-		 * matched = true; break; } } } // XXX else if (tempMt is a different
-		 * kind of template)
-		 * 
-		 * if (!matched) { log.info(
-		 * "AVU claims to be from template {}, but name not matched", uuid);
-		 * log.info( "AVU: {}", avu.getAvuAttribute() + ", " + avu.getAvuValue()
-		 * + ", " + avu.getAvuUnit()); } else {
-		 * log.info("AVU matched with new template {}", uuid);
-		 * log.info("Adding template to map"); templateMap.put(uuid, tempMt); }
-		 * } }
-		 * 
-		 * if (!matched) {
-		 * log.info("AVU not matched with any template, adding to orphans list"
-		 * ); orphans.add(avu); }
-		 * 
-		 * matched = false; tempMt = null; unitIndex = 0; uuidStart = 0; }
-		 * 
-		 * List<MetadataTemplate> returnList = new
-		 * ArrayList<MetadataTemplate>();
-		 * returnList.addAll(templateMap.values());
-		 * 
-		 * for (MetadataTemplate mt : returnList) { if (mt.getType() ==
-		 * TemplateTypeEnum.FORM_BASED) { for (MetadataElement me :
-		 * ((FormBasedMetadataTemplate) mt) .getElements()) { if (me.getType()
-		 * == ElementTypeEnum.REF_IRODS_QUERY) {
-		 * me.setDisplayValue(getValueFromRefQuery( me.getCurrentValue(),
-		 * irodsAbsolutePath)); } } } }
-		 */
-		// return new MetadataMergeResult(returnList, orphans);
-		return null;
+		for (MetaDataAndDomainData avu : avuList) {
+			if (avu.getAvuUnit().contains(
+					JargonMetadataTemplateConstants.AVU_UNIT_PREFIX)) {
+				log.info("unit contains a template UUID");
+				unitIndex = avu.getAvuUnit().indexOf(
+						JargonMetadataTemplateConstants.AVU_UNIT_PREFIX);
+				uuidStart = unitIndex
+						+ JargonMetadataTemplateConstants.AVU_UNIT_PREFIX
+								.length();
+
+				// The unit string might contain, e.g.,
+				// "fromTemplate:01234567-01234-01234-01234-0123456789ab"
+				String uuid = avu.getAvuUnit().substring(uuidStart);
+
+				// See if the template is already in the hash map
+				if (templateMap.containsKey(uuid)) {
+					log.info("avu belongs to a template already in the map");
+					tempMt = templateMap.get(uuid);
+
+					if (tempMt.getType() == TemplateTypeEnum.FORM_BASED) {
+						FormBasedMetadataTemplate tempFbmt = (FormBasedMetadataTemplate) tempMt;
+						for (MetadataElement me : tempFbmt.getElements()) {
+							if (avu.getAvuAttribute().equalsIgnoreCase(
+									me.getName())) {
+								// Not a REF_IRODS_QUERY type, set current
+								// value to raw value
+								me.getCurrentValue().add(avu.getAvuValue());
+								me.getDisplayValue().add(avu.getAvuValue());
+
+								matched = true;
+								break;
+							}
+						}
+					} // XXX else if (tempMt is a different kind of template)
+
+					if (!matched) {
+						log.info(
+								"AVU claims to be from template {}, but name not matched",
+								uuid);
+						log.info(
+								"AVU: {}",
+								avu.getAvuAttribute() + ", "
+										+ avu.getAvuValue() + ", "
+										+ avu.getAvuUnit());
+					}
+				} else {
+					log.info("avu belongs to a template not in the map");
+					tempMt = this.findTemplateByUUID(uuid);
+					if (tempMt == null) {
+						log.info("no template found for UUID {}", uuid);
+					} else if (tempMt.getType() == TemplateTypeEnum.FORM_BASED) {
+						FormBasedMetadataTemplate tempFbmt = (FormBasedMetadataTemplate) tempMt;
+						for (MetadataElement me : tempFbmt.getElements()) {
+							if (avu.getAvuAttribute().equalsIgnoreCase(
+									me.getName())) {
+								// Not a REF_IRODS_QUERY type, set current
+								// value to raw value
+								me.getCurrentValue().add(avu.getAvuValue());
+								me.getDisplayValue().add(avu.getAvuValue());
+
+								matched = true;
+								break;
+							}
+						}
+					} // XXX else if (tempMt is a different kind of template)
+
+					if (!matched) {
+						log.info(
+								"AVU claims to be from template {}, but name not matched",
+								uuid);
+						log.info(
+								"AVU: {}",
+								avu.getAvuAttribute() + ", "
+										+ avu.getAvuValue() + ", "
+										+ avu.getAvuUnit());
+					} else {
+						log.info("AVU matched with new template {}", uuid);
+						log.info("Adding template to map");
+						templateMap.put(uuid, tempMt);
+					}
+				}
+			}
+
+			if (!matched) {
+				log.info("AVU not matched with any template, adding to orphans list");
+				orphans.add(avu);
+			}
+
+			matched = false;
+			tempMt = null;
+			unitIndex = 0;
+			uuidStart = 0;
+		}
+
+		List<MetadataTemplate> returnList = new ArrayList<MetadataTemplate>();
+		returnList.addAll(templateMap.values());
+
+		for (MetadataTemplate mt : returnList) {
+			if (mt.getType() == TemplateTypeEnum.FORM_BASED) {
+				for (MetadataElement me : ((FormBasedMetadataTemplate) mt)
+						.getElements()) {
+					if (me.getType() == ElementTypeEnum.REF_IRODS_QUERY) {
+						me.getDisplayValue().add(
+								getValueFromRefQuery(me.getCurrentValue()
+										.get(0), irodsAbsolutePath));
+					}
+				}
+			}
+		}
+
+		return new MetadataMergeResult(returnList, orphans);
 	}
 
 	String getValueFromRefQuery(String refQuery, String irodsAbsolutePath) {
@@ -1164,6 +1180,8 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 			log.info("MDTemplate AVU present. continuing...");
 		}
 
+		UUID uuid = UUID.fromString(queryResult.get(0).getAvuValue());
+
 		b = new byte[fis.available()];
 
 		log.info("Size of file in bytes: {}", b.length);
@@ -1182,8 +1200,14 @@ public class JargonMetadataResolver extends AbstractMetadataResolver {
 		returnTemplate.setFqName(inFile.getAbsolutePath());
 
 		// UUID
-		returnTemplate.setUuid(UUID
-				.fromString(queryResult.get(0).getAvuValue()));
+		returnTemplate.setUuid(uuid);
+
+		if (returnTemplate.getType() == TemplateTypeEnum.FORM_BASED) {
+			FormBasedMetadataTemplate fbmt = (FormBasedMetadataTemplate) returnTemplate;
+			for (MetadataElement me : fbmt.getElements()) {
+				me.setTemplateUuid(uuid);
+			}
+		}
 
 		// Date created, dateModified
 		irodsAccessObjectFactory.getIRODSFileSystemAO(irodsAccount);

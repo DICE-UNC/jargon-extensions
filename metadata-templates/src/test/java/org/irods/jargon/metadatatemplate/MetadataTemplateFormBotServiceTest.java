@@ -1,5 +1,6 @@
 package org.irods.jargon.metadatatemplate;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
@@ -10,7 +11,6 @@ import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.pub.DataTransferOperations;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.core.pub.IRODSFileSystem;
-import org.irods.jargon.core.pub.ResourceAO;
 import org.irods.jargon.core.pub.domain.AvuData;
 import org.irods.jargon.core.pub.io.IRODSFile;
 import org.irods.jargon.core.query.MetaDataAndDomainData;
@@ -19,16 +19,21 @@ import org.irods.jargon.formbot.FormBotExecutionResult;
 import org.irods.jargon.formbot.FormBotForm;
 import org.irods.jargon.formbot.FormBotValidationEnum;
 import org.irods.jargon.formbot.FormBotValidationResult;
+import org.irods.jargon.formbot.MetadataTemplateFormBotService;
 import org.irods.jargon.testutils.TestingPropertiesHelper;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class MetadataTemplateFormBotServiceTest {
 
 	private static Properties testingProperties = new Properties();
 	private static TestingPropertiesHelper testingPropertiesHelper = new TestingPropertiesHelper();
 	private static IRODSFileSystem irodsFileSystem;
+	private static ObjectMapper objectMapper = new ObjectMapper();
 
 	private static final String TEMPLATE_FILE_NAME1 = "src/test/resources/templates/test1.mdtemplate";
 	private static final String TEMPLATE_FILE_NAME2 = "src/test/resources/templates/test2.mdtemplate";
@@ -40,7 +45,7 @@ public class MetadataTemplateFormBotServiceTest {
 	private static final String TEMPLATE_NOPATH3 = "test3.mdtemplate";
 	private static final String TEST_FILE_NOPATH = "testFile.txt";
 
-	public static final String IRODS_TEST_SUBDIR_PATH = "JargonMetadataResolverTest";
+	public static final String IRODS_TEST_SUBDIR_PATH = "MetadataTemplateFormBotServiceTest";
 	private static org.irods.jargon.testutils.IRODSTestSetupUtilities irodsTestSetupUtilities = null;
 
 	@BeforeClass
@@ -100,10 +105,16 @@ public class MetadataTemplateFormBotServiceTest {
 		MetadataTemplateFormBotService formBotService = new MetadataTemplateFormBotService(
 				accessObjectFactory, irodsAccount);
 
-		FormBotForm returnForm = formBotService.buildFormBotForm(dummyJson);
+		String returnString = formBotService.buildFormBotForm(dummyJson);
 
-		Assert.assertNull("buildFormBotForm should have returned null",
-				returnForm);
+		Assert.assertTrue("buildFormBotForm should have returned empty string",
+				returnString.isEmpty());
+
+		// FormBotForm returnForm = objectMapper.readValue(
+		// formBotService.buildFormBotForm(dummyJson), FormBotForm.class);
+		//
+		// Assert.assertNull("buildFormBotForm should have returned null",
+		// returnForm);
 	}
 
 	@Test
@@ -154,10 +165,23 @@ public class MetadataTemplateFormBotServiceTest {
 		MetadataTemplateFormBotService formBotService = new MetadataTemplateFormBotService(
 				accessObjectFactory, irodsAccount);
 
-		FormBotForm returnForm = formBotService.buildFormBotForm(uuidJson);
+		String returnString = formBotService.buildFormBotForm(uuidJson);
 
-		Assert.assertNotNull("buildFormBotForm should not have returned null",
-				returnForm);
+		Assert.assertFalse(
+				"buildFormBotForm should not have returned empty string",
+				returnString.isEmpty());
+
+		FormBotForm returnForm = objectMapper.readValue(returnString,
+				FormBotForm.class);
+		
+		Assert.assertTrue(
+				"buildFormBotForm should have returned a form populated from template1.mdtemplate",
+				returnForm.getName().equalsIgnoreCase("test1"));
+
+		// FormBotForm returnForm = formBotService.buildFormBotForm(uuidJson);
+		//
+		// Assert.assertNotNull("buildFormBotForm should not have returned null",
+		// returnForm);
 	}
 
 	@Test
@@ -197,15 +221,28 @@ public class MetadataTemplateFormBotServiceTest {
 
 		String mdTemplateFqName = mdTemplatePath + '/' + TEMPLATE_NOPATH1;
 
-		String faNameJson = "{\n\t\"fqName\":\"" + mdTemplateFqName + "\"}";
+		String fqNameJson = "{\n\t\"fqName\":\"" + mdTemplateFqName + "\"}";
 
 		MetadataTemplateFormBotService formBotService = new MetadataTemplateFormBotService(
 				accessObjectFactory, irodsAccount);
 
-		FormBotForm returnForm = formBotService.buildFormBotForm(faNameJson);
+		String returnString = formBotService.buildFormBotForm(fqNameJson);
 
-		Assert.assertNotNull("buildFormBotForm should not have returned null",
-				returnForm);
+		Assert.assertFalse(
+				"buildFormBotForm should not have returned empty string",
+				returnString.isEmpty());
+
+		FormBotForm returnForm = objectMapper.readValue(returnString,
+				FormBotForm.class);
+
+		Assert.assertTrue(
+				"buildFormBotForm should have returned a form populated from template1.mdtemplate",
+				returnForm.getName().equalsIgnoreCase("test1"));
+
+		// FormBotForm returnForm = formBotService.buildFormBotForm(faNameJson);
+		//
+		// Assert.assertNotNull("buildFormBotForm should not have returned null",
+		// returnForm);
 	}
 
 	@Test
@@ -249,10 +286,23 @@ public class MetadataTemplateFormBotServiceTest {
 		MetadataTemplateFormBotService formBotService = new MetadataTemplateFormBotService(
 				accessObjectFactory, irodsAccount);
 
-		FormBotForm returnForm = formBotService.buildFormBotForm(nameJson);
+		String returnString = formBotService.buildFormBotForm(nameJson);
 
-		Assert.assertNotNull("buildFormBotForm should not have returned null",
-				returnForm);
+		Assert.assertFalse(
+				"buildFormBotForm should not have returned empty string",
+				returnString.isEmpty());
+
+		FormBotForm returnForm = objectMapper.readValue(returnString,
+				FormBotForm.class);
+
+		Assert.assertTrue(
+				"buildFormBotForm should have returned a form populated from template1.mdtemplate",
+				returnForm.getName().equalsIgnoreCase("test1"));
+
+		// FormBotForm returnForm = formBotService.buildFormBotForm(nameJson);
+		//
+		// Assert.assertNotNull("buildFormBotForm should not have returned null",
+		// returnForm);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -303,8 +353,17 @@ public class MetadataTemplateFormBotServiceTest {
 		MetadataTemplateFormBotService formBotService = new MetadataTemplateFormBotService(
 				accessObjectFactory, irodsAccount);
 
-		FormBotValidationResult returnResult = formBotService
-				.validateFormBotField(fieldJson);
+		// FormBotValidationResult returnResult = formBotService
+		// .validateFormBotField(fieldJson);
+
+		String returnString = formBotService.validateFormBotField(fieldJson);
+
+		Assert.assertFalse(
+				"validateFormBotField should not have returned empty string",
+				returnString.isEmpty());
+
+		FormBotValidationResult returnResult = objectMapper.readValue(
+				returnString, FormBotValidationResult.class);
 
 		Assert.assertEquals(
 				"validateFormBotField should have returned an error",
@@ -360,12 +419,25 @@ public class MetadataTemplateFormBotServiceTest {
 		MetadataTemplateFormBotService formBotService = new MetadataTemplateFormBotService(
 				accessObjectFactory, irodsAccount);
 
-		FormBotValidationResult returnResult = formBotService
-				.validateFormBotField(fieldJson);
+		String returnString = formBotService.validateFormBotField(fieldJson);
+
+		Assert.assertFalse(
+				"validateFormBotField should not have returned empty string",
+				returnString.isEmpty());
+
+		FormBotValidationResult returnResult = objectMapper.readValue(
+				returnString, FormBotValidationResult.class);
 
 		Assert.assertEquals(
 				"validateFormBotField should have returned an error",
 				FormBotValidationEnum.ERROR, returnResult.getCode());
+
+		// FormBotValidationResult returnResult = formBotService
+		// .validateFormBotField(fieldJson);
+		//
+		// Assert.assertEquals(
+		// "validateFormBotField should have returned an error",
+		// FormBotValidationEnum.ERROR, returnResult.getCode());
 	}
 
 	@Test
@@ -417,12 +489,25 @@ public class MetadataTemplateFormBotServiceTest {
 		MetadataTemplateFormBotService formBotService = new MetadataTemplateFormBotService(
 				accessObjectFactory, irodsAccount);
 
-		FormBotValidationResult returnResult = formBotService
-				.validateFormBotField(fieldJson);
+		String returnString = formBotService.validateFormBotField(fieldJson);
+
+		Assert.assertFalse(
+				"validateFormBotField should not have returned empty string",
+				returnString.isEmpty());
+
+		FormBotValidationResult returnResult = objectMapper.readValue(
+				returnString, FormBotValidationResult.class);
 
 		Assert.assertEquals(
 				"validateFormBotField should have returned FAILURE, because value is not convertible to integer",
 				FormBotValidationEnum.FAILURE, returnResult.getCode());
+
+		// FormBotValidationResult returnResult = formBotService
+		// .validateFormBotField(fieldJson);
+		//
+		// Assert.assertEquals(
+		// "validateFormBotField should have returned FAILURE, because value is not convertible to integer",
+		// FormBotValidationEnum.FAILURE, returnResult.getCode());
 	}
 
 	@Test
@@ -474,12 +559,25 @@ public class MetadataTemplateFormBotServiceTest {
 		MetadataTemplateFormBotService formBotService = new MetadataTemplateFormBotService(
 				accessObjectFactory, irodsAccount);
 
-		FormBotValidationResult returnResult = formBotService
-				.validateFormBotField(fieldJson);
+		String returnString = formBotService.validateFormBotField(fieldJson);
 
+		Assert.assertFalse(
+				"validateFormBotField should not have returned empty string",
+				returnString.isEmpty());
+
+		FormBotValidationResult returnResult = objectMapper.readValue(
+				returnString, FormBotValidationResult.class);
+		
 		Assert.assertEquals(
 				"validateFormBotField should have returned SUCCESS",
 				FormBotValidationEnum.SUCCESS, returnResult.getCode());
+
+		// FormBotValidationResult returnResult = formBotService
+		// .validateFormBotField(fieldJson);
+		//
+		// Assert.assertEquals(
+		// "validateFormBotField should have returned SUCCESS",
+		// FormBotValidationEnum.SUCCESS, returnResult.getCode());
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -531,18 +629,31 @@ public class MetadataTemplateFormBotServiceTest {
 		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(
 				mdTemplateFqName, avuData);
 
-		String fieldJson = "{\n\t\"value\":\"15\",\n\t\"fieldUniqueName\":\"00000000-0000-0000-0000-000000000000attribute2\",\n\t\"pathToFile\":\""
+		String fieldJson = "{\n\t\"value\":\"15\",\n\t\"fieldUniqueName\":\"00000000-0000-0000-0000-000000000000attribute2\",\n\t\"pathToObject\":\""
 				+ testFileNameFQ + "\"}";
 
 		MetadataTemplateFormBotService formBotService = new MetadataTemplateFormBotService(
 				accessObjectFactory, irodsAccount);
 
-		FormBotExecutionResult returnResult = formBotService
-				.executeFormBotField(fieldJson);
+		String returnString = formBotService.executeFormBotField(fieldJson);
+
+		Assert.assertFalse(
+				"executeFormBotField should not have returned empty string",
+				returnString.isEmpty());
+
+		FormBotExecutionResult returnResult = objectMapper.readValue(
+				returnString, FormBotExecutionResult.class);
 
 		Assert.assertEquals(
 				"executeFormBotField should have returned an error",
 				FormBotExecutionEnum.ERROR, returnResult.getCode());
+
+		// FormBotExecutionResult returnResult = formBotService
+		// .executeFormBotField(fieldJson);
+		//
+		// Assert.assertEquals(
+		// "executeFormBotField should have returned an error",
+		// FormBotExecutionEnum.ERROR, returnResult.getCode());
 	}
 
 	@Test
@@ -595,17 +706,30 @@ public class MetadataTemplateFormBotServiceTest {
 
 		String fieldJson = "{\n\t\"value\":\"15\",\n\t\"fieldUniqueName\":\""
 				+ uuid.toString()
-				+ "attribute2\",\n\t\"pathToFile\":\"path/is/bogus\"}";
+				+ "attribute2\",\n\t\"pathToObject\":\"path/is/bogus\"}";
 
 		MetadataTemplateFormBotService formBotService = new MetadataTemplateFormBotService(
 				accessObjectFactory, irodsAccount);
 
-		FormBotExecutionResult returnResult = formBotService
-				.executeFormBotField(fieldJson);
+		String returnString = formBotService.executeFormBotField(fieldJson);
+		
+		Assert.assertFalse(
+				"executeFormBotField should not have returned empty string",
+				returnString.isEmpty());
+
+		FormBotExecutionResult returnResult = objectMapper.readValue(
+				returnString, FormBotExecutionResult.class);
 
 		Assert.assertEquals(
 				"executeFormBotField should have returned an error",
 				FormBotExecutionEnum.ERROR, returnResult.getCode());
+
+		// FormBotExecutionResult returnResult = formBotService
+		// .executeFormBotField(fieldJson);
+		//
+		// Assert.assertEquals(
+		// "executeFormBotField should have returned an error",
+		// FormBotExecutionEnum.ERROR, returnResult.getCode());
 	}
 
 	@Test
@@ -658,18 +782,31 @@ public class MetadataTemplateFormBotServiceTest {
 		String testFileNameFQ = targetIrodsCollection + '/' + TEST_FILE_NOPATH;
 
 		String fieldJson = "{\n\t\"value\":\"15\",\n\t\"fieldUniqueName\":\""
-				+ uuid.toString() + "bogus\",\n\t\"pathToFile\":\""
+				+ uuid.toString() + "bogus\",\n\t\"pathToObject\":\""
 				+ testFileNameFQ + "\"}";
 
 		MetadataTemplateFormBotService formBotService = new MetadataTemplateFormBotService(
 				accessObjectFactory, irodsAccount);
 
-		FormBotExecutionResult returnResult = formBotService
-				.executeFormBotField(fieldJson);
+		String returnString = formBotService.executeFormBotField(fieldJson);
+
+		Assert.assertFalse(
+				"executeFormBotField should not have returned empty string",
+				returnString.isEmpty());
+
+		FormBotExecutionResult returnResult = objectMapper.readValue(
+				returnString, FormBotExecutionResult.class);
 
 		Assert.assertEquals(
 				"executeFormBotField should have returned an error",
 				FormBotExecutionEnum.ERROR, returnResult.getCode());
+
+		// FormBotExecutionResult returnResult = formBotService
+		// .executeFormBotField(fieldJson);
+		//
+		// Assert.assertEquals(
+		// "executeFormBotField should have returned an error",
+		// FormBotExecutionEnum.ERROR, returnResult.getCode());
 	}
 
 	@Test
@@ -723,18 +860,31 @@ public class MetadataTemplateFormBotServiceTest {
 
 		String fieldJson = "{\n\t\"value\":\"bogus\",\n\t\"fieldUniqueName\":\""
 				+ uuid.toString()
-				+ "attribute2\",\n\t\"pathToFile\":\""
+				+ "attribute2\",\n\t\"pathToObject\":\""
 				+ testFileNameFQ + "\"}";
 
 		MetadataTemplateFormBotService formBotService = new MetadataTemplateFormBotService(
 				accessObjectFactory, irodsAccount);
 
-		FormBotExecutionResult returnResult = formBotService
-				.executeFormBotField(fieldJson);
+		String returnString = formBotService.executeFormBotField(fieldJson);
+
+		Assert.assertFalse(
+				"executeFormBotField should not have returned empty string",
+				returnString.isEmpty());
+
+		FormBotExecutionResult returnResult = objectMapper.readValue(
+				returnString, FormBotExecutionResult.class);
 
 		Assert.assertEquals(
-				"validateFormBotField should have returned VALIDATION_FAILED, because value is not convertible to integer",
+				"executeFormBotField should have returned VALIDATION_FAILED, because value is not convertible to integer",
 				FormBotExecutionEnum.VALIDATION_FAILED, returnResult.getCode());
+
+		// FormBotExecutionResult returnResult = formBotService
+		// .executeFormBotField(fieldJson);
+		//
+		// Assert.assertEquals(
+		// "validateFormBotField should have returned VALIDATION_FAILED, because value is not convertible to integer",
+		// FormBotExecutionEnum.VALIDATION_FAILED, returnResult.getCode());
 	}
 
 	@Test
@@ -787,16 +937,25 @@ public class MetadataTemplateFormBotServiceTest {
 		String testFileNameFQ = targetIrodsCollection + '/' + TEST_FILE_NOPATH;
 
 		String fieldJson = "{\n\t\"value\":\"42\",\n\t\"fieldUniqueName\":\""
-				+ uuid.toString() + "attribute2\",\n\t\"pathToFile\":\""
+				+ uuid.toString() + "attribute2\",\n\t\"pathToObject\":\""
 				+ testFileNameFQ + "\"}";
 		;
 
 		MetadataTemplateFormBotService formBotService = new MetadataTemplateFormBotService(
 				accessObjectFactory, irodsAccount);
 
-		FormBotExecutionResult returnResult = formBotService
-				.executeFormBotField(fieldJson);
-		
+		// FormBotExecutionResult returnResult = formBotService
+		// .executeFormBotField(fieldJson);
+
+		String returnString = formBotService.executeFormBotField(fieldJson);
+
+		Assert.assertFalse(
+				"executeFormBotField should not have returned empty string",
+				returnString.isEmpty());
+
+		FormBotExecutionResult returnResult = objectMapper.readValue(
+				returnString, FormBotExecutionResult.class);
+
 		List<MetaDataAndDomainData> fileAvus = accessObjectFactory
 				.getDataObjectAO(irodsAccount).findMetadataValuesForDataObject(
 						targetIrodsCollection, TEST_FILE_NOPATH);
@@ -860,17 +1019,31 @@ public class MetadataTemplateFormBotServiceTest {
 		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(
 				mdTemplateFqName, avuData);
 
-		String fieldJson = "{\"broken\" : \"WhereItLives\", \"fields\" : [ {\"fieldName\" : \"NameOfField\", \"value\" : \"MyValue\"}, {\"fieldName\" : \"NameOfField\", \"value\" : \"MyValue\"}, {\"fieldName\" : \"NameOfField\", \"value\" : \"MyValue\"}]}";
+		String formJson = "{\"broken\" : \"WhereItLives\", \"fields\" : [ {\"fieldName\" : \"NameOfField\", \"value\" : \"MyValue\"}, {\"fieldName\" : \"NameOfField\", \"value\" : \"MyValue\"}, {\"fieldName\" : \"NameOfField\", \"value\" : \"MyValue\"}]}";
 
 		MetadataTemplateFormBotService formBotService = new MetadataTemplateFormBotService(
 				accessObjectFactory, irodsAccount);
 
-		List<FormBotValidationResult> returnResult = formBotService
-				.validateFormBotForm(fieldJson);
+		String returnString = formBotService.validateFormBotForm(formJson);
+
+		Assert.assertFalse(
+				"validateFormBotForm should not have returned empty string",
+				returnString.isEmpty());
+
+		List<FormBotValidationResult> returnResultList = Arrays
+				.asList(objectMapper.readValue(returnString,
+						FormBotValidationResult[].class));
 
 		Assert.assertEquals(
 				"validateFormBotForm should have returned an error",
-				FormBotValidationEnum.ERROR, returnResult.get(0).getCode());
+				FormBotValidationEnum.ERROR, returnResultList.get(0).getCode());
+
+		// List<FormBotValidationResult> returnResult = formBotService
+		// .validateFormBotForm(fieldJson);
+		//
+		// Assert.assertEquals(
+		// "validateFormBotForm should have returned an error",
+		// FormBotValidationEnum.ERROR, returnResult.get(0).getCode());
 	}
 
 	@Test
@@ -916,22 +1089,40 @@ public class MetadataTemplateFormBotServiceTest {
 		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(
 				mdTemplateFqName, avuData);
 
-		String fieldJson = "{\"formUniqueName\" : \""
+		String formJson = "{\"formUniqueName\" : \""
 				+ uuid.toString()
 				+ "\", \"fields\" : [ {\"fieldName\" : \"attribute1\", \"value\" : \"MyValue\"}, {\"fieldName\" : \"attribute2\", \"value\" : \"MyValue\"}, {\"fieldName\" : \"optional1\", \"value\" : \"MyValue\"}]}";
 
 		MetadataTemplateFormBotService formBotService = new MetadataTemplateFormBotService(
 				accessObjectFactory, irodsAccount);
 
-		List<FormBotValidationResult> returnResult = formBotService
-				.validateFormBotForm(fieldJson);
+		String returnString = formBotService.validateFormBotForm(formJson);
+
+		Assert.assertFalse(
+				"validateFormBotForm should not have returned empty string",
+				returnString.isEmpty());
+
+		List<FormBotValidationResult> returnResultList = Arrays
+				.asList(objectMapper.readValue(returnString,
+						FormBotValidationResult[].class));
 
 		Assert.assertEquals(
 				"validateFormBotForm return list should have 4 elements", 4,
-				returnResult.size());
+				returnResultList.size());
 		Assert.assertEquals(
 				"validateFormBotForm overall return value should be FAILURE",
-				FormBotValidationEnum.FAILURE, returnResult.get(0).getCode());
+				FormBotValidationEnum.FAILURE, returnResultList.get(0)
+						.getCode());
+
+		// List<FormBotValidationResult> returnResult = formBotService
+		// .validateFormBotForm(fieldJson);
+		//
+		// Assert.assertEquals(
+		// "validateFormBotForm return list should have 4 elements", 4,
+		// returnResult.size());
+		// Assert.assertEquals(
+		// "validateFormBotForm overall return value should be FAILURE",
+		// FormBotValidationEnum.FAILURE, returnResult.get(0).getCode());
 	}
 
 	@Test
@@ -977,22 +1168,40 @@ public class MetadataTemplateFormBotServiceTest {
 		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(
 				mdTemplateFqName, avuData);
 
-		String fieldJson = "{\"formUniqueName\" : \""
+		String formJson = "{\"formUniqueName\" : \""
 				+ uuid.toString()
 				+ "\", \"fields\" : [ {\"fieldName\" : \"attribute1\", \"value\" : \"hello\"}, {\"fieldName\" : \"attribute2\", \"value\" : \"42\"}, {\"fieldName\" : \"optional1\", \"value\" : \"MyValue\"}]}";
 
 		MetadataTemplateFormBotService formBotService = new MetadataTemplateFormBotService(
 				accessObjectFactory, irodsAccount);
 
-		List<FormBotValidationResult> returnResult = formBotService
-				.validateFormBotForm(fieldJson);
+		String returnString = formBotService.validateFormBotForm(formJson);
+
+		Assert.assertFalse(
+				"validateFormBotForm should not have returned empty string",
+				returnString.isEmpty());
+
+		List<FormBotValidationResult> returnResultList = Arrays
+				.asList(objectMapper.readValue(returnString,
+						FormBotValidationResult[].class));
 
 		Assert.assertEquals(
 				"validateFormBotForm return list should have 4 elements", 4,
-				returnResult.size());
+				returnResultList.size());
 		Assert.assertEquals(
-				"validateFormBotForm overall return value should be FAILURE",
-				FormBotValidationEnum.SUCCESS, returnResult.get(0).getCode());
+				"validateFormBotForm overall return value should be SUCCESS",
+				FormBotValidationEnum.SUCCESS, returnResultList.get(0)
+						.getCode());
+
+		// List<FormBotValidationResult> returnResult = formBotService
+		// .validateFormBotForm(fieldJson);
+		//
+		// Assert.assertEquals(
+		// "validateFormBotForm return list should have 4 elements", 4,
+		// returnResult.size());
+		// Assert.assertEquals(
+		// "validateFormBotForm overall return value should be FAILURE",
+		// FormBotValidationEnum.SUCCESS, returnResult.get(0).getCode());
 	}
 
 	@Test
@@ -1038,17 +1247,30 @@ public class MetadataTemplateFormBotServiceTest {
 		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(
 				mdTemplateFqName, avuData);
 
-		String fieldJson = "{\"broken\" : \"WhereItLives\", \"pathToFile\" : \"path\\to\\file\", \"fields\" : [ {\"fieldName\" : \"NameOfField\", \"value\" : \"MyValue\"}, {\"fieldName\" : \"NameOfField\", \"value\" : \"MyValue\"}, {\"fieldName\" : \"NameOfField\", \"value\" : \"MyValue\"}]}";
+		String formJson = "{\"broken\" : \"WhereItLives\", \"pathToObject\" : \"path\\to\\file\", \"fields\" : [ {\"fieldName\" : \"NameOfField\", \"value\" : \"MyValue\"}, {\"fieldName\" : \"NameOfField\", \"value\" : \"MyValue\"}, {\"fieldName\" : \"NameOfField\", \"value\" : \"MyValue\"}]}";
 
 		MetadataTemplateFormBotService formBotService = new MetadataTemplateFormBotService(
 				accessObjectFactory, irodsAccount);
 
-		List<FormBotExecutionResult> returnResult = formBotService
-				.executeFormBotForm(fieldJson);
+		String returnString = formBotService.executeFormBotForm(formJson);
+		
+		Assert.assertFalse(
+				"executeFormBotForm should not have returned empty string",
+				returnString.isEmpty());
 
-		Assert.assertEquals(
-				"validateFormBotForm should have returned an error",
-				FormBotExecutionEnum.ERROR, returnResult.get(0).getCode());
+		List<FormBotExecutionResult> returnResultList = Arrays
+				.asList(objectMapper.readValue(returnString,
+						FormBotExecutionResult[].class));
+
+		Assert.assertEquals("executeFormBotForm should have returned an error",
+				FormBotExecutionEnum.ERROR, returnResultList.get(0).getCode());
+
+		// List<FormBotExecutionResult> returnResult = formBotService
+		// .executeFormBotForm(fieldJson);
+		//
+		// Assert.assertEquals(
+		// "validateFormBotForm should have returned an error",
+		// FormBotExecutionEnum.ERROR, returnResult.get(0).getCode());
 	}
 
 	@Test
@@ -1100,25 +1322,43 @@ public class MetadataTemplateFormBotServiceTest {
 				irodsAccount.getDefaultStorageResource(), null, null);
 		String testFileNameFQ = targetIrodsCollection + '/' + TEST_FILE_NOPATH;
 
-		String fieldJson = "{\"formUniqueName\" : \""
+		String formJson = "{\"formUniqueName\" : \""
 				+ uuid.toString()
-				+ "\", \"pathToFile\" : \""
+				+ "\", \"pathToObject\" : \""
 				+ testFileNameFQ
 				+ "\", \"fields\" : [ {\"fieldName\" : \"attribute1\", \"value\" : \"MyValue\"}, {\"fieldName\" : \"attribute2\", \"value\" : \"MyValue\"}, {\"fieldName\" : \"optional1\", \"value\" : \"MyValue\"}]}";
 
 		MetadataTemplateFormBotService formBotService = new MetadataTemplateFormBotService(
 				accessObjectFactory, irodsAccount);
 
-		List<FormBotExecutionResult> returnResult = formBotService
-				.executeFormBotForm(fieldJson);
+		String returnString = formBotService.executeFormBotForm(formJson);
+
+		Assert.assertFalse(
+				"executeFormBotForm should not have returned empty string",
+				returnString.isEmpty());
+
+		List<FormBotExecutionResult> returnResultList = Arrays
+				.asList(objectMapper.readValue(returnString,
+						FormBotExecutionResult[].class));
 
 		Assert.assertEquals(
 				"executeFormBotForm return list should have 4 elements", 4,
-				returnResult.size());
+				returnResultList.size());
 		Assert.assertEquals(
-				"validateFormBotForm overall return value should be VALIDATION_FAILED",
-				FormBotExecutionEnum.VALIDATION_FAILED, returnResult.get(0)
+				"executeFormBotForm overall return value should be VALIDATION_FAILED",
+				FormBotExecutionEnum.VALIDATION_FAILED, returnResultList.get(0)
 						.getCode());
+
+		// List<FormBotExecutionResult> returnResult = formBotService
+		// .executeFormBotForm(fieldJson);
+		//
+		// Assert.assertEquals(
+		// "executeFormBotForm return list should have 4 elements", 4,
+		// returnResult.size());
+		// Assert.assertEquals(
+		// "validateFormBotForm overall return value should be VALIDATION_FAILED",
+		// FormBotExecutionEnum.VALIDATION_FAILED, returnResult.get(0)
+		// .getCode());
 	}
 
 	@Test
@@ -1170,17 +1410,35 @@ public class MetadataTemplateFormBotServiceTest {
 				irodsAccount.getDefaultStorageResource(), null, null);
 		String testFileNameFQ = targetIrodsCollection + '/' + TEST_FILE_NOPATH;
 
-		String fieldJson = "{\"formUniqueName\" : \""
+		String formJson = "{\"formUniqueName\" : \""
 				+ uuid.toString()
-				+ "\", \"pathToFile\" : \""
+				+ "\", \"pathToObject\" : \""
 				+ testFileNameFQ
 				+ "\", \"fields\" : [ {\"fieldName\" : \"attribute1\", \"value\" : \"MyValue\"}, {\"fieldName\" : \"attribute2\", \"value\" : \"42\"}, {\"fieldName\" : \"optional1\", \"value\" : \"MyValue\"}]}";
 
 		MetadataTemplateFormBotService formBotService = new MetadataTemplateFormBotService(
 				accessObjectFactory, irodsAccount);
 
-		List<FormBotExecutionResult> returnResult = formBotService
-				.executeFormBotForm(fieldJson);
+//		List<FormBotExecutionResult> returnResult = formBotService
+//				.executeFormBotForm(fieldJson);
+		
+		String returnString = formBotService.executeFormBotForm(formJson);
+		
+		Assert.assertFalse(
+				"executeFormBotForm should not have returned empty string",
+				returnString.isEmpty());
+
+		List<FormBotExecutionResult> returnResultList = Arrays
+				.asList(objectMapper.readValue(returnString,
+						FormBotExecutionResult[].class));
+
+		Assert.assertEquals(
+				"executeFormBotForm return list should have 4 elements", 4,
+				returnResultList.size());
+		Assert.assertEquals(
+				"executeFormBotForm overall return value should be SUCCESS",
+				FormBotExecutionEnum.SUCCESS, returnResultList.get(0)
+						.getCode());
 
 		List<MetaDataAndDomainData> fileAvus = accessObjectFactory
 				.getDataObjectAO(irodsAccount).findMetadataValuesForDataObject(
@@ -1194,12 +1452,6 @@ public class MetadataTemplateFormBotServiceTest {
 			}
 		}
 
-		Assert.assertEquals(
-				"executeFormBotForm return list should have 4 elements", 4,
-				returnResult.size());
-		Assert.assertEquals(
-				"executeFormBotForm overall return value should be SUCCESS",
-				FormBotExecutionEnum.SUCCESS, returnResult.get(0).getCode());
 		Assert.assertEquals(
 				"executeFormBotForm should have set metadata on file", "42",
 				attribute2Value);

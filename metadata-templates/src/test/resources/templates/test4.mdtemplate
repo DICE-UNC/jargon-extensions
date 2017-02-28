@@ -9,28 +9,28 @@
 			"description" : "First attribute",
 			"required" : "true",
 			"type" : "REF_IRODS_QUERY",
-			"currentValue" : "data.name"
+			"currentValue" : [ "data.name" ]
 		},
 		{
 			"name" : "data_owner_name",
 			"description" : "Second attribute",
 			"required" : "true",
 			"type" : "REF_IRODS_QUERY",
-			"currentValue" : "data.owner_name"
+			"currentValue" : [ "data.owner_name" ]
 		},
 		{
 			"name" : "data_owner_zone",
 			"description" : "Third attribute",
 			"required" : "true",
 			"type" : "REF_IRODS_QUERY",
-			"currentValue" : "data.owner_zone"
+			"currentValue" : [ "data.owner_zone" ]
 		},
 		{
 			"name" : "user_type",
 			"description" : "Fourth attribute",
 			"required" : "true",
 			"type" : "REF_IRODS_QUERY",
-			"currentValue" : "user.type"
+			"currentValue" : [ "user.type" ]
 		}
 	]
 }

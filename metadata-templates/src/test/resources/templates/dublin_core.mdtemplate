@@ -1,0 +1,98 @@
+{
+	"name" : "dublin_core",
+	"description" : "Template for Dublin Core metadata fields",
+	"author" : "Rick Skarbez",
+	"required" : "false",
+	"elements" : [
+		{
+			"name" : "title",
+			"description" : "The name given to the resource, usually by the Creator or Publisher.",
+			"required" : "true",
+			"type" : "RAW_STRING"
+		},
+		{
+			"name" : "author",
+			"description" : "The person or organization primarily responsible for creating the intellectual content of the resource.",
+			"required" : "true",
+			"type" : "RAW_STRING"
+		},
+		{
+			"name" : "subject",
+			"description" : "The topic of the resource. Typically, subject will be expressed as keywords or phrases that describe the subject or content of the resource.",
+			"required" : "false",
+			"type" : "LIST_STRING"
+		},
+		{
+			"name" : "description",
+			"description" : "A textual description of the content of the resource, including abstracts in the case of document-like objects or content descriptions in the case of visual resources.",
+			"required" : "true",
+			"type" : "RAW_STRING"
+		},
+		{
+			"name" : "publisher",
+			"description" : "The entity responsible for making the resource available in its present form, such as a publishing house, a university department, or a corporate entity.",
+			"required" : "false",
+			"type" : "RAW_STRING"
+		},
+		{
+			"name" : "contributor",
+			"description" : "A person or organization not specified in a Creator element who has made significant intellectual contributions to the resource but whose contribution is secondary to any person or organization specified in a Creator element (for example, editor, transcriber, and illustrator).",
+			"required" : "false",
+			"type" : "RAW_STRING"
+		},
+		{
+			"name" : "date",
+			"description" : "A date associated with the creation or availability of the resource, preferred format YYYY-MM-DD.",
+			"required" : "true",
+			"type" : "RAW_DATE"
+		},
+		{
+			"name" : "type",
+			"description" : "The category of the resource, such as home page, novel, poem, working paper, technical report, essay, dictionary.",
+			"required" : "false",
+			"type" : "RAW_STRING"
+		},
+		{
+			"name" : "format",
+			"description" : "The data format and, optionally, dimensions (e.g., size, duration) of the resource.",
+			"required" : "false",
+			"type" : "RAW_STRING"
+		},
+		{
+			"name" : "identifier",
+			"description" : "A string or number used to uniquely identify the resource. Examples for networked resources include URLs and URNs (when implemented). Other globally-unique identifiers, such as International Standard Book Numbers (ISBN) or other formal names would also be candidates for this element.",
+			"required" : "true",
+			"type" : "RAW_STRING"
+		},
+		{
+			"name" : "source",
+			"description" : "Information about a second resource from which the present resource is derived.",
+			"required" : "false",
+			"type" : "RAW_STRING"
+		},	
+		{
+			"name" : "language",
+			"description" : "The language of the intellectual content of the resource.",
+			"required" : "false",
+			"type" : "RAW_STRING"
+		},
+		{
+			"name" : "relation",
+			"description" : "An identifier of a second resource and its relationship to the present resource. This element is used to express linkages among related resources.",
+			"required" : "false",
+			"type" : "RAW_STRING"
+		},
+		{
+			"name" : "coverage",
+			"description" : "The spatial and/or temporal characteristics of the intellectual content of the resource.",
+			"required" : "false",
+			"type" : "RAW_STRING"
+		},
+		{
+			"name" : "rights",
+			"description" : "A rights management statement, an identifier that links to a rights management statement, or an identifier that links to a service providing information about rights management for the resource.",
+			"required" : "false",
+			"type" : "RAW_STRING"
+		}						
+	]
+}

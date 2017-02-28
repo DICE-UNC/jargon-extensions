@@ -1,0 +1,14 @@
+{
+	"name" : "test6",
+	"description" : "Sixth test metadata template",
+	"author" : "Rick Skarbez",
+	"required" : "true",
+	"elements" : [
+		{
+			"name" : "string_list",
+			"description" : "First attribute",
+			"required" : "true",
+			"type" : "LIST_STRING"
+		}
+	]
+}
