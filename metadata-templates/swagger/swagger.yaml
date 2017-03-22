@@ -1,0 +1,445 @@
+swagger: "2.0"
+info:
+  description: |
+    This is a FormBot server
+  version: "1.0.0"
+  title: Swagger FormBot
+  #termsOfService: http://helloreverb.com/terms/
+  #contact:
+  #  name: apiteam@swagger.io
+  #license:
+  #  name: Apache 2.0
+  #  url: http://www.apache.org/licenses/LICENSE-2.0.html
+#host: petstore.swagger.io
+basePath: /v1
+schemes:
+  - https
+securityDefinitions:
+  basicAuth:
+    type: basic
+    description: HTTP Basic Authentication. Works over `HTTP` and `HTTPS`
+security:
+  - basicAuth: []
+paths:
+  /ping:
+    get:
+      tags:
+        - status
+      summary: Get a ping back from the server
+      description: 'Call iRODS as an authorized user and get back a simple ping response'
+      operationId: ping
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+        - name: midTierOnly
+          in: query
+          description: causes ping to only reach the REST mid tier and not query the back-end, provides a simple heartbeat of the mid-tier.  By default a ping will talk to the back end iRODS server
+          required: false
+          default: false
+          type: boolean
+      responses:
+          200:
+            description: 'Successful ping, containing info on how long it too the REST backend to connect to iRODS'
+            schema:
+              $ref: '#/definitions/Ping'
+  /buildPopulatedForms:
+    post:
+      tags:
+        - FormBot
+        - build
+        - form
+      summary: Retrieve FormBot Forms representing the MetadataTemplates used by a given file
+      description: ""
+      operationId: buildPopulatedForms
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: JSON object that can be used to retrieve a file or collection object
+          required: true
+          schema:
+            "$ref": "#/definitions/DataObjectOrCollectionRequest"
+      responses:
+        "200":
+          description: Forms found
+          schema:
+            "$ref": "#/definitions/Forms"
+          examples:
+            application/json:
+              uniqueId: 01234567-0123-0123-0123-0123456789ab
+              name: test1
+              description: Test metadata template
+              fields:
+                - name: attribute1
+                  uniqueId: 01234567-0123-0123-0123-0123456789abattribute1
+                  type: RAW_STRING
+                  formElement: TEXT
+                  currentValue: 
+                    - value1
+                  defaultValue:
+                  displayValue:
+                    - value1
+                  paramList: 
+                    - value1
+                    - value2
+                    - value3
+                - name: attribute2
+                  uniqueId: 01234567-0123-0123-0123-0123456789abattribute2
+                  description: Second attribute
+                  type: RAW_INT
+                  formElement: NUMBER
+                  currentValue: 
+                    - 5
+                  paramList: 
+                    - 1
+                    - 10
+        "400":
+          description: Ill-formed request
+        "404":
+          description: Data object or collection could not be found
+  /buildForm:
+    post:
+      tags:
+        - FormBot
+        - build
+        - form
+      summary: Retrieve a FormBot form (as JSON) for the specified MetadataTemplate
+      description: ""
+      operationId: buildForm
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: JSON object that can be used to retrieve a MetadataTemplate
+          required: true
+          schema:
+            "$ref": "#/definitions/MetadataTemplateRequest"
+      responses:
+        "200":
+          description: Form found
+          schema:
+            "$ref": "#/definitions/Form"
+          examples:
+            application/json:
+              uniqueId: 01234567-0123-0123-0123-0123456789ab
+              name: test1
+              description: Test metadata template
+              fields:
+                - name: attribute1
+                  uniqueId: 01234567-0123-0123-0123-0123456789abattribute1
+                  type: RAW_STRING
+                  formElement: TEXT
+                  currentValue: 
+                    - value1
+                  defaultValue:
+                  displayValue:
+                    - value1
+                  paramList: 
+                    - value1
+                    - value2
+                    - value3
+                - name: attribute2
+                  uniqueId: 01234567-0123-0123-0123-0123456789abattribute2
+                  description: Second attribute
+                  type: RAW_INT
+                  formElement: NUMBER
+                  currentValue: 
+                    - 5
+                  paramList: 
+                    - 1
+                    - 10
+        "400":
+          description: Ill-formed request
+        "404":
+          description: MetadataTemplate could not be found
+  /validateField:
+    post:
+      tags:
+        - FormBot
+        - validate
+        - field
+      summary: Validate the specified field (MetadataElement)
+      description: ""
+      operationId: validateField
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: JSON object representing a FormBotField
+          required: true
+          schema:
+            "$ref": "#/definitions/Field"
+      responses:
+        "200":
+          description: Form found, validation performed
+          schema:
+            "$ref": "#/definitions/ValidationResult"
+          examples:
+            application/json:
+            - code: SUCCESS
+              message: SUCCESS
+            - code: FAILURE
+              message: BAD_TYPE
+            - code: ERROR
+              message: Field not found
+        "400":
+          description: Ill-formed request
+          schema:
+            "$ref": "#/definitions/ValidationResult"
+        "404":
+          description: MetadataTemplate could not be found
+          schema:
+            "$ref": "#/definitions/ValidationResult"
+  /validateForm:
+    post:
+      tags:
+        - FormBot
+        - validate
+        - form
+      summary: Validate the specified form (MetadataTemplate)
+      description: ""
+      operationId: validateForm
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: JSON object representing a FormBotForm
+          required: true
+          schema:
+            "$ref": "#/definitions/Form"
+      responses:
+        "200":
+          description: Form found, validation performed
+          schema:
+            type: array
+            items:
+              "$ref": "#/definitions/ValidationResult"
+          examples:
+            application/json:
+            - - code: SUCCESS
+                message: All fields passed validation
+              - code: SUCCESS
+                message: SUCCESS
+              - code: FAILURE
+                message: BAD_TYPE
+              - code: SUCCESS
+                message: SUCCESS
+            - - code: FAILURE
+                message: At least one field failed validation
+              - code: SUCCESS
+                message: SUCCESS
+              - code: FAILURE
+                message: BAD_TYPE
+              - code: SUCCESS
+                message: SUCCESS
+            - code: ERROR
+              message: Bad JSON
+        "400":
+          description: Ill-formed request
+        "404":
+          description: MetadataTemplate could not be found
+  /executeField:
+    post:
+      tags:
+        - FormBot
+        - execute
+        - field
+      summary: Execute the specified field (MetadataElement)
+      description: ""
+      operationId: executeField
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: field
+          description: JSON object representing a FormBotField
+          required: true
+          schema:
+            "$ref": "#/definitions/Field"
+        - in: query
+          name: path
+          description: Path to an iRODS object that will receive metadata
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Form found, execution performed
+          schema:
+            "$ref": "#/definitions/ExecutionResult"
+          examples:
+            application/json:
+            - code: SUCCESS
+              message: Metadata added to iRODS object
+            - code: VALIDATION_FAILED
+              message: Validation failed for field attribute2 with value [badValue]
+            - code: ERROR
+              message: JargonException when trying to save metadata to iRODS object
+        "400":
+          description: Ill-formed request
+        "404":
+          description: MetadataTemplate could not be found
+  /executeForm:
+    post:
+      tags:
+        - FormBot
+        - execute
+        - form
+      summary: Execute the specified form (MetadataTemplate)
+      description: ""
+      operationId: executeForm
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: form
+          description: JSON object representing a FormBotForm
+          required: true
+          schema:
+            "$ref": "#/definitions/Form"
+        - in: query
+          name: path
+          description: Path to an iRODS object that will receive metadata
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Form found, validation performed
+          schema:
+            type: array
+            items:
+              "$ref": "#/definitions/ExecutionResult"
+          examples:
+            application/json:
+            - - code: SUCCESS
+                message: Metadata added to iRODS object
+              - code: SUCCESS
+                message: SUCCESS
+              - code: FAILURE
+                message: BAD_TYPE
+              - code: SUCCESS
+                message: SUCCESS
+            - - code: VALIDATION_FAILED
+                message: At least one field failed validation
+              - code: SUCCESS
+                message: SUCCESS
+              - code: VALIDATION_FAILED
+                message: BAD_TYPE
+              - code: SUCCESS
+                message: SUCCESS
+            - code: ERROR
+              message: Bad JSON
+        "400":
+          description: Ill-formed request
+        "404":
+          description: MetadataTemplate could not be found
+definitions:
+  DataObjectOrCollectionRequest:
+    type: object
+    properties:
+      fqName:
+        type: string
+  MetadataTemplateRequest:
+    type: object
+    properties:
+      uuid:
+        type: string
+      fqName:
+        type: string
+      name:
+        type: string
+      activeDir:
+        type: string
+  Field:
+    type: object
+    properties:
+      name:
+        type: string
+      uniqueId:
+        type: string
+      description:
+        type: string
+      type:
+        type: string
+      formElement:
+        type: string
+      currentValue:
+        type: array
+        items:
+          type: string
+      defaultValue:
+        type: array
+        items:
+          type: string
+      displayValue:
+        type: array
+        items:
+          type: string
+      paramList:
+        type: array
+        items:
+          type: string
+  Form:
+    type: object
+    properties:
+      name:
+        type: string
+      uniqueId:
+        type: string
+      description:
+        type: string
+      fields:
+        type: array
+        items:
+          "$ref": "#/definitions/Field"
+  Forms:
+    type: object
+    properties:
+      forms:
+        type: array
+        items:
+          "$ref": "#/definitions/Form"          
+  ValidationResult:
+    type: object
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+  ExecutionResult:
+    type: object
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+  Ping:
+    type: object
+    properties:
+      pingTime:
+        type: number
+        format: float
+        description: milliseconds to connect to iRODS and get a response from the perspective of the mid-tier service
+    
+          
+    
+      
+        
+      
+ 

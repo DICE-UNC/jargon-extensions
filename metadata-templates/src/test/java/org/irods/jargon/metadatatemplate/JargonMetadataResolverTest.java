@@ -9,16 +9,12 @@ import java.util.UUID;
 import junit.framework.Assert;
 
 import org.irods.jargon.core.connection.IRODSAccount;
-import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.DataTransferOperations;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.core.pub.IRODSFileSystem;
 import org.irods.jargon.core.pub.domain.AvuData;
 import org.irods.jargon.core.pub.io.IRODSFile;
-import org.irods.jargon.core.query.AVUQueryElement;
 import org.irods.jargon.core.query.MetaDataAndDomainData;
-import org.irods.jargon.core.query.QueryConditionOperators;
-import org.irods.jargon.dataprofile.accessor.DataProfileAccessorServiceImpl;
 import org.irods.jargon.testutils.TestingPropertiesHelper;
 import org.junit.After;
 import org.junit.BeforeClass;
@@ -43,7 +39,7 @@ public class JargonMetadataResolverTest {
 	private static final String TEMPLATE_NOPATH4 = "test4.mdtemplate";
 	private static final String TEMPLATE_NOPATH5 = "test5.mdtemplate";
 	private static final String TEST_FILE_NOPATH = "testFile.txt";
-
+	
 	public static final String IRODS_TEST_SUBDIR_PATH = "JargonMetadataResolverTest";
 	private static org.irods.jargon.testutils.IRODSTestSetupUtilities irodsTestSetupUtilities = null;
 
@@ -1644,7 +1640,7 @@ public class JargonMetadataResolverTest {
 		MetadataElement me = new MetadataElement();
 		me.setElementName("addedElement");
 		me.setType(ElementTypeEnum.RAW_INT);
-		me.setDefaultValue("42");
+		me.getDefaultValue().add("42");
 
 		template.setDescription("TemplateModified");
 		template.getElements().add(me);
@@ -1730,7 +1726,7 @@ public class JargonMetadataResolverTest {
 		MetadataElement me = new MetadataElement();
 		me.setElementName("addedElement");
 		me.setType(ElementTypeEnum.RAW_INT);
-		me.setDefaultValue("42");
+		me.getDefaultValue().add("42");
 
 		template.setDescription("TemplateModified");
 		template.getElements().add(me);
@@ -1841,7 +1837,7 @@ public class JargonMetadataResolverTest {
 		MetadataElement me = new MetadataElement();
 		me.setElementName("addedElement");
 		me.setType(ElementTypeEnum.RAW_INT);
-		me.setDefaultValue("42");
+		me.getDefaultValue().add("42");
 
 		template.setDescription("TemplateModified");
 		template.getElements().add(me);
@@ -2088,7 +2084,7 @@ public class JargonMetadataResolverTest {
 		}
 
 		Assert.assertEquals("Templates not instantiated", "test_value",
-				template.getElements().get(0).getCurrentValue());
+				template.getElements().get(0).getCurrentValue().get(0));
 	}
 
 	@Test
@@ -2223,7 +2219,7 @@ public class JargonMetadataResolverTest {
 		}
 
 		Assert.assertEquals("Templates not instantiated", "test_value",
-				template.getElements().get(0).getCurrentValue());
+				template.getElements().get(0).getCurrentValue().get(0));
 	}
 
 	@Test
@@ -2284,32 +2280,32 @@ public class JargonMetadataResolverTest {
 		for (MetadataElement me : template.getElements()) {
 			if (me.getName().equalsIgnoreCase("data_name")) {
 				Assert.assertEquals("data.name not in currentValue",
-						"data.name", me.getCurrentValue());
+						"data.name", me.getCurrentValue().get(0));
 				Assert.assertEquals("data.name not populated",
-						TEST_FILE_NOPATH, me.getDisplayValue());
+						TEST_FILE_NOPATH, me.getDisplayValue().get(0));
 			} else if (me.getName().equalsIgnoreCase("data_owner_name")) {
 				Assert.assertEquals("data.owner_name not in currentValue",
-						"data.owner_name", me.getCurrentValue());
+						"data.owner_name", me.getCurrentValue().get(0));
 				Assert.assertEquals(
 						"data.owner_name not populated",
 						testingPropertiesHelper.getTestProperties()
 								.getProperty(
 										TestingPropertiesHelper.IRODS_USER_KEY),
-						me.getDisplayValue());
+						me.getDisplayValue().get(0));
 			} else if (me.getName().equalsIgnoreCase("data_owner_zone")) {
 				Assert.assertEquals("data.owner_zone not in currentValue",
-						"data.owner_zone", me.getCurrentValue());
+						"data.owner_zone", me.getCurrentValue().get(0));
 				Assert.assertEquals(
 						"data.owner_zone not populated",
 						testingPropertiesHelper.getTestProperties()
 								.getProperty(
 										TestingPropertiesHelper.IRODS_ZONE_KEY),
-						me.getDisplayValue());
+						me.getDisplayValue().get(0));
 			} else if (me.getName().equalsIgnoreCase("user_type")) {
 				Assert.assertEquals("user.type not in currentValue",
-						"user.type", me.getCurrentValue());
+						"user.type", me.getCurrentValue().get(0));
 				Assert.assertEquals("user.type not populated", "rodsuser",
-						me.getDisplayValue());
+						me.getDisplayValue().get(0));
 			}
 		}
 	}
@@ -2367,279 +2363,23 @@ public class JargonMetadataResolverTest {
 		for (MetadataElement me : template.getElements()) {
 			if (me.getName().equalsIgnoreCase("coll_owner")) {
 				Assert.assertEquals("coll.owner not in currentValue",
-						"coll.owner", me.getCurrentValue());
+						"coll.owner", me.getCurrentValue().get(0));
 				Assert.assertEquals(
 						"coll.owner not populated",
 						testingPropertiesHelper.getTestProperties()
 								.getProperty(
 										TestingPropertiesHelper.IRODS_USER_KEY),
-						me.getDisplayValue());
+						me.getDisplayValue().get(0));
 			} else if (me.getName().equalsIgnoreCase("coll_owner_zone")) {
 				Assert.assertEquals("coll.owner_zone not in currentValue",
-						"coll.owner_zone", me.getCurrentValue());
+						"coll.owner_zone", me.getCurrentValue().get(0));
 				Assert.assertEquals(
 						"coll.owner_zone not populated",
 						testingPropertiesHelper.getTestProperties()
 								.getProperty(
 										TestingPropertiesHelper.IRODS_ZONE_KEY),
-						me.getDisplayValue());
+						me.getDisplayValue().get(0));
 			}
-		}
-	}
-
-	@Test
-	public void saveTemplateToSystemMetadataForDataObject() throws Exception {
-		String testDirName1 = "saveTemplateToSystemMetadataForDataObjectDir";
-
-		String targetIrodsCollection1 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName1);
-
-		IRODSAccount irodsAccount = testingPropertiesHelper
-				.buildIRODSAccountFromTestProperties(testingProperties);
-
-		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
-				.getIRODSAccessObjectFactory();
-
-		IRODSFile targetCollectionAsFile1 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection1);
-
-		targetCollectionAsFile1.mkdirs();
-
-		JargonMetadataResolver resolver = new JargonMetadataResolver(
-				irodsAccount, accessObjectFactory);
-
-		String mdTemplatePath1 = resolver
-				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection1);
-
-		DataTransferOperations dataTransferOperations = irodsFileSystem
-				.getIRODSAccessObjectFactory().getDataTransferOperations(
-						irodsAccount);
-
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				mdTemplatePath1, irodsAccount.getDefaultStorageResource(),
-				null, null);
-
-		String templateFqName1 = mdTemplatePath1 + '/' + TEMPLATE_NOPATH1;
-
-		UUID uuid1 = UUID.randomUUID();
-		AvuData avuData = AvuData.instance("test1", uuid1.toString(),
-				JargonMetadataTemplateConstants.MD_TEMPLATE_UNIT);
-		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(
-				templateFqName1, avuData);
-
-		// Create a file in targetIrodsCollection1
-		dataTransferOperations.putOperation(TEST_FILE_NAME,
-				targetIrodsCollection1,
-				irodsAccount.getDefaultStorageResource(), null, null);
-		String testFileNameFQ = targetIrodsCollection1 + '/' + TEST_FILE_NOPATH;
-
-		MetadataTemplate metadataTemplate = resolver
-				.findTemplateByFqName(templateFqName1);
-		FormBasedMetadataTemplate fbmt = null;
-
-		if (metadataTemplate.getType() == TemplateTypeEnum.FORM_BASED) {
-			fbmt = (FormBasedMetadataTemplate) metadataTemplate;
-		}
-
-		for (MetadataElement me : fbmt.getElements()) {
-			if (me.getName().equalsIgnoreCase("attribute1")) {
-				me.setCurrentValue("value1");
-			} else if (me.getName().equalsIgnoreCase("attribute2")) {
-				me.setCurrentValue("42");
-			} else if (me.getName().equalsIgnoreCase("optional1")) {
-				me.setCurrentValue("optional_value1");
-			}
-		}
-
-		resolver.saveTemplateToSystemMetadataOnObject(fbmt, testFileNameFQ);
-
-		List<AVUQueryElement> queryElements = new ArrayList<AVUQueryElement>();
-		List<MetaDataAndDomainData> queryResult = new ArrayList<MetaDataAndDomainData>();
-
-		queryElements.add(AVUQueryElement.instanceForValueQuery(
-				AVUQueryElement.AVUQueryPart.ATTRIBUTE,
-				QueryConditionOperators.EQUAL, "attribute1"));
-
-		queryResult = accessObjectFactory.getDataObjectAO(irodsAccount)
-				.findMetadataValuesForDataObjectUsingAVUQuery(queryElements,
-						testFileNameFQ);
-
-		Assert.assertTrue(
-				"saveTemplateToSystemMetadataOnObject did not create Attribute attribute1",
-				!queryResult.isEmpty());
-
-		for (MetaDataAndDomainData mdd : queryResult) {
-			Assert.assertEquals("attribute1 has wrong value", "value1",
-					mdd.getAvuValue());
-		}
-
-		queryElements.clear();
-
-		queryElements.add(AVUQueryElement.instanceForValueQuery(
-				AVUQueryElement.AVUQueryPart.ATTRIBUTE,
-				QueryConditionOperators.EQUAL, "attribute2"));
-
-		queryResult = accessObjectFactory.getDataObjectAO(irodsAccount)
-				.findMetadataValuesForDataObjectUsingAVUQuery(queryElements,
-						testFileNameFQ);
-
-		Assert.assertTrue(
-				"saveTemplateToSystemMetadataOnObject did not create Attribute attribute2",
-				!queryResult.isEmpty());
-
-		for (MetaDataAndDomainData mdd : queryResult) {
-			Assert.assertEquals("attribute2 has wrong value", "42",
-					mdd.getAvuValue());
-		}
-
-		queryElements.clear();
-
-		queryElements.add(AVUQueryElement.instanceForValueQuery(
-				AVUQueryElement.AVUQueryPart.ATTRIBUTE,
-				QueryConditionOperators.EQUAL, "optional1"));
-
-		queryResult = accessObjectFactory.getDataObjectAO(irodsAccount)
-				.findMetadataValuesForDataObjectUsingAVUQuery(queryElements,
-						testFileNameFQ);
-
-		Assert.assertTrue(
-				"saveTemplateToSystemMetadataOnObject did not create Attribute optional1",
-				!queryResult.isEmpty());
-
-		for (MetaDataAndDomainData mdd : queryResult) {
-			Assert.assertEquals("attribute2 has wrong value",
-					"optional_value1", mdd.getAvuValue());
-		}
-	}
-
-	@Test
-	public void saveTemplateToSystemMetadataForCollection() throws Exception {
-		String testDirName1 = "saveTemplateToSystemMetadataForCollectionDir";
-
-		String targetIrodsCollection1 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName1);
-
-		IRODSAccount irodsAccount = testingPropertiesHelper
-				.buildIRODSAccountFromTestProperties(testingProperties);
-
-		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
-				.getIRODSAccessObjectFactory();
-
-		IRODSFile targetCollectionAsFile1 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection1);
-
-		targetCollectionAsFile1.mkdirs();
-
-		JargonMetadataResolver resolver = new JargonMetadataResolver(
-				irodsAccount, accessObjectFactory);
-
-		String mdTemplatePath1 = resolver
-				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection1);
-
-		DataTransferOperations dataTransferOperations = irodsFileSystem
-				.getIRODSAccessObjectFactory().getDataTransferOperations(
-						irodsAccount);
-
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				mdTemplatePath1, irodsAccount.getDefaultStorageResource(),
-				null, null);
-
-		String templateFqName1 = mdTemplatePath1 + '/' + TEMPLATE_NOPATH1;
-
-		UUID uuid1 = UUID.randomUUID();
-		AvuData avuData = AvuData.instance("test1", uuid1.toString(),
-				JargonMetadataTemplateConstants.MD_TEMPLATE_UNIT);
-		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(
-				templateFqName1, avuData);
-
-//		// Create a file in targetIrodsCollection1
-//		dataTransferOperations.putOperation(TEST_FILE_NAME,
-//				targetIrodsCollection1,
-//				irodsAccount.getDefaultStorageResource(), null, null);
-//		String testFileNameFQ = targetIrodsCollection1 + '/' + TEST_FILE_NOPATH;
-
-		MetadataTemplate metadataTemplate = resolver
-				.findTemplateByFqName(templateFqName1);
-		FormBasedMetadataTemplate fbmt = null;
-
-		if (metadataTemplate.getType() == TemplateTypeEnum.FORM_BASED) {
-			fbmt = (FormBasedMetadataTemplate) metadataTemplate;
-		}
-
-		for (MetadataElement me : fbmt.getElements()) {
-			if (me.getName().equalsIgnoreCase("attribute1")) {
-				me.setCurrentValue("value1");
-			} else if (me.getName().equalsIgnoreCase("attribute2")) {
-				me.setCurrentValue("42");
-			} else if (me.getName().equalsIgnoreCase("optional1")) {
-				me.setCurrentValue("optional_value1");
-			}
-		}
-
-		resolver.saveTemplateToSystemMetadataOnObject(fbmt, targetIrodsCollection1);
-
-		List<AVUQueryElement> queryElements = new ArrayList<AVUQueryElement>();
-		List<MetaDataAndDomainData> queryResult = new ArrayList<MetaDataAndDomainData>();
-
-		queryElements.add(AVUQueryElement.instanceForValueQuery(
-				AVUQueryElement.AVUQueryPart.ATTRIBUTE,
-				QueryConditionOperators.EQUAL, "attribute1"));
-
-		queryResult = accessObjectFactory.getCollectionAO(irodsAccount)
-				.findMetadataValuesByMetadataQueryForCollection(queryElements,
-						targetIrodsCollection1);
-
-		Assert.assertTrue(
-				"saveTemplateToSystemMetadataOnObject did not create Attribute attribute1",
-				!queryResult.isEmpty());
-
-		for (MetaDataAndDomainData mdd : queryResult) {
-			Assert.assertEquals("attribute1 has wrong value", "value1",
-					mdd.getAvuValue());
-		}
-
-		queryElements.clear();
-
-		queryElements.add(AVUQueryElement.instanceForValueQuery(
-				AVUQueryElement.AVUQueryPart.ATTRIBUTE,
-				QueryConditionOperators.EQUAL, "attribute2"));
-
-		queryResult = accessObjectFactory.getCollectionAO(irodsAccount)
-				.findMetadataValuesByMetadataQueryForCollection(queryElements,
-						targetIrodsCollection1);
-
-		Assert.assertTrue(
-				"saveTemplateToSystemMetadataOnObject did not create Attribute attribute2",
-				!queryResult.isEmpty());
-
-		for (MetaDataAndDomainData mdd : queryResult) {
-			Assert.assertEquals("attribute2 has wrong value", "42",
-					mdd.getAvuValue());
-		}
-
-		queryElements.clear();
-
-		queryElements.add(AVUQueryElement.instanceForValueQuery(
-				AVUQueryElement.AVUQueryPart.ATTRIBUTE,
-				QueryConditionOperators.EQUAL, "optional1"));
-
-		queryResult = accessObjectFactory.getCollectionAO(irodsAccount)
-				.findMetadataValuesByMetadataQueryForCollection(queryElements,
-						targetIrodsCollection1);
-
-		Assert.assertTrue(
-				"saveTemplateToSystemMetadataOnObject did not create Attribute optional1",
-				!queryResult.isEmpty());
-
-		for (MetaDataAndDomainData mdd : queryResult) {
-			Assert.assertEquals("attribute2 has wrong value",
-					"optional_value1", mdd.getAvuValue());
 		}
 	}
 }
