@@ -17,6 +17,7 @@ import org.irods.jargon.testutils.TestingPropertiesHelper;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class JargonMetadataResolverTest {
@@ -1656,7 +1657,7 @@ public class JargonMetadataResolverTest {
 				template.getElements().get(0).getCurrentValue().get(0));
 	}
 
-	@Test
+	@Ignore // see add refquery support in mdtemplate #24
 	public void getAndMergeTemplateWithRefIrodsQueryForFile() throws Exception {
 		String testDirName1 = "getAndMergeTemplateWithRefIrodsQueryForFileDir1";
 
@@ -1720,7 +1721,7 @@ public class JargonMetadataResolverTest {
 		}
 	}
 
-	@Test
+	@Ignore // add refquery support in mdtemplate #24
 	public void getAndMergeTemplateWithRefIrodsQueryForCollection() throws Exception {
 		String testDirName1 = "getAndMergeTemplateWithRefIrodsQueryForCollectionDir1";
 
