@@ -4,9 +4,9 @@ import java.io.File;
 import java.io.FilenameFilter;
 
 /**
- * 
+ *
  * Filter to identify metadatatemplate ".mdtemplate" files
- * 
+ *
  * @author rskarbez
  *
  */
@@ -14,11 +14,10 @@ import java.io.FilenameFilter;
 public class MetadataTemplateFileFilter implements FilenameFilter {
 
 	@Override
-	public boolean accept(File file, String fileName) {
+	public boolean accept(final File file, final String fileName) {
 		if (fileName.endsWith(MetadataTemplateConstants.TEMPLATE_FILE_EXT)) {
 			return true;
-		}
-		else {	
+		} else {
 			return false;
 		}
 	}

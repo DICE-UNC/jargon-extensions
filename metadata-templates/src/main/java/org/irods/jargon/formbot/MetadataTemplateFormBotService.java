@@ -11,19 +11,10 @@ import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.core.pub.io.IRODSFileFactoryImpl;
 import org.irods.jargon.core.service.AbstractJargonService;
-import org.irods.jargon.formbot.FormBotExecutionEnum;
-import org.irods.jargon.formbot.FormBotExecutionResult;
-import org.irods.jargon.formbot.FormBotField;
-import org.irods.jargon.formbot.FormBotForm;
-import org.irods.jargon.formbot.FormBotService;
-import org.irods.jargon.formbot.FormBotValidationEnum;
-import org.irods.jargon.formbot.FormBotValidationResult;
-import org.irods.jargon.formbot.FormElementEnum;
 import org.irods.jargon.metadatatemplate.JargonMetadataExporter;
 import org.irods.jargon.metadatatemplate.JargonMetadataResolver;
 import org.irods.jargon.metadatatemplate.MetadataElement;
 import org.irods.jargon.metadatatemplate.MetadataTemplate;
-import org.irods.jargon.metadatatemplate.FormBasedMetadataTemplate;
 import org.irods.jargon.metadatatemplate.MetadataTemplateParsingException;
 import org.irods.jargon.metadatatemplate.MetadataTemplateProcessingException;
 import org.irods.jargon.metadatatemplate.TemplateTypeEnum;
@@ -38,15 +29,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 
-public class MetadataTemplateFormBotService extends AbstractJargonService
-		implements FormBotService {
-	static private Logger log = LoggerFactory
-			.getLogger(IRODSFileFactoryImpl.class);
+public class MetadataTemplateFormBotService extends AbstractJargonService implements FormBotService {
+	static private Logger log = LoggerFactory.getLogger(IRODSFileFactoryImpl.class);
 	static private ObjectMapper objectMapper = new ObjectMapper();
 
 	@Override
 	// public FormBotForm buildFormBotForm(String json) {
-	public String buildFormBotForm(String json) {
+	public String buildFormBotForm(final String json) {
 
 		JsonNode node = null;
 
@@ -56,9 +45,9 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 			log.error("IOException: Failed to parse input JSON to JsonNode");
 		}
 
-		if (!(node.has("uuid") || node.has("fqName") || (node.has("name") && node
-				.has("activeDir")))) {
-			log.error("Insufficient information to find metadata template: json must contain a field uuid, fqName, or both name and activeDir");
+		if (!(node.has("uuid") || node.has("fqName") || (node.has("name") && node.has("activeDir")))) {
+			log.error(
+					"Insufficient information to find metadata template: json must contain a field uuid, fqName, or both name and activeDir");
 			// return null;
 			return "";
 		}
@@ -70,12 +59,9 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 		FormBotForm form = new FormBotForm();
 
 		try {
-			resolver = new JargonMetadataResolver(irodsAccount,
-					irodsAccessObjectFactory);
+			resolver = new JargonMetadataResolver(irodsAccount, irodsAccessObjectFactory);
 		} catch (JargonException e) {
-			log.error(
-					"JargonException: JargonMetadataResolver could not be created",
-					e);
+			log.error("JargonException: JargonMetadataResolver could not be created", e);
 		}
 
 		if (resolver == null) {
@@ -86,18 +72,16 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 
 		try {
 			if (node.has("uuid")) {
-				template = resolver.findTemplateByUUID(node.get("uuid")
-						.asText());
+				template = resolver.findTemplateByUUID(node.get("uuid").asText());
 			} else if (node.has("fqName")) {
-				template = resolver.findTemplateByFqName(node.get("fqName")
-						.asText());
+				template = resolver.findTemplateByFqName(node.get("fqName").asText());
 			} else if (node.has("name") && node.has("activeDir")) {
-				template = resolver.findTemplateByName(node.get("name")
-						.asText(), node.get("activeDir").asText());
+				template = resolver.findTemplateByName(node.get("name").asText(), node.get("activeDir").asText());
 			} else {
 				// This should already have been caught above, but
 				// replicated here for completeness
-				log.error("Insufficient information to find metadata template: json must contain a field uuid, fqName, or both name and activeDir");
+				log.error(
+						"Insufficient information to find metadata template: json must contain a field uuid, fqName, or both name and activeDir");
 				// return null;
 				return "";
 			}
@@ -126,7 +110,7 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 		form.setUniqueId(uuidString);
 
 		if (template.getType() == TemplateTypeEnum.FORM_BASED) {
-			FormBasedMetadataTemplate fbmt = (FormBasedMetadataTemplate) template;
+			MetadataTemplate fbmt = template;
 			for (MetadataElement me : fbmt.getElements()) {
 				FormBotField field = new FormBotField();
 				field.setName(me.getName());
@@ -247,7 +231,7 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 
 	@Override
 	// public FormBotValidationResult validateFormBotField(String json) {
-	public String validateFormBotField(String json) {
+	public String validateFormBotField(final String json) {
 		JsonNode node = null;
 		FormBotValidationResult validationResult = null;
 		String returnJson = "";
@@ -258,8 +242,7 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 			log.error("IOException: Failed to parse input JSON to JsonNode");
 			// return new FormBotValidationResult(FormBotValidationEnum.ERROR,
 			// "Bad JSON");
-			validationResult = new FormBotValidationResult(
-					FormBotValidationEnum.ERROR, "Bad JSON");
+			validationResult = new FormBotValidationResult(FormBotValidationEnum.ERROR, "Bad JSON");
 			try {
 				returnJson = objectMapper.writeValueAsString(validationResult);
 			} catch (JsonProcessingException e1) {
@@ -267,13 +250,13 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 			}
 		}
 
-		if (!(node.has("value") && (node.has("fieldUniqueName") || (node
-				.has("formUniqueName") && node.has("fieldName"))))) {
-			log.error("Insufficient information to find validate field: json must contain value and either fieldUniqueName, or formUniqueName AND fieldName");
+		if (!(node.has("value")
+				&& (node.has("fieldUniqueName") || (node.has("formUniqueName") && node.has("fieldName"))))) {
+			log.error(
+					"Insufficient information to find validate field: json must contain value and either fieldUniqueName, or formUniqueName AND fieldName");
 			// return new FormBotValidationResult(FormBotValidationEnum.ERROR,
 			// "Bad JSON");
-			validationResult = new FormBotValidationResult(
-					FormBotValidationEnum.ERROR, "Bad JSON");
+			validationResult = new FormBotValidationResult(FormBotValidationEnum.ERROR, "Bad JSON");
 			try {
 				returnJson = objectMapper.writeValueAsString(validationResult);
 			} catch (JsonProcessingException e) {
@@ -286,16 +269,12 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 		MetadataTemplate template = null;
 
 		try {
-			resolver = new JargonMetadataResolver(irodsAccount,
-					irodsAccessObjectFactory);
+			resolver = new JargonMetadataResolver(irodsAccount, irodsAccessObjectFactory);
 		} catch (JargonException e) {
-			log.error(
-					"JargonException: JargonMetadataResolver could not be created",
-					e);
+			log.error("JargonException: JargonMetadataResolver could not be created", e);
 			// return new FormBotValidationResult(FormBotValidationEnum.ERROR,
 			// "Could not create JargonMetadataResolver");
-			validationResult = new FormBotValidationResult(
-					FormBotValidationEnum.ERROR,
+			validationResult = new FormBotValidationResult(FormBotValidationEnum.ERROR,
 					"Could not create JargonMetadataResolver");
 			try {
 				returnJson = objectMapper.writeValueAsString(validationResult);
@@ -332,11 +311,11 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 		} else {
 			// This should already have been caught above, but
 			// replicated here for completeness
-			log.error("Insufficient information to find metadata template: json must contain a field uuid, fqName, or both name and activeDir");
+			log.error(
+					"Insufficient information to find metadata template: json must contain a field uuid, fqName, or both name and activeDir");
 			// return new FormBotValidationResult(FormBotValidationEnum.ERROR,
 			// "Insufficient information to find metadata template");
-			validationResult = new FormBotValidationResult(
-					FormBotValidationEnum.ERROR,
+			validationResult = new FormBotValidationResult(FormBotValidationEnum.ERROR,
 					"Insufficient information to find metadata template");
 			try {
 				returnJson = objectMapper.writeValueAsString(validationResult);
@@ -352,8 +331,7 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 			log.error("MetadataTemplateParsingException: Error parsing metadata template");
 			// return new FormBotValidationResult(FormBotValidationEnum.ERROR,
 			// "Error parsing metadata template");
-			validationResult = new FormBotValidationResult(
-					FormBotValidationEnum.ERROR,
+			validationResult = new FormBotValidationResult(FormBotValidationEnum.ERROR,
 					"Error parsing metadata template");
 			try {
 				returnJson = objectMapper.writeValueAsString(validationResult);
@@ -365,8 +343,7 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 			log.error("FileNotFoundException: Metadata template not found");
 			// return new FormBotValidationResult(FormBotValidationEnum.ERROR,
 			// "Metadata template not found");
-			validationResult = new FormBotValidationResult(
-					FormBotValidationEnum.ERROR, "Metadata template not found");
+			validationResult = new FormBotValidationResult(FormBotValidationEnum.ERROR, "Metadata template not found");
 			try {
 				returnJson = objectMapper.writeValueAsString(validationResult);
 			} catch (JsonProcessingException e1) {
@@ -377,8 +354,7 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 			log.error("MetadataTemplateProcessingException: Error processing metadata template");
 			// return new FormBotValidationResult(FormBotValidationEnum.ERROR,
 			// "Error processing metadata template");
-			validationResult = new FormBotValidationResult(
-					FormBotValidationEnum.ERROR,
+			validationResult = new FormBotValidationResult(FormBotValidationEnum.ERROR,
 					"Error processing metadata template");
 			try {
 				returnJson = objectMapper.writeValueAsString(validationResult);
@@ -390,8 +366,7 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 			log.error("IOException: Error reading metadata template from disk");
 			// return new FormBotValidationResult(FormBotValidationEnum.ERROR,
 			// "Error reading metadata template from disk");
-			validationResult = new FormBotValidationResult(
-					FormBotValidationEnum.ERROR,
+			validationResult = new FormBotValidationResult(FormBotValidationEnum.ERROR,
 					"Error reading metadata template from disk");
 			try {
 				returnJson = objectMapper.writeValueAsString(validationResult);
@@ -402,13 +377,12 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 		}
 
 		if (template.getType() == TemplateTypeEnum.FORM_BASED) {
-			FormBasedMetadataTemplate fbmt = (FormBasedMetadataTemplate) template;
+			MetadataTemplate fbmt = template;
 			for (MetadataElement me : fbmt.getElements()) {
 				if (me.getName().equalsIgnoreCase(fieldName)) {
 					me.setCurrentValue(value);
-					ValidationReturnEnum validationReturn = ValidatorSingleton.VALIDATOR
-							.validate(irodsAccount, irodsAccessObjectFactory,
-									me);
+					ValidationReturnEnum validationReturn = ValidatorSingleton.VALIDATOR.validate(irodsAccount,
+							irodsAccessObjectFactory, me);
 
 					FormBotValidationEnum fbv;
 					if (validationReturn == ValidationReturnEnum.SUCCESS) {
@@ -422,11 +396,9 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 
 					// return new FormBotValidationResult(fbv,
 					// validationReturn.toString());
-					validationResult = new FormBotValidationResult(fbv,
-							validationReturn.toString());
+					validationResult = new FormBotValidationResult(fbv, validationReturn.toString());
 					try {
-						returnJson = objectMapper
-								.writeValueAsString(validationResult);
+						returnJson = objectMapper.writeValueAsString(validationResult);
 					} catch (JsonProcessingException e) {
 						log.error("JsonProcessingException when writing FormBotValidationResult to json String");
 					}
@@ -437,8 +409,7 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 
 		// return new FormBotValidationResult(FormBotValidationEnum.ERROR,
 		// "Field not found");
-		validationResult = new FormBotValidationResult(
-				FormBotValidationEnum.ERROR, "Field not found");
+		validationResult = new FormBotValidationResult(FormBotValidationEnum.ERROR, "Field not found");
 		try {
 			returnJson = objectMapper.writeValueAsString(validationResult);
 		} catch (JsonProcessingException e) {
@@ -449,7 +420,7 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 
 	@Override
 	// public List<FormBotValidationResult> validateFormBotForm(String json) {
-	public String validateFormBotForm(String json) {
+	public String validateFormBotForm(final String json) {
 		JsonNode node = null;
 		List<String> fieldNames = null;
 		List<List<String>> fieldValues = null;
@@ -461,8 +432,7 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 			node = objectMapper.readValue(json, JsonNode.class);
 		} catch (IOException e) {
 			log.error("IOException: Failed to parse input JSON to JsonNode");
-			returnList.add(new FormBotValidationResult(
-					FormBotValidationEnum.ERROR, "Bad JSON"));
+			returnList.add(new FormBotValidationResult(FormBotValidationEnum.ERROR, "Bad JSON"));
 			// return returnList;
 			try {
 				returnJson = objectMapper.writeValueAsString(returnList);
@@ -473,9 +443,9 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 		}
 
 		if (!(node.has("formUniqueName") && node.has("fields"))) {
-			log.error("Insufficient information to find metadata template and fields: json must contain formUniqueName and fields elements");
-			returnList.add(new FormBotValidationResult(
-					FormBotValidationEnum.ERROR, "Bad JSON"));
+			log.error(
+					"Insufficient information to find metadata template and fields: json must contain formUniqueName and fields elements");
+			returnList.add(new FormBotValidationResult(FormBotValidationEnum.ERROR, "Bad JSON"));
 			// return returnList;
 			try {
 				returnJson = objectMapper.writeValueAsString(returnList);
@@ -489,18 +459,14 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 		MetadataTemplate template = null;
 
 		try {
-			resolver = new JargonMetadataResolver(irodsAccount,
-					irodsAccessObjectFactory);
+			resolver = new JargonMetadataResolver(irodsAccount, irodsAccessObjectFactory);
 		} catch (JargonException e) {
-			log.error(
-					"JargonException: JargonMetadataResolver could not be created",
-					e);
+			log.error("JargonException: JargonMetadataResolver could not be created", e);
 		}
 
 		if (resolver == null) {
 			log.error("Unable to instantiate JargonMetadataResolver");
-			returnList.add(new FormBotValidationResult(
-					FormBotValidationEnum.ERROR,
+			returnList.add(new FormBotValidationResult(FormBotValidationEnum.ERROR,
 					"Unable to instantiate JargonMetadataResolver"));
 			// return returnList;
 			try {
@@ -523,10 +489,8 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 					fieldNames.add(fieldNode.get("fieldName").asText());
 
 					if (fieldNode.get("value").isArray()) {
-						ArrayNode valuesNode = (ArrayNode) fieldNode
-								.get("value");
-						Iterator<JsonNode> valuesIterator = valuesNode
-								.elements();
+						ArrayNode valuesNode = (ArrayNode) fieldNode.get("value");
+						Iterator<JsonNode> valuesIterator = valuesNode.elements();
 						while (valuesIterator.hasNext()) {
 							JsonNode valueNode = valuesIterator.next();
 							value.add(valueNode.asText());
@@ -541,13 +505,10 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 		}
 
 		try {
-			template = resolver.findTemplateByUUID(node.get("formUniqueName")
-					.asText());
+			template = resolver.findTemplateByUUID(node.get("formUniqueName").asText());
 		} catch (MetadataTemplateParsingException e) {
 			log.error("MetadataTemplateParsingException: Error parsing metadata template");
-			returnList.add(new FormBotValidationResult(
-					FormBotValidationEnum.ERROR,
-					"Error parsing metadata template"));
+			returnList.add(new FormBotValidationResult(FormBotValidationEnum.ERROR, "Error parsing metadata template"));
 			// return returnList;
 			try {
 				returnJson = objectMapper.writeValueAsString(returnList);
@@ -557,10 +518,7 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 			return returnJson;
 		} catch (FileNotFoundException e) {
 			log.error("FileNotFoundException: Metadata template not found");
-			returnList
-					.add(new FormBotValidationResult(
-							FormBotValidationEnum.ERROR,
-							"Metadata template not found"));
+			returnList.add(new FormBotValidationResult(FormBotValidationEnum.ERROR, "Metadata template not found"));
 			// return returnList;
 			try {
 				returnJson = objectMapper.writeValueAsString(returnList);
@@ -570,9 +528,8 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 			return returnJson;
 		} catch (MetadataTemplateProcessingException e) {
 			log.error("MetadataTemplateProcessingException: Error processing metadata template");
-			returnList.add(new FormBotValidationResult(
-					FormBotValidationEnum.ERROR,
-					"Error processing metadata template"));
+			returnList.add(
+					new FormBotValidationResult(FormBotValidationEnum.ERROR, "Error processing metadata template"));
 			// return returnList;
 			try {
 				returnJson = objectMapper.writeValueAsString(returnList);
@@ -582,8 +539,7 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 			return returnJson;
 		} catch (IOException e) {
 			log.error("IOException: Error reading metadata template from disk");
-			returnList.add(new FormBotValidationResult(
-					FormBotValidationEnum.ERROR,
+			returnList.add(new FormBotValidationResult(FormBotValidationEnum.ERROR,
 					"Error reading metadata template from disk"));
 			// return returnList;
 			try {
@@ -597,26 +553,23 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 		boolean validationFailed = false;
 
 		if (template.getType() == TemplateTypeEnum.FORM_BASED) {
-			FormBasedMetadataTemplate fbmt = (FormBasedMetadataTemplate) template;
+			MetadataTemplate fbmt = template;
 			for (int i = 0; i < fieldNames.size(); i++) {
 				for (MetadataElement me : fbmt.getElements()) {
 					String fieldName = fieldNames.get(i);
 					List<String> value = fieldValues.get(i);
 					if (me.getName().equalsIgnoreCase(fieldName)) {
 						me.setCurrentValue(value);
-						ValidationReturnEnum validationReturn = ValidatorSingleton.VALIDATOR
-								.validate(irodsAccount,
-										irodsAccessObjectFactory, me);
+						ValidationReturnEnum validationReturn = ValidatorSingleton.VALIDATOR.validate(irodsAccount,
+								irodsAccessObjectFactory, me);
 						if ((validationReturn == ValidationReturnEnum.SUCCESS)
 								|| (validationReturn == ValidationReturnEnum.NOT_VALIDATED)
 								|| (validationReturn == ValidationReturnEnum.REGEX_SYNTAX_ERROR)) {
-							returnList.add(new FormBotValidationResult(
-									FormBotValidationEnum.SUCCESS,
+							returnList.add(new FormBotValidationResult(FormBotValidationEnum.SUCCESS,
 									validationReturn.toString()));
 							break;
 						} else {
-							returnList.add(new FormBotValidationResult(
-									FormBotValidationEnum.FAILURE,
+							returnList.add(new FormBotValidationResult(FormBotValidationEnum.FAILURE,
 									validationReturn.toString()));
 							validationFailed = true;
 							break;
@@ -627,13 +580,11 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 		} // TODO else if (other type of MetadataTemplate)
 
 		if (validationFailed) {
-			returnList.add(0, new FormBotValidationResult(
-					FormBotValidationEnum.FAILURE,
-					"At least one field failed validation"));
+			returnList.add(0,
+					new FormBotValidationResult(FormBotValidationEnum.FAILURE, "At least one field failed validation"));
 		} else {
-			returnList.add(0, new FormBotValidationResult(
-					FormBotValidationEnum.SUCCESS,
-					"All fields passed validation"));
+			returnList.add(0,
+					new FormBotValidationResult(FormBotValidationEnum.SUCCESS, "All fields passed validation"));
 		}
 
 		// return returnList;
@@ -647,7 +598,7 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 
 	@Override
 	// public FormBotExecutionResult executeFormBotField(String json) {
-	public String executeFormBotField(String json) {
+	public String executeFormBotField(final String json) {
 		JsonNode node = null;
 		FormBotExecutionResult executionResult = null;
 		String returnJson = "";
@@ -656,8 +607,8 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 			node = objectMapper.readValue(json, JsonNode.class);
 		} catch (IOException e) {
 			log.error("IOException: Failed to parse input JSON to JsonNode");
-//			return new FormBotExecutionResult(FormBotExecutionEnum.ERROR,
-//					"Bad JSON");
+			// return new FormBotExecutionResult(FormBotExecutionEnum.ERROR,
+			// "Bad JSON");
 			executionResult = new FormBotExecutionResult(FormBotExecutionEnum.ERROR, "Bad JSON");
 			try {
 				returnJson = objectMapper.writeValueAsString(executionResult);
@@ -667,12 +618,12 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 			return returnJson;
 		}
 
-		if (!(node.has("value") && node.has("pathToObject") && (node
-				.has("fieldUniqueName") || (node.has("formUniqueName") && node
-				.has("fieldName"))))) {
-			log.error("Insufficient information to find validate field: json must contain value and either fieldUniqueName, or formUniqueName AND fieldName");
-//			return new FormBotExecutionResult(FormBotExecutionEnum.ERROR,
-//					"Bad JSON");
+		if (!(node.has("value") && node.has("pathToObject")
+				&& (node.has("fieldUniqueName") || (node.has("formUniqueName") && node.has("fieldName"))))) {
+			log.error(
+					"Insufficient information to find validate field: json must contain value and either fieldUniqueName, or formUniqueName AND fieldName");
+			// return new FormBotExecutionResult(FormBotExecutionEnum.ERROR,
+			// "Bad JSON");
 			executionResult = new FormBotExecutionResult(FormBotExecutionEnum.ERROR, "Bad JSON");
 			try {
 				returnJson = objectMapper.writeValueAsString(executionResult);
@@ -687,15 +638,13 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 		MetadataTemplate template = null;
 
 		try {
-			resolver = new JargonMetadataResolver(irodsAccount,
-					irodsAccessObjectFactory);
+			resolver = new JargonMetadataResolver(irodsAccount, irodsAccessObjectFactory);
 		} catch (JargonException e) {
-			log.error(
-					"JargonException: JargonMetadataResolver could not be created",
-					e);
-//			return new FormBotExecutionResult(FormBotExecutionEnum.ERROR,
-//					"Could not create JargonMetadataResolver");
-			executionResult = new FormBotExecutionResult(FormBotExecutionEnum.ERROR, "Could not create JargonMetadataResolver");
+			log.error("JargonException: JargonMetadataResolver could not be created", e);
+			// return new FormBotExecutionResult(FormBotExecutionEnum.ERROR,
+			// "Could not create JargonMetadataResolver");
+			executionResult = new FormBotExecutionResult(FormBotExecutionEnum.ERROR,
+					"Could not create JargonMetadataResolver");
 			try {
 				returnJson = objectMapper.writeValueAsString(executionResult);
 			} catch (JsonProcessingException e1) {
@@ -704,8 +653,7 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 			return returnJson;
 		}
 
-		exporter = new JargonMetadataExporter(irodsAccessObjectFactory,
-				irodsAccount);
+		exporter = new JargonMetadataExporter(irodsAccessObjectFactory, irodsAccount);
 
 		List<String> value = new ArrayList<String>();
 
@@ -735,10 +683,12 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 		} else {
 			// This should already have been caught above, but
 			// replicated here for completeness
-			log.error("Insufficient information to find metadata template: json must contain a field uuid, fqName, or both name and activeDir");
-//			return new FormBotExecutionResult(FormBotExecutionEnum.ERROR,
-//					"Insufficient information to find metadata template");
-			executionResult = new FormBotExecutionResult(FormBotExecutionEnum.ERROR, "Insufficient information to find MetadataTemplate");
+			log.error(
+					"Insufficient information to find metadata template: json must contain a field uuid, fqName, or both name and activeDir");
+			// return new FormBotExecutionResult(FormBotExecutionEnum.ERROR,
+			// "Insufficient information to find metadata template");
+			executionResult = new FormBotExecutionResult(FormBotExecutionEnum.ERROR,
+					"Insufficient information to find MetadataTemplate");
 			try {
 				returnJson = objectMapper.writeValueAsString(executionResult);
 			} catch (JsonProcessingException e1) {
@@ -751,8 +701,8 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 			template = resolver.findTemplateByUUID(formUuid);
 		} catch (MetadataTemplateParsingException e) {
 			log.error("MetadataTemplateParsingException: Error parsing metadata template");
-//			return new FormBotExecutionResult(FormBotExecutionEnum.ERROR,
-//					"Error parsing metadata template");
+			// return new FormBotExecutionResult(FormBotExecutionEnum.ERROR,
+			// "Error parsing metadata template");
 			executionResult = new FormBotExecutionResult(FormBotExecutionEnum.ERROR, "Error parsing MetadataTemplate");
 			try {
 				returnJson = objectMapper.writeValueAsString(executionResult);
@@ -762,8 +712,8 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 			return returnJson;
 		} catch (FileNotFoundException e) {
 			log.error("FileNotFoundException: Metadata template not found");
-//			return new FormBotExecutionResult(FormBotExecutionEnum.ERROR,
-//					"Metadata template not found");
+			// return new FormBotExecutionResult(FormBotExecutionEnum.ERROR,
+			// "Metadata template not found");
 			executionResult = new FormBotExecutionResult(FormBotExecutionEnum.ERROR, "MetadataTemplate not found");
 			try {
 				returnJson = objectMapper.writeValueAsString(executionResult);
@@ -773,9 +723,10 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 			return returnJson;
 		} catch (MetadataTemplateProcessingException e) {
 			log.error("MetadataTemplateProcessingException: Error processing metadata template");
-//			return new FormBotExecutionResult(FormBotExecutionEnum.ERROR,
-//					"Error processing metadata template");
-			executionResult = new FormBotExecutionResult(FormBotExecutionEnum.ERROR, "Error processing MetadataTemplate");
+			// return new FormBotExecutionResult(FormBotExecutionEnum.ERROR,
+			// "Error processing metadata template");
+			executionResult = new FormBotExecutionResult(FormBotExecutionEnum.ERROR,
+					"Error processing MetadataTemplate");
 			try {
 				returnJson = objectMapper.writeValueAsString(executionResult);
 			} catch (JsonProcessingException e1) {
@@ -784,9 +735,10 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 			return returnJson;
 		} catch (IOException e) {
 			log.error("IOException: Error reading metadata template from disk");
-//			return new FormBotExecutionResult(FormBotExecutionEnum.ERROR,
-//					"Error reading metadata template from disk");
-			executionResult = new FormBotExecutionResult(FormBotExecutionEnum.ERROR, "Error reading MetadataTemplate from disk");
+			// return new FormBotExecutionResult(FormBotExecutionEnum.ERROR,
+			// "Error reading metadata template from disk");
+			executionResult = new FormBotExecutionResult(FormBotExecutionEnum.ERROR,
+					"Error reading MetadataTemplate from disk");
 			try {
 				returnJson = objectMapper.writeValueAsString(executionResult);
 			} catch (JsonProcessingException e1) {
@@ -796,39 +748,41 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 		}
 
 		if (template.getType() == TemplateTypeEnum.FORM_BASED) {
-			FormBasedMetadataTemplate fbmt = (FormBasedMetadataTemplate) template;
+			MetadataTemplate fbmt = template;
 			for (MetadataElement me : fbmt.getElements()) {
 
 				if (me.getName().equalsIgnoreCase(fieldName)) {
 					me.setCurrentValue(value);
-					ValidationReturnEnum validationReturn = ValidatorSingleton.VALIDATOR
-							.validate(irodsAccount, irodsAccessObjectFactory,
-									me);
+					ValidationReturnEnum validationReturn = ValidatorSingleton.VALIDATOR.validate(irodsAccount,
+							irodsAccessObjectFactory, me);
 
 					if (validationReturn == ValidationReturnEnum.SUCCESS
 							|| validationReturn == ValidationReturnEnum.NOT_VALIDATED
 							|| validationReturn == ValidationReturnEnum.REGEX_SYNTAX_ERROR) {
 						try {
-							exporter.saveElementToSystemMetadataOnObject(me,
-									pathToObject);
+							exporter.saveElementToSystemMetadataOnObject(me, pathToObject);
 						} catch (JargonException e) {
 							log.error("JargonException when trying to add metadata to data object");
-//							return new FormBotExecutionResult(
-//									FormBotExecutionEnum.ERROR,
-//									"JargonException when trying to add metadata to data object");
-							executionResult = new FormBotExecutionResult(FormBotExecutionEnum.ERROR, "JargonException when trying to save metadata to iRODS object");
+							// return new FormBotExecutionResult(
+							// FormBotExecutionEnum.ERROR,
+							// "JargonException when trying to add metadata to
+							// data object");
+							executionResult = new FormBotExecutionResult(FormBotExecutionEnum.ERROR,
+									"JargonException when trying to save metadata to iRODS object");
 							try {
 								returnJson = objectMapper.writeValueAsString(executionResult);
 							} catch (JsonProcessingException e1) {
-								log.error("JsonProcessingException when writing FormBotValidationResult to json String");
+								log.error(
+										"JsonProcessingException when writing FormBotValidationResult to json String");
 							}
 							return returnJson;
 						}
 
-//						return new FormBotExecutionResult(
-//								FormBotExecutionEnum.SUCCESS,
-//								"Metadata added to data object");
-						executionResult = new FormBotExecutionResult(FormBotExecutionEnum.SUCCESS, "Metadata added to iRODS object");
+						// return new FormBotExecutionResult(
+						// FormBotExecutionEnum.SUCCESS,
+						// "Metadata added to data object");
+						executionResult = new FormBotExecutionResult(FormBotExecutionEnum.SUCCESS,
+								"Metadata added to iRODS object");
 						try {
 							returnJson = objectMapper.writeValueAsString(executionResult);
 						} catch (JsonProcessingException e1) {
@@ -836,11 +790,10 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 						}
 						return returnJson;
 					} else {
-						String retString = "Validation failed for field "
-								+ fieldName + " with value " + value;
-//						return new FormBotExecutionResult(
-//								FormBotExecutionEnum.VALIDATION_FAILED,
-//								retString);
+						String retString = "Validation failed for field " + fieldName + " with value " + value;
+						// return new FormBotExecutionResult(
+						// FormBotExecutionEnum.VALIDATION_FAILED,
+						// retString);
 						executionResult = new FormBotExecutionResult(FormBotExecutionEnum.VALIDATION_FAILED, retString);
 						try {
 							returnJson = objectMapper.writeValueAsString(executionResult);
@@ -853,8 +806,8 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 			}
 		} // TODO else if (other type of MetadataTemplate)
 
-//		return new FormBotExecutionResult(FormBotExecutionEnum.ERROR,
-//				"Field not found");
+		// return new FormBotExecutionResult(FormBotExecutionEnum.ERROR,
+		// "Field not found");
 		executionResult = new FormBotExecutionResult(FormBotExecutionEnum.ERROR, "Field not found");
 		try {
 			returnJson = objectMapper.writeValueAsString(executionResult);
@@ -866,7 +819,7 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 
 	@Override
 	// public List<FormBotExecutionResult> executeFormBotForm(String json) {
-	public String executeFormBotForm(String json) {
+	public String executeFormBotForm(final String json) {
 		JsonNode node = null;
 		List<String> fieldNames = null;
 		List<List<String>> fieldValues = null;
@@ -878,9 +831,8 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 			node = objectMapper.readValue(json, JsonNode.class);
 		} catch (IOException e) {
 			log.error("IOException: Failed to parse input JSON to JsonNode");
-			returnList.add(new FormBotExecutionResult(
-					FormBotExecutionEnum.ERROR, "Bad JSON"));
-//			return returnList;
+			returnList.add(new FormBotExecutionResult(FormBotExecutionEnum.ERROR, "Bad JSON"));
+			// return returnList;
 			try {
 				returnJson = objectMapper.writeValueAsString(returnList);
 			} catch (JsonProcessingException e1) {
@@ -889,12 +841,11 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 			return returnJson;
 		}
 
-		if (!(node.has("formUniqueName") && node.has("pathToObject") && node
-				.has("fields"))) {
-			log.error("Insufficient information to find metadata template and fields: json must contain formUniqueName and fields elements");
-			returnList.add(new FormBotExecutionResult(
-					FormBotExecutionEnum.ERROR, "Bad JSON"));
-//			return returnList;
+		if (!(node.has("formUniqueName") && node.has("pathToObject") && node.has("fields"))) {
+			log.error(
+					"Insufficient information to find metadata template and fields: json must contain formUniqueName and fields elements");
+			returnList.add(new FormBotExecutionResult(FormBotExecutionEnum.ERROR, "Bad JSON"));
+			// return returnList;
 			try {
 				returnJson = objectMapper.writeValueAsString(returnList);
 			} catch (JsonProcessingException e1) {
@@ -908,20 +859,16 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 		MetadataTemplate template = null;
 
 		try {
-			resolver = new JargonMetadataResolver(irodsAccount,
-					irodsAccessObjectFactory);
+			resolver = new JargonMetadataResolver(irodsAccount, irodsAccessObjectFactory);
 		} catch (JargonException e) {
-			log.error(
-					"JargonException: JargonMetadataResolver could not be created",
-					e);
+			log.error("JargonException: JargonMetadataResolver could not be created", e);
 		}
 
 		if (resolver == null) {
 			log.error("Unable to instantiate JargonMetadataResolver");
-			returnList.add(new FormBotExecutionResult(
-					FormBotExecutionEnum.ERROR,
+			returnList.add(new FormBotExecutionResult(FormBotExecutionEnum.ERROR,
 					"Unable to instantiate JargonMetadataResolver"));
-//			return returnList;
+			// return returnList;
 			try {
 				returnJson = objectMapper.writeValueAsString(returnList);
 			} catch (JsonProcessingException e1) {
@@ -930,8 +877,7 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 			return returnJson;
 		}
 
-		exporter = new JargonMetadataExporter(irodsAccessObjectFactory,
-				irodsAccount);
+		exporter = new JargonMetadataExporter(irodsAccessObjectFactory, irodsAccount);
 
 		String pathToObject = node.get("pathToObject").asText();
 		String formUuid = node.get("formUniqueName").asText();
@@ -948,10 +894,8 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 					fieldNames.add(fieldNode.get("fieldName").asText());
 
 					if (fieldNode.get("value").isArray()) {
-						ArrayNode valuesNode = (ArrayNode) fieldNode
-								.get("value");
-						Iterator<JsonNode> valuesIterator = valuesNode
-								.elements();
+						ArrayNode valuesNode = (ArrayNode) fieldNode.get("value");
+						Iterator<JsonNode> valuesIterator = valuesNode.elements();
 						while (valuesIterator.hasNext()) {
 							JsonNode valueNode = valuesIterator.next();
 							value.add(valueNode.asText());
@@ -969,10 +913,8 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 			template = resolver.findTemplateByUUID(formUuid);
 		} catch (MetadataTemplateParsingException e) {
 			log.error("MetadataTemplateParsingException: Error parsing metadata template");
-			returnList.add(new FormBotExecutionResult(
-					FormBotExecutionEnum.ERROR,
-					"Error parsing metadata template"));
-//			return returnList;
+			returnList.add(new FormBotExecutionResult(FormBotExecutionEnum.ERROR, "Error parsing metadata template"));
+			// return returnList;
 			try {
 				returnJson = objectMapper.writeValueAsString(returnList);
 			} catch (JsonProcessingException e1) {
@@ -981,9 +923,8 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 			return returnJson;
 		} catch (FileNotFoundException e) {
 			log.error("FileNotFoundException: Metadata template not found");
-			returnList.add(new FormBotExecutionResult(
-					FormBotExecutionEnum.ERROR, "Metadata template not found"));
-//			return returnList;
+			returnList.add(new FormBotExecutionResult(FormBotExecutionEnum.ERROR, "Metadata template not found"));
+			// return returnList;
 			try {
 				returnJson = objectMapper.writeValueAsString(returnList);
 			} catch (JsonProcessingException e1) {
@@ -992,10 +933,9 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 			return returnJson;
 		} catch (MetadataTemplateProcessingException e) {
 			log.error("MetadataTemplateProcessingException: Error processing metadata template");
-			returnList.add(new FormBotExecutionResult(
-					FormBotExecutionEnum.ERROR,
-					"Error processing metadata template"));
-//			return returnList;
+			returnList
+					.add(new FormBotExecutionResult(FormBotExecutionEnum.ERROR, "Error processing metadata template"));
+			// return returnList;
 			try {
 				returnJson = objectMapper.writeValueAsString(returnList);
 			} catch (JsonProcessingException e1) {
@@ -1004,10 +944,9 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 			return returnJson;
 		} catch (IOException e) {
 			log.error("IOException: Error reading metadata template from disk");
-			returnList.add(new FormBotExecutionResult(
-					FormBotExecutionEnum.ERROR,
+			returnList.add(new FormBotExecutionResult(FormBotExecutionEnum.ERROR,
 					"Error reading metadata template from disk"));
-//			return returnList;
+			// return returnList;
 			try {
 				returnJson = objectMapper.writeValueAsString(returnList);
 			} catch (JsonProcessingException e1) {
@@ -1020,39 +959,33 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 		boolean error = false;
 
 		if (template.getType() == TemplateTypeEnum.FORM_BASED) {
-			FormBasedMetadataTemplate fbmt = (FormBasedMetadataTemplate) template;
+			MetadataTemplate fbmt = template;
 			for (int i = 0; i < fieldNames.size(); i++) {
 				for (MetadataElement me : fbmt.getElements()) {
 					String fieldName = fieldNames.get(i);
 					List<String> value = fieldValues.get(i);
 					if (me.getName().equalsIgnoreCase(fieldName)) {
 						me.setCurrentValue(value);
-						ValidationReturnEnum validationReturn = ValidatorSingleton.VALIDATOR
-								.validate(irodsAccount,
-										irodsAccessObjectFactory, me);
+						ValidationReturnEnum validationReturn = ValidatorSingleton.VALIDATOR.validate(irodsAccount,
+								irodsAccessObjectFactory, me);
 						if (validationReturn == ValidationReturnEnum.SUCCESS
 								|| validationReturn == ValidationReturnEnum.NOT_VALIDATED
 								|| validationReturn == ValidationReturnEnum.REGEX_SYNTAX_ERROR) {
 							try {
-								exporter.saveElementToSystemMetadataOnObject(
-										me, pathToObject);
+								exporter.saveElementToSystemMetadataOnObject(me, pathToObject);
 							} catch (JargonException e) {
 								log.error("JargonException when trying to add metadata to data object");
-								returnList
-										.add(new FormBotExecutionResult(
-												FormBotExecutionEnum.ERROR,
-												"JargonException when adding metadata to data obj"));
+								returnList.add(new FormBotExecutionResult(FormBotExecutionEnum.ERROR,
+										"JargonException when adding metadata to data obj"));
 								error = true;
 								break;
 							}
 
-							returnList.add(new FormBotExecutionResult(
-									FormBotExecutionEnum.SUCCESS,
+							returnList.add(new FormBotExecutionResult(FormBotExecutionEnum.SUCCESS,
 									validationReturn.toString()));
 							break;
 						} else {
-							returnList.add(new FormBotExecutionResult(
-									FormBotExecutionEnum.VALIDATION_FAILED,
+							returnList.add(new FormBotExecutionResult(FormBotExecutionEnum.VALIDATION_FAILED,
 									validationReturn.toString()));
 							validationFailed = true;
 							break;
@@ -1063,20 +996,17 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 		} // TODO else if (other type of MetadataTemplate)
 
 		if (error) {
-			returnList.add(0, new FormBotExecutionResult(
-					FormBotExecutionEnum.ERROR,
-					"At least one field generated an error"));
+			returnList.add(0,
+					new FormBotExecutionResult(FormBotExecutionEnum.ERROR, "At least one field generated an error"));
 		} else if (validationFailed) {
-			returnList.add(0, new FormBotExecutionResult(
-					FormBotExecutionEnum.VALIDATION_FAILED,
+			returnList.add(0, new FormBotExecutionResult(FormBotExecutionEnum.VALIDATION_FAILED,
 					"At least one field failed validation"));
 		} else {
-			returnList.add(0, new FormBotExecutionResult(
-					FormBotExecutionEnum.SUCCESS,
-					"Metadata added to iRODS object"));
+			returnList.add(0,
+					new FormBotExecutionResult(FormBotExecutionEnum.SUCCESS, "Metadata added to iRODS object"));
 		}
 
-//		return returnList;
+		// return returnList;
 		try {
 			returnJson = objectMapper.writeValueAsString(returnList);
 		} catch (JsonProcessingException e1) {
@@ -1089,8 +1019,7 @@ public class MetadataTemplateFormBotService extends AbstractJargonService
 		super();
 	}
 
-	public MetadataTemplateFormBotService(
-			final IRODSAccessObjectFactory irodsAccessObjectFactory,
+	public MetadataTemplateFormBotService(final IRODSAccessObjectFactory irodsAccessObjectFactory,
 			final IRODSAccount irodsAccount) {
 		super(irodsAccessObjectFactory, irodsAccount);
 	}

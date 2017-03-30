@@ -8,8 +8,7 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(Suite.class)
-@SuiteClasses({ JargonMetadataResolverTest.class,
-		JargonMetadataExporterTest.class,
+@SuiteClasses({ JargonMetadataResolverTest.class, JargonMetadataExporterTest.class,
 		MetadataTemplateFormBotServiceTest.class })
 public class AllTests {
 

@@ -73,7 +73,7 @@ public class JargonMetadataResolverTest {
 		IRODSFile targetCollectionAsFile = accessObjectFactory.getIRODSFileFactory(irodsAccount)
 				.instanceIRODSFile(targetIrodsCollection);
 		targetCollectionAsFile.mkdirs();
-		FormBasedMetadataTemplate template = new FormBasedMetadataTemplate();
+		MetadataTemplate template = new MetadataTemplate();
 		template.setAuthor("me");
 		template.setDescription("descr");
 		template.setName(testDirName);
@@ -431,7 +431,7 @@ public class JargonMetadataResolverTest {
 
 		String templateFqName = mdTemplatePath2 + '/' + TEMPLATE_NOPATH1;
 
-		MetadataTemplate metadataTemplate = new FormBasedMetadataTemplate();
+		MetadataTemplate metadataTemplate = new MetadataTemplate();
 
 		resolver.setPublicTemplateLocations(Arrays.asList(targetIrodsCollection3));
 		metadataTemplate = resolver.findTemplateByName("test1", targetIrodsCollection2);
@@ -485,7 +485,7 @@ public class JargonMetadataResolverTest {
 
 		String templateFqName = mdTemplatePath2 + '/' + TEMPLATE_NOPATH1;
 
-		MetadataTemplate metadataTemplate = new FormBasedMetadataTemplate();
+		MetadataTemplate metadataTemplate = new MetadataTemplate();
 
 		resolver.setPublicTemplateLocations(Arrays.asList(targetIrodsCollection3));
 		metadataTemplate = resolver.findTemplateByName("test1", mdTemplatePath2);
@@ -537,7 +537,7 @@ public class JargonMetadataResolverTest {
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME3, targetIrodsCollection3,
 				irodsAccount.getDefaultStorageResource(), null, null);
 
-		MetadataTemplate metadataTemplate = new FormBasedMetadataTemplate();
+		MetadataTemplate metadataTemplate = new MetadataTemplate();
 
 		resolver.setPublicTemplateLocations(Arrays.asList(targetIrodsCollection3));
 		metadataTemplate = resolver.findTemplateByName("notGoingToMatch", mdTemplatePath2);
@@ -597,7 +597,7 @@ public class JargonMetadataResolverTest {
 
 		String templateFqName = mdTemplatePath3 + '/' + TEMPLATE_NOPATH1;
 
-		MetadataTemplate metadataTemplate = new FormBasedMetadataTemplate();
+		MetadataTemplate metadataTemplate = new MetadataTemplate();
 
 		metadataTemplate = resolver.findTemplateByNameInDirectoryHierarchy("test1", targetIrodsCollection3);
 
@@ -655,7 +655,7 @@ public class JargonMetadataResolverTest {
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME3, mdTemplatePath1,
 				irodsAccount.getDefaultStorageResource(), null, null);
 
-		MetadataTemplate metadataTemplate = new FormBasedMetadataTemplate();
+		MetadataTemplate metadataTemplate = new MetadataTemplate();
 
 		metadataTemplate = resolver.findTemplateByNameInDirectoryHierarchy("notGoingToBeFound", targetIrodsCollection3);
 
@@ -705,7 +705,7 @@ public class JargonMetadataResolverTest {
 
 		String templateFqName = targetIrodsCollection1 + '/' + TEMPLATE_NOPATH1;
 
-		MetadataTemplate metadataTemplate = new FormBasedMetadataTemplate();
+		MetadataTemplate metadataTemplate = new MetadataTemplate();
 
 		JargonMetadataResolver resolver = new JargonMetadataResolver(irodsAccount, accessObjectFactory);
 
@@ -755,7 +755,7 @@ public class JargonMetadataResolverTest {
 		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2, targetIrodsCollection2,
 				irodsAccount.getDefaultStorageResource(), null, null);
 
-		MetadataTemplate metadataTemplate = new FormBasedMetadataTemplate();
+		MetadataTemplate metadataTemplate = new MetadataTemplate();
 
 		JargonMetadataResolver resolver = new JargonMetadataResolver(irodsAccount, accessObjectFactory);
 
@@ -800,7 +800,7 @@ public class JargonMetadataResolverTest {
 
 		String templateFqName = mdTemplatePath1 + '/' + TEMPLATE_NOPATH1;
 
-		MetadataTemplate metadataTemplate = new FormBasedMetadataTemplate();
+		MetadataTemplate metadataTemplate = new MetadataTemplate();
 
 		metadataTemplate = resolver.findTemplateByFqName(templateFqName);
 
@@ -839,7 +839,7 @@ public class JargonMetadataResolverTest {
 
 		String badTemplateFqName = mdTemplatePath1 + "/notReallyATemplateFile";
 
-		MetadataTemplate metadataTemplate = new FormBasedMetadataTemplate();
+		MetadataTemplate metadataTemplate = new MetadataTemplate();
 
 		metadataTemplate = resolver.findTemplateByFqName(badTemplateFqName);
 
@@ -962,12 +962,11 @@ public class JargonMetadataResolverTest {
 
 		String templateFqName = mdTemplatePath1 + '/' + TEMPLATE_NOPATH1;
 
-		MetadataTemplate metadataTemplate = new FormBasedMetadataTemplate();
+		MetadataTemplate metadataTemplate = new MetadataTemplate();
 
 		metadataTemplate = resolver.findTemplateByFqName(templateFqName);
 
-		String pathToSavedFile = resolver.saveFormBasedTemplateAsJSON((FormBasedMetadataTemplate) metadataTemplate,
-				mdTemplatePath2);
+		String pathToSavedFile = resolver.saveFormBasedTemplateAsJSON(metadataTemplate, mdTemplatePath2);
 
 		MetadataTemplate template = resolver.findTemplateByFqName(pathToSavedFile);
 
@@ -1015,12 +1014,11 @@ public class JargonMetadataResolverTest {
 
 		String templateFqName = mdTemplatePath1 + '/' + TEMPLATE_NOPATH1;
 
-		MetadataTemplate metadataTemplate = new FormBasedMetadataTemplate();
+		MetadataTemplate metadataTemplate = new MetadataTemplate();
 
 		metadataTemplate = resolver.findTemplateByFqName(templateFqName);
 
-		String pathToSavedFile = resolver.saveFormBasedTemplateAsJSON((FormBasedMetadataTemplate) metadataTemplate,
-				targetIrodsCollection2);
+		String pathToSavedFile = resolver.saveFormBasedTemplateAsJSON(metadataTemplate, targetIrodsCollection2);
 
 		MetadataTemplate template = resolver.findTemplateByFqName(pathToSavedFile);
 
@@ -1070,12 +1068,11 @@ public class JargonMetadataResolverTest {
 
 		String templateFqName = mdTemplatePath1 + '/' + TEMPLATE_NOPATH1;
 
-		MetadataTemplate metadataTemplate = new FormBasedMetadataTemplate();
+		MetadataTemplate metadataTemplate = new MetadataTemplate();
 
 		metadataTemplate = resolver.findTemplateByFqName(templateFqName);
 
-		String pathToSavedFile = resolver.saveFormBasedTemplateAsJSON((FormBasedMetadataTemplate) metadataTemplate,
-				mdTemplatePath2);
+		String pathToSavedFile = resolver.saveFormBasedTemplateAsJSON(metadataTemplate, mdTemplatePath2);
 
 		List<MetaDataAndDomainData> templateAVUs = resolver.queryTemplateAVUForFile(pathToSavedFile);
 		List<MetaDataAndDomainData> elementAVUs = resolver.queryElementAVUForFile(pathToSavedFile);
@@ -1223,12 +1220,11 @@ public class JargonMetadataResolverTest {
 
 		JargonMetadataResolver resolver = new JargonMetadataResolver(irodsAccount, accessObjectFactory);
 
-		FormBasedMetadataTemplate template = (FormBasedMetadataTemplate) resolver
-				.findTemplateByFqName(mdTemplateFqName1);
+		MetadataTemplate template = resolver.findTemplateByFqName(mdTemplateFqName1);
 
 		String mdTemplateFqName2 = resolver.saveFormBasedTemplateAsJSON(template, targetIrodsCollection2);
 
-		template = (FormBasedMetadataTemplate) resolver.findTemplateByFqName(mdTemplateFqName2);
+		template = resolver.findTemplateByFqName(mdTemplateFqName2);
 
 		MetadataElement me = new MetadataElement();
 		me.setElementName("addedElement");
@@ -1242,7 +1238,7 @@ public class JargonMetadataResolverTest {
 
 		Assert.assertTrue("updateFormBasedTemplateByFqName returned false", retVal);
 
-		template = (FormBasedMetadataTemplate) resolver.findTemplateByFqName(mdTemplateFqName2);
+		template = resolver.findTemplateByFqName(mdTemplateFqName2);
 
 		Assert.assertEquals("template description not changed by updateFormBasedTemplateByFqName",
 				template.getDescription(), "TemplateModified");
@@ -1290,12 +1286,11 @@ public class JargonMetadataResolverTest {
 
 		JargonMetadataResolver resolver = new JargonMetadataResolver(irodsAccount, accessObjectFactory);
 
-		FormBasedMetadataTemplate template = (FormBasedMetadataTemplate) resolver
-				.findTemplateByFqName(mdTemplateFqName1);
+		MetadataTemplate template = resolver.findTemplateByFqName(mdTemplateFqName1);
 
 		String mdTemplateFqName2 = resolver.saveFormBasedTemplateAsJSON(template, targetIrodsCollection2);
 
-		template = (FormBasedMetadataTemplate) resolver.findTemplateByFqName(mdTemplateFqName2);
+		template = resolver.findTemplateByFqName(mdTemplateFqName2);
 
 		MetadataElement me = new MetadataElement();
 		me.setElementName("addedElement");
@@ -1308,7 +1303,7 @@ public class JargonMetadataResolverTest {
 
 		boolean retVal = resolver.updateFormBasedTemplateByFqName(mdTemplateFqName2, template);
 
-		template = (FormBasedMetadataTemplate) resolver.findTemplateByFqName(mdTemplateFqName2);
+		template = resolver.findTemplateByFqName(mdTemplateFqName2);
 
 		Assert.assertFalse("updateFormBasedTemplateByFqName returned true", retVal);
 		Assert.assertEquals("template description inappropriately changed by updateFormBasedTemplateByFqName",
@@ -1366,19 +1361,18 @@ public class JargonMetadataResolverTest {
 
 		JargonMetadataResolver resolver = new JargonMetadataResolver(irodsAccount, accessObjectFactory);
 
-		FormBasedMetadataTemplate template = (FormBasedMetadataTemplate) resolver
-				.findTemplateByFqName(mdTemplateFqName1);
+		MetadataTemplate template = resolver.findTemplateByFqName(mdTemplateFqName1);
 
 		String mdTemplateFqName3 = resolver.saveFormBasedTemplateAsJSON(template, targetIrodsCollection1);
 
-		template = (FormBasedMetadataTemplate) resolver.findTemplateByFqName(mdTemplateFqName2);
+		template = resolver.findTemplateByFqName(mdTemplateFqName2);
 
 		String mdTemplateFqName4 = resolver.saveFormBasedTemplateAsJSON(template, targetIrodsCollection2);
 
 		String mdTemplateFqName5 = resolver.computeMetadataTemplatesPathUnderParent(targetIrodsCollection2) + '/'
 				+ TEMPLATE_NOPATH1;
 
-		template = (FormBasedMetadataTemplate) resolver.findTemplateByFqName(mdTemplateFqName3);
+		template = resolver.findTemplateByFqName(mdTemplateFqName3);
 
 		MetadataElement me = new MetadataElement();
 		me.setElementName("addedElement");
@@ -1393,7 +1387,7 @@ public class JargonMetadataResolverTest {
 		Assert.assertFalse("updateFormBasedTemplateByFqName returned true", retVal);
 
 		MetadataTemplate template2 = resolver.findTemplateByFqName(mdTemplateFqName5);
-		template = (FormBasedMetadataTemplate) resolver.findTemplateByFqName(mdTemplateFqName4);
+		template = resolver.findTemplateByFqName(mdTemplateFqName4);
 
 		Assert.assertNull("updateFormBasedTemplateByFqName inappropriately saved a file", template2);
 
@@ -1553,10 +1547,10 @@ public class JargonMetadataResolverTest {
 
 		// Because templates are assigned random UUIDs, they come out in random
 		// order. Need to find the right one to test.
-		FormBasedMetadataTemplate template = null;
+		MetadataTemplate template = null;
 		for (MetadataTemplate mt : result.getTemplates()) {
 			if (mt.getName().compareTo("test2") == 0) {
-				template = (FormBasedMetadataTemplate) mt;
+				template = mt;
 				break;
 			}
 		}
@@ -1645,10 +1639,10 @@ public class JargonMetadataResolverTest {
 
 		// Because templates are assigned random UUIDs, they come out in random
 		// order. Need to find the right one to test.
-		FormBasedMetadataTemplate template = null;
+		MetadataTemplate template = null;
 		for (MetadataTemplate mt : result.getTemplates()) {
 			if (mt.getName().compareTo("test2") == 0) {
-				template = (FormBasedMetadataTemplate) mt;
+				template = mt;
 				break;
 			}
 		}
@@ -1696,7 +1690,7 @@ public class JargonMetadataResolverTest {
 
 		MetadataMergeResult result = resolver.getAndMergeTemplateListForPath(testFileNameFQ);
 
-		FormBasedMetadataTemplate template = (FormBasedMetadataTemplate) result.getTemplates().get(0);
+		MetadataTemplate template = result.getTemplates().get(0);
 
 		for (MetadataElement me : template.getElements()) {
 			if (me.getName().equalsIgnoreCase("data_name")) {
@@ -1755,7 +1749,7 @@ public class JargonMetadataResolverTest {
 
 		MetadataMergeResult result = resolver.getAndMergeTemplateListForPath(targetIrodsCollection1);
 
-		FormBasedMetadataTemplate template = (FormBasedMetadataTemplate) result.getTemplates().get(0);
+		MetadataTemplate template = result.getTemplates().get(0);
 
 		for (MetadataElement me : template.getElements()) {
 			if (me.getName().equalsIgnoreCase("coll_owner")) {
