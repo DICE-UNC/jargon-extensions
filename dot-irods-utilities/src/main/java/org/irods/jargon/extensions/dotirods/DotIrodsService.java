@@ -2,16 +2,11 @@ package org.irods.jargon.extensions.dotirods;
 
 import java.io.File;
 import java.io.FilenameFilter;
-
-import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.irods.jargon.core.exception.FileNotFoundException;
 import org.irods.jargon.core.exception.JargonException;
-import org.irods.jargon.core.pub.io.IRODSFile;
 import org.irods.jargon.core.pub.io.IRODSFileImpl;
-import org.irods.jargon.core.utils.MiscIRODSUtils;
 
 /**
  * Interface for service to discover and manipulate .irods collections
@@ -51,8 +46,7 @@ public interface DotIrodsService {
 	 *             if a .irods collection is not available
 	 * @throws JargonException
 	 */
-	public abstract DotIrodsCollection retrieveDotIrodsAtPath(
-			String irodsAbsolutePath, boolean homeDir)
+	public abstract DotIrodsCollection retrieveDotIrodsAtPath(String irodsAbsolutePath, boolean homeDir)
 			throws FileNotFoundException, JargonException;
 
 	/**
@@ -63,8 +57,7 @@ public interface DotIrodsService {
 	 *            home directory
 	 * @throws JargonException
 	 */
-	public abstract void deleteDotIrodsForUserHome(final String userName)
-			throws JargonException;
+	public abstract void deleteDotIrodsForUserHome(final String userName) throws JargonException;
 
 	/**
 	 * Delete the .irods collection at the given absolute path
@@ -74,8 +67,7 @@ public interface DotIrodsService {
 	 *            collection
 	 * @throws JargonException
 	 */
-	public abstract void deleteDotIrodsFileAtPath(final String irodsAbsolutePath)
-			throws JargonException;
+	public abstract void deleteDotIrodsFileAtPath(final String irodsAbsolutePath) throws JargonException;
 
 	/**
 	 * Create a .irods collection in the user home dir
@@ -85,8 +77,7 @@ public interface DotIrodsService {
 	 *            home directory
 	 * @throws JargonException
 	 */
-	public abstract void createDotIrodsForUserHome(final String userName)
-			throws JargonException;
+	public abstract void createDotIrodsForUserHome(final String userName) throws JargonException;
 
 	/**
 	 * Create a .irods directory under the given parent path
@@ -97,8 +88,7 @@ public interface DotIrodsService {
 	 * @throws JargonException
 	 */
 	public abstract void createDotIrodsUnderParent(
-			final String irodsAbsolutePathToParentUnderWhichDotIrodsWillBeCreated)
-			throws JargonException;
+			final String irodsAbsolutePathToParentUnderWhichDotIrodsWillBeCreated) throws JargonException;
 
 	/**
 	 * Create a .irods collection in the user home dir if it does not exist, and
@@ -110,8 +100,7 @@ public interface DotIrodsService {
 	 * @return {@link DotIrodsCollection} that was created or already existed
 	 * @throws JargonException
 	 */
-	public abstract DotIrodsCollection findOrCreateUserHomeCollection(
-			final String userName) throws JargonException;
+	public abstract DotIrodsCollection findOrCreateUserHomeCollection(final String userName) throws JargonException;
 
 	/**
 	 * Returns true if there is a .irods collection in the specified collection,
@@ -126,8 +115,8 @@ public interface DotIrodsService {
 	 *             if the parent collection does not exist
 	 * @throws JargonException
 	 */
-	public abstract boolean dotIrodsCollectionPresentInCollection(
-			final String irodsAbsolutePathToParent) throws JargonException;
+	public abstract boolean dotIrodsCollectionPresentInCollection(final String irodsAbsolutePathToParent)
+			throws JargonException;
 
 	/**
 	 * Lists all files in the user home .irods collection
@@ -159,8 +148,7 @@ public interface DotIrodsService {
 	 *             if a .irods collection is not available
 	 * @throws JargonException
 	 */
-	public abstract File[] listFilesOfTypeInDotIrodsUserHome(
-			final String userName, FilenameFilter filter)
+	public abstract File[] listFilesOfTypeInDotIrodsUserHome(final String userName, FilenameFilter filter)
 			throws FileNotFoundException, JargonException;
 
 	/**
@@ -185,9 +173,8 @@ public interface DotIrodsService {
 	 *             if the specified directory does not exist
 	 * @throws JargonException
 	 */
-	public abstract File[] listFilesInDirectoryHierarchyDotIrods(
-			final String irodsAbsolutePath, boolean resolveConflicts)
-			throws FileNotFoundException, JargonException;
+	public abstract File[] listFilesInDirectoryHierarchyDotIrods(final String irodsAbsolutePath,
+			boolean resolveConflicts) throws FileNotFoundException, JargonException;
 
 	/**
 	 * Lists all* files in all .irods collections found in the hierarchy of
@@ -208,9 +195,8 @@ public interface DotIrodsService {
 	 *             if the specified directory does not exist
 	 * @throws JargonException
 	 */
-	public abstract File[] listFilesInDirectoryHierarchyDotIrods(
-			final String irodsAbsolutePath) throws FileNotFoundException,
-			JargonException;
+	public abstract File[] listFilesInDirectoryHierarchyDotIrods(final String irodsAbsolutePath)
+			throws FileNotFoundException, JargonException;
 
 	/**
 	 * Lists all* files (filtered by type) in all .irods collections found in
@@ -237,10 +223,8 @@ public interface DotIrodsService {
 	 *             if the specified directory does not exist
 	 * @throws JargonException
 	 */
-	public abstract File[] listFilesOfTypeInDirectoryHierarchyDotIrods(
-			final String irodsAbsolutePath, FilenameFilter filter,
-			boolean resolveConflicts) throws FileNotFoundException,
-			JargonException;
+	public abstract File[] listFilesOfTypeInDirectoryHierarchyDotIrods(final String irodsAbsolutePath,
+			FilenameFilter filter, boolean resolveConflicts) throws FileNotFoundException, JargonException;
 
 	/**
 	 * Lists all* files (filtered by type) in all .irods collections found in
@@ -264,12 +248,11 @@ public interface DotIrodsService {
 	 *             if the specified directory does not exist
 	 * @throws JargonException
 	 */
-	public abstract File[] listFilesOfTypeInDirectoryHierarchyDotIrods(
-			final String irodsAbsolutePath, FilenameFilter filter)
-			throws FileNotFoundException, JargonException;
+	public abstract File[] listFilesOfTypeInDirectoryHierarchyDotIrods(final String irodsAbsolutePath,
+			FilenameFilter filter) throws FileNotFoundException, JargonException;
 
 	/**
-	 * Lists all* files (filtered by type) in the specified subdirectories of
+	 * Lists all files (filtered by type) in the specified subdirectories of
 	 * .irods collections found in the hierarchy of parent folders above the
 	 * specified folder.
 	 * 
@@ -297,14 +280,13 @@ public interface DotIrodsService {
 	 *             if the specified directory does not exist
 	 * @throws JargonException
 	 */
-	public abstract File[] listFilesOfTypeInDirectoryHierarchyDotIrodsSubDir(
-			final String irodsAbsolutePath, final String subDir,
-			FilenameFilter filter, boolean resolveConflicts)
+	public abstract File[] listFilesOfTypeInDirectoryHierarchyDotIrodsSubDir(final String irodsAbsolutePath,
+			final String subDir, FilenameFilter filter, boolean resolveConflicts)
 			throws FileNotFoundException, JargonException;
 
 	/**
-	 * Lists all* files (filtered by type) in all .irods collections found in
-	 * the hierarchy of parent folders above the specified folder.
+	 * Lists all files (filtered by type) in all .irods collections found in the
+	 * hierarchy of parent folders above the specified folder.
 	 * 
 	 * * If multiple files have the same name, only the file closest in the
 	 * directory hierarchy to the specified folder is included in the list. This
@@ -327,19 +309,17 @@ public interface DotIrodsService {
 	 *             if the specified directory does not exist
 	 * @throws JargonException
 	 */
-	public abstract File[] listFilesOfTypeInDirectoryHierarchyDotIrodsSubDir(
-			final String irodsAbsolutePath, final String subDir,
-			FilenameFilter filter) throws FileNotFoundException,
-			JargonException;
-
+	public abstract File[] listFilesOfTypeInDirectoryHierarchyDotIrodsSubDir(final String irodsAbsolutePath,
+			final String subDir, FilenameFilter filter) throws FileNotFoundException, JargonException;
 
 	/**
 	 * TODO: add comment
+	 * 
 	 * @param irodsAbsolutePath
 	 * @param dotIrodsSubdir
 	 * @return
 	 * @throws JargonException
 	 */
-	public abstract List<String> listStringifiedFilesInDotIrodsCollection(
-			final String irodsAbsolutePath, final String dotIrodsSubdir) throws JargonException;
+	public abstract List<String> listStringifiedFilesInDotIrodsCollection(final String irodsAbsolutePath,
+			final String dotIrodsSubdir) throws JargonException;
 }
