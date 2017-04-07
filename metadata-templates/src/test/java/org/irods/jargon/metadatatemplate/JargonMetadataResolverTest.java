@@ -158,6 +158,7 @@ public class JargonMetadataResolverTest {
 
 		JargonMetadataResolver resolver = new JargonMetadataResolver(context, accessObjectFactory,
 				metadataConfiguration);
+		UUID uuid = resolver.saveTemplate(template, MetadataTemplateLocationTypeEnum.PUBLIC);
 
 		List<MetadataTemplate> metadataTemplates = resolver.listPublicTemplates();
 

@@ -282,8 +282,6 @@ public class JargonMetadataResolver extends AbstractMetadataResolver<MetadataTem
 
 		MetadataTemplate returnTemplate = null;
 		IRODSFile collectionIrodsFile = null;
-		boolean matched = false;
-
 		// for (String publicDir : getPublicTemplateLocations()) {
 		try {
 			collectionIrodsFile = this.getIrodsAccessObjectFactory()
@@ -301,7 +299,6 @@ public class JargonMetadataResolver extends AbstractMetadataResolver<MetadataTem
 
 				try {
 					returnTemplate = processFileToMetadataTemplate((IRODSFile) f);
-					matched = true;
 				} catch (JargonException je) {
 					log.error("JargonException in processFileToMetadataTemplate", je);
 					log.info("Matched {} with {}, but file could not be processed", name, f.getAbsolutePath());
@@ -451,6 +448,7 @@ public class JargonMetadataResolver extends AbstractMetadataResolver<MetadataTem
 		StringBuilder sb = new StringBuilder();
 		sb.append("mdtemplate");
 		sb.append(System.currentTimeMillis());
+		sb.append(MetadataTemplateConstants.TEMPLATE_FILE_EXT);
 		return sb.toString();
 	}
 
