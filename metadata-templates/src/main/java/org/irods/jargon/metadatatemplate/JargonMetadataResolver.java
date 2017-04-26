@@ -666,20 +666,18 @@ public class JargonMetadataResolver extends AbstractMetadataResolver<MetadataTem
 					log.info("avu belongs to a template already in the map");
 					tempMt = templateMap.get(uuid);
 
-					if (tempMt.getType() == TemplateTypeEnum.FORM_BASED) {
-						MetadataTemplate tempFbmt = tempMt;
-						for (MetadataElement me : tempFbmt.getElements()) {
-							if (avu.getAvuAttribute().equalsIgnoreCase(me.getName())) {
-								// Not a REF_IRODS_QUERY type, set current
-								// value to raw value
-								me.getCurrentValue().add(avu.getAvuValue());
-								me.getDisplayValue().add(avu.getAvuValue());
+					MetadataTemplate tempFbmt = tempMt;
+					for (MetadataElement me : tempFbmt.getElements()) {
+						if (avu.getAvuAttribute().equalsIgnoreCase(me.getName())) {
+							// Not a REF_IRODS_QUERY type, set current
+							// value to raw value
+							me.getCurrentValue().add(avu.getAvuValue());
+							me.getDisplayValue().add(avu.getAvuValue());
 
-								matched = true;
-								break;
-							}
+							matched = true;
+							break;
 						}
-					} // XXX else if (tempMt is a different kind of template)
+					}
 
 					if (!matched) {
 						log.info("AVU claims to be from template {}, but name not matched", uuid);
@@ -690,7 +688,7 @@ public class JargonMetadataResolver extends AbstractMetadataResolver<MetadataTem
 					tempMt = this.findTemplateByUUID(uuid);
 					if (tempMt == null) {
 						log.info("no template found for UUID {}", uuid);
-					} else if (tempMt.getType() == TemplateTypeEnum.FORM_BASED) {
+					} else {
 						MetadataTemplate tempFbmt = tempMt;
 						for (MetadataElement me : tempFbmt.getElements()) {
 							if (avu.getAvuAttribute().equalsIgnoreCase(me.getName())) {
@@ -731,12 +729,11 @@ public class JargonMetadataResolver extends AbstractMetadataResolver<MetadataTem
 		returnList.addAll(templateMap.values());
 
 		for (MetadataTemplate mt : returnList) {
-			if (mt.getType() == TemplateTypeEnum.FORM_BASED) {
-				for (MetadataElement me : mt.getElements()) {
-					if (me.getType() == ElementTypeEnum.REF_IRODS_QUERY) {
-						me.getDisplayValue().add(getValueFromRefQuery(me.getCurrentValue().get(0), irodsAbsolutePath));
-					}
+			for (MetadataElement me : mt.getElements()) {
+				if (me.getType() == ElementTypeEnum.REF_IRODS_QUERY) {
+					me.getDisplayValue().add(getValueFromRefQuery(me.getCurrentValue().get(0), irodsAbsolutePath));
 				}
+
 			}
 		}
 
@@ -885,11 +882,9 @@ public class JargonMetadataResolver extends AbstractMetadataResolver<MetadataTem
 		// UUID
 		returnTemplate.setUuid(uuid);
 
-		if (returnTemplate.getType() == TemplateTypeEnum.FORM_BASED) {
-			MetadataTemplate fbmt = returnTemplate;
-			for (MetadataElement me : fbmt.getElements()) {
-				me.setTemplateUuid(uuid);
-			}
+		MetadataTemplate fbmt = returnTemplate;
+		for (MetadataElement me : fbmt.getElements()) {
+			me.setTemplateUuid(uuid);
 		}
 
 		// Date created, dateModified

@@ -51,33 +51,11 @@ public class JargonMetadataExporter extends AbstractMetadataExporter {
 		if (!irodsObject.exists()) {
 			throw new FileNotFoundException("pathToObject does not resolve to an iRODS object");
 		}
-		/*
-		 * FileCatalogObjectAO objectAO = null;
-		 *
-		 * if (irodsObject.isFile()) { objectAO =
-		 * irodsAccessObjectFactory.getDataObjectAO(irodsAccount); } else if
-		 * (irodsObject.isDirectory()) { objectAO =
-		 * irodsAccessObjectFactory.getCollectionAO(irodsAccount); } else {
-		 * throw new IllegalArgumentException( "object at " + pathToObject +
-		 * " is neither a data object nor a collection - the JargonMetadataResolver currently only supports these types of objects"
-		 * ); }
-		 */
-		if (template.getType() == TemplateTypeEnum.FORM_BASED) {
-			for (MetadataElement me : template.getElements()) {
-				saveElementToSystemMetadataOnObject(me, pathToObject);
-				/*
-				 * if (!me.getCurrentValue().isEmpty()) { for (String s :
-				 * me.getCurrentValue()) { AvuData avuData = AvuData .instance(
-				 * me.getName(), s,
-				 * JargonMetadataTemplateConstants.AVU_UNIT_PREFIX +
-				 * template.getUuid() .toString()); if (irodsObject.isFile()) {
-				 * ((DataObjectAO) objectAO).addAVUMetadata( pathToObject,
-				 * avuData); } else if (irodsObject.isDirectory()) {
-				 * ((CollectionAO) objectAO).addAVUMetadata( pathToObject,
-				 * avuData); } } }
-				 */
-			}
-		} // TODO else if for different TemplateTypeEnum types
+
+		for (MetadataElement me : template.getElements()) {
+			saveElementToSystemMetadataOnObject(me, pathToObject);
+
+		}
 	}
 
 	@Override
