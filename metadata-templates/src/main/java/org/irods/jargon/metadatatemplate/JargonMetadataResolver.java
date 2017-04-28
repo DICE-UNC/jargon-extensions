@@ -672,8 +672,6 @@ public class JargonMetadataResolver extends AbstractMetadataResolver<MetadataTem
 							// Not a REF_IRODS_QUERY type, set current
 							// value to raw value
 							me.getCurrentValue().add(avu.getAvuValue());
-							me.getDisplayValue().add(avu.getAvuValue());
-
 							matched = true;
 							break;
 						}
@@ -695,7 +693,6 @@ public class JargonMetadataResolver extends AbstractMetadataResolver<MetadataTem
 								// Not a REF_IRODS_QUERY type, set current
 								// value to raw value
 								me.getCurrentValue().add(avu.getAvuValue());
-								me.getDisplayValue().add(avu.getAvuValue());
 
 								matched = true;
 								break;
@@ -731,7 +728,7 @@ public class JargonMetadataResolver extends AbstractMetadataResolver<MetadataTem
 		for (MetadataTemplate mt : returnList) {
 			for (MetadataElement me : mt.getElements()) {
 				if (me.getType() == ElementTypeEnum.REF_IRODS_QUERY) {
-					me.getDisplayValue().add(getValueFromRefQuery(me.getCurrentValue().get(0), irodsAbsolutePath));
+					me.getCurrentValue().add(getValueFromRefQuery(me.getDefaultValue().get(0), irodsAbsolutePath));
 				}
 
 			}
