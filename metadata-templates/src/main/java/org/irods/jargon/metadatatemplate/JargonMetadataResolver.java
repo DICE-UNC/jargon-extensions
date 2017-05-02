@@ -76,9 +76,10 @@ public class JargonMetadataResolver extends AbstractMetadataResolver<MetadataTem
 	 * publicTemplateLocations.
 	 *
 	 * @return List of {@link MetadataTemplate}
+	 * @throws MetadataTemplateProcessingException
 	 */
 	@Override
-	public List<MetadataTemplate> listPublicTemplates() {
+	public List<MetadataTemplate> listPublicTemplates() throws MetadataTemplateProcessingException {
 		List<MetadataTemplate> tempList = new ArrayList<MetadataTemplate>();
 
 		// for (String dir : getPublicTemplateLocations()) {
@@ -101,8 +102,11 @@ public class JargonMetadataResolver extends AbstractMetadataResolver<MetadataTem
 			}
 		} catch (JargonException je) {
 			log.error("JargonException when obtaining public templates", je);
+			throw new MetadataTemplateProcessingException("cannot find public templates", je);
 		} catch (IOException ie) {
 			log.error("IOException when processing public templates", ie);
+			throw new MetadataTemplateProcessingException("cannot find public templates", ie);
+
 		}
 		// }
 
@@ -125,10 +129,11 @@ public class JargonMetadataResolver extends AbstractMetadataResolver<MetadataTem
 	 * @param absolutePath
 	 *            {@link String} containing a fully-qualified iRODS path
 	 * @return List of {@link MetadataTemplate}
+	 * @throws MetadataTemplateProcessingException
 	 */
 	@Override
 	public List<MetadataTemplate> listTemplatesInDirectoryHierarchyAbovePath(final String absolutePath)
-			throws IOException {
+			throws MetadataTemplateProcessingException {
 		log.info("listTemplatesInDirectoryHierarchyAbovePath");
 		List<MetadataTemplate> templateList = null;
 		File[] templateFiles = {};
@@ -146,7 +151,7 @@ public class JargonMetadataResolver extends AbstractMetadataResolver<MetadataTem
 			templateList = processFilesToMetadataTemplates(templateFiles);
 		} catch (JargonException je) {
 			log.error("JargonException when processing metadata template files", je);
-			return templateList;
+			throw new MetadataTemplateProcessingException("cannot list templates", je);
 		}
 
 		return templateList;
@@ -214,8 +219,7 @@ public class JargonMetadataResolver extends AbstractMetadataResolver<MetadataTem
 
 	@Override // FIXME: switch to AVU query
 	public MetadataTemplate findTemplateByNameInDirectoryHierarchy(final String name, final String activeDir)
-			throws FileNotFoundException, IOException, MetadataTemplateProcessingException,
-			MetadataTemplateParsingException {
+			throws MetadataTemplateProcessingException, MetadataTemplateParsingException {
 		log.info("findTemplateByNameInDirectoryHierarchy()");
 
 		if (name == null || name.isEmpty()) {
@@ -251,7 +255,7 @@ public class JargonMetadataResolver extends AbstractMetadataResolver<MetadataTem
 					} catch (JargonException je) {
 						log.error("JargonException in processFileToMetadataTemplate", je);
 						log.info("Matched {} with {}, but file could not be processed", name, f.getAbsolutePath());
-						returnTemplate = null;
+						throw new MetadataTemplateParsingException("cannot parse template", je);
 					}
 					break;
 				}
@@ -272,8 +276,8 @@ public class JargonMetadataResolver extends AbstractMetadataResolver<MetadataTem
 	 */
 
 	@Override
-	public MetadataTemplate findTemplateByNameInPublicTemplates(final String name) throws FileNotFoundException,
-			IOException, MetadataTemplateProcessingException, MetadataTemplateParsingException {
+	public MetadataTemplate findTemplateByNameInPublicTemplates(final String name)
+			throws MetadataTemplateProcessingException, MetadataTemplateParsingException {
 		log.info("findTemplateByNameInPublicTemplates()");
 
 		if (name == null || name.isEmpty()) {
@@ -302,16 +306,12 @@ public class JargonMetadataResolver extends AbstractMetadataResolver<MetadataTem
 				} catch (JargonException je) {
 					log.error("JargonException in processFileToMetadataTemplate", je);
 					log.info("Matched {} with {}, but file could not be processed", name, f.getAbsolutePath());
-					returnTemplate = null;
+					throw new MetadataTemplateParsingException("cannot parse template", je);
+
 				}
 				break;
 			}
 		}
-
-		// if (matched) {
-		// break;
-		// }
-		// }
 
 		return returnTemplate;
 	}
@@ -333,8 +333,9 @@ public class JargonMetadataResolver extends AbstractMetadataResolver<MetadataTem
 	 *
 	 *         XXX Should this make sure a template is in an "appropriate"
 	 *         location?
+	 * @throws MetadataTemplateProcessingException
 	 */
-	private String findAbsolutePathForUUID(final String uuid) {
+	private String findAbsolutePathForUUID(final String uuid) throws MetadataTemplateProcessingException {
 		log.info("findAbsolutePathForUUID()");
 
 		List<AVUQueryElement> queryElements = new ArrayList<AVUQueryElement>();
@@ -348,10 +349,10 @@ public class JargonMetadataResolver extends AbstractMetadataResolver<MetadataTem
 					.findMetadataValuesByMetadataQuery(queryElements);
 		} catch (JargonQueryException jqe) {
 			log.error("AvuQuery for UUID failed!", jqe);
-			return null;
+			throw new MetadataTemplateProcessingException("avu query for UUID failed", jqe);
 		} catch (JargonException je) {
 			log.error("JargonException in getFqNameForUUID", je);
-			return null;
+			throw new MetadataTemplateProcessingException("avu query for UUID failed", je);
 		}
 
 		if (queryResult.isEmpty()) {
@@ -361,7 +362,8 @@ public class JargonMetadataResolver extends AbstractMetadataResolver<MetadataTem
 
 		if (queryResult.size() > 1) {
 			log.error("{} matches for specified UUID! This should be impossible!", queryResult.size());
-			log.info("Returning the fully-qualified name for only the first matched file.");
+			throw new MetadataTemplateProcessingException("no match found");
+
 		}
 
 		return queryResult.get(0).getDomainObjectUniqueName();
