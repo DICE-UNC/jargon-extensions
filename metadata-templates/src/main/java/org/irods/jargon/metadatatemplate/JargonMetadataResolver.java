@@ -1,20 +1,23 @@
 package org.irods.jargon.metadatatemplate;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import org.irods.jargon.core.connection.IRODSAccount;
+import org.irods.jargon.core.exception.FileNotFoundException;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.core.pub.domain.AvuData;
 import org.irods.jargon.core.pub.domain.ObjStat;
 import org.irods.jargon.core.pub.io.IRODSFile;
+import org.irods.jargon.core.pub.io.IRODSFileFactory;
 import org.irods.jargon.core.pub.io.IRODSFileFactoryImpl;
 import org.irods.jargon.core.pub.io.IRODSFileInputStream;
 import org.irods.jargon.core.pub.io.IRODSFileOutputStream;
@@ -35,21 +38,16 @@ public class JargonMetadataResolver extends AbstractMetadataResolver<MetadataTem
 
 	static private TemplateParserSingleton parser = TemplateParserSingleton.PARSER;
 
-	// FIXME: account for version in avus and in add/update
-	// FIXME: semantics to promote template to public?
-	// FIXME: menu of other mdtemplate locations? How to set up a group repo?
-	// How to config?
-
 	/**
 	 * Default constructor takes config and context information
-	 * 
+	 *
 	 * @param metadataTemplateContext
 	 * @param irodsAccessObjectFactory
 	 * @param metadataTemplateConfiguration
 	 */
-	public JargonMetadataResolver(MetadataTemplateContext metadataTemplateContext,
-			IRODSAccessObjectFactory irodsAccessObjectFactory,
-			MetadataTemplateConfiguration metadataTemplateConfiguration) {
+	public JargonMetadataResolver(final MetadataTemplateContext metadataTemplateContext,
+			final IRODSAccessObjectFactory irodsAccessObjectFactory,
+			final MetadataTemplateConfiguration metadataTemplateConfiguration) {
 		super(metadataTemplateContext, irodsAccessObjectFactory, metadataTemplateConfiguration);
 	}
 
@@ -113,215 +111,18 @@ public class JargonMetadataResolver extends AbstractMetadataResolver<MetadataTem
 		return tempList;
 	}
 
-	/**
-	 * Return a list of MetadataTemplates found in the iRODS hierarchy of which
-	 * the given path is the lowermost leaf.
-	 * </p>
-	 * <p>
-	 * This list will only contain one MetadataTemplate for each template name.
-	 * In the event that the hierarchy has multiple templates with the same
-	 * name, the template nearest to the given directory will be returned. (That
-	 * is, if the directory's parent and grandparent both contain a metadata
-	 * template "specialMetadata", the template that is returned will be the one
-	 * specified in the parent directory, and the template specified in the
-	 * grandparent directory will not appear in the list.)
-	 *
-	 * @param absolutePath
-	 *            {@link String} containing a fully-qualified iRODS path
-	 * @return List of {@link MetadataTemplate}
-	 * @throws MetadataTemplateProcessingException
-	 */
-	@Override
-	public List<MetadataTemplate> listTemplatesInDirectoryHierarchyAbovePath(final String absolutePath)
-			throws MetadataTemplateProcessingException {
-		log.info("listTemplatesInDirectoryHierarchyAbovePath");
-		List<MetadataTemplate> templateList = null;
-		File[] templateFiles = {};
-		DotIrodsService dotIrodsService = instanceDotIrodsService();
-
-		try {
-			templateFiles = dotIrodsService.listFilesOfTypeInDirectoryHierarchyDotIrodsSubDir(absolutePath,
-					DotIrodsConstants.METADATA_TEMPLATES_SUBDIR, new MetadataTemplateFileFilter());
-		} catch (JargonException je) {
-			log.error("JargonException when listing files in directory", je);
-			return templateList;
-		}
-
-		try {
-			templateList = processFilesToMetadataTemplates(templateFiles);
-		} catch (JargonException je) {
-			log.error("JargonException when processing metadata template files", je);
-			throw new MetadataTemplateProcessingException("cannot list templates", je);
-		}
-
-		return templateList;
-	}
-
-	/**
-	 * Return a MetadataTemplate given its name.
-	 * </p>
-	 * <p>
-	 * If there are multiple templates for a given name, only one will be
-	 * returned. The resolution scheme is first in activeDir, then nearest in
-	 * the iRODS hierarchy above activeDir, then finally in the public template
-	 * directories. In practice, this will first call
-	 * <code>listTemplatesInIrodsHierarchyAbovePath</code>, and if no match is
-	 * found in that list, <code>listPublicTemplates</code>.
-	 * </p>
-	 * <p>
-	 * If no match is found, returns <code>null</code>.
-	 * </p>
-	 * <p>
-	 * WARNING: If multiple public templates have the same name, results may be
-	 * unexpected. See the documentation for @link{listPublicTemplates} for more
-	 * information.
-	 *
-	 * @param name
-	 *            {@link String} containing the template name to be searched for
-	 * @param activeDir
-	 *            {@link String} containing the active iRODS path
-	 *
-	 * @return Nearest metadata template matching the name, or <code>null</code>
-	 *         if no match
-	 */
-	@Override // FIXME: switch to AVU query
-	public MetadataTemplate findTemplateByName(final String name, final String activeDir) throws FileNotFoundException,
-			IOException, MetadataTemplateProcessingException, MetadataTemplateParsingException {
-		log.info("findTemplateByName()");
-
-		if (name == null || name.isEmpty()) {
-			throw new IllegalArgumentException("name is null or empty");
-		}
-
-		if (activeDir == null || activeDir.isEmpty()) {
-			throw new IllegalArgumentException("activeDir is null or empty");
-		}
-
-		MetadataTemplate returnTemplate = null;
-
-		// First look in directory hierarchy
-		returnTemplate = findTemplateByNameInDirectoryHierarchy(name, activeDir);
-
-		// If null, no template was found in directory hierarchy
-		// Look in public locations
-		if (returnTemplate == null) {
-			log.info("No match in directory hierarchy, trying public locations");
-
-			returnTemplate = findTemplateByNameInPublicTemplates(name);
-		}
-
-		if (returnTemplate == null) {
-			log.info("No match found for name {}, returning null", name);
-		}
-
-		return returnTemplate;
-	}
-
-	@Override // FIXME: switch to AVU query
-	public MetadataTemplate findTemplateByNameInDirectoryHierarchy(final String name, final String activeDir)
-			throws MetadataTemplateProcessingException, MetadataTemplateParsingException {
-		log.info("findTemplateByNameInDirectoryHierarchy()");
-
-		if (name == null || name.isEmpty()) {
-			throw new IllegalArgumentException("name is null or empty");
-		}
-
-		if (activeDir == null || activeDir.isEmpty()) {
-			throw new IllegalArgumentException("activeDir is null or empty");
-		}
-
-		MetadataTemplate returnTemplate = null;
-		File[] templateFilesInHierarchy;
-
-		DotIrodsService dotIrodsService = instanceDotIrodsService();
-
-		try {
-			templateFilesInHierarchy = dotIrodsService.listFilesOfTypeInDirectoryHierarchyDotIrodsSubDir(activeDir,
-					DotIrodsConstants.METADATA_TEMPLATES_SUBDIR, new MetadataTemplateFileFilter());
-		} catch (JargonException je) {
-			log.error("JargonException when listing files in directory", je);
-			throw new MetadataTemplateProcessingException("error listing .irods files", je);
-		}
-
-		if (templateFilesInHierarchy.length > 0) {
-			for (File f : templateFilesInHierarchy) {
-				String nameFromFilename = LocalFileUtils.getFileNameUpToExtension(f.getName());
-
-				if (nameFromFilename.equalsIgnoreCase(name)) {
-					log.info("Name matched: {}", f.getAbsolutePath());
-
-					try {
-						returnTemplate = processFileToMetadataTemplate((IRODSFile) f);
-					} catch (JargonException je) {
-						log.error("JargonException in processFileToMetadataTemplate", je);
-						log.info("Matched {} with {}, but file could not be processed", name, f.getAbsolutePath());
-						throw new MetadataTemplateParsingException("cannot parse template", je);
-					}
-					break;
-				}
-			}
-		}
-
-		return returnTemplate;
-	}
-
 	private DotIrodsService instanceDotIrodsService() {
-		DotIrodsService dotIrodsService = new DotIrodsServiceImpl(this.getIrodsAccessObjectFactory(),
+		DotIrodsService dotIrodsService = new DotIrodsServiceImpl(getIrodsAccessObjectFactory(),
 				retrieveIrodsAccountFromContext());
 		return dotIrodsService;
 	}
 
-	/**
-	 * FIXME: change to AVU based query - mcc
-	 */
-
-	@Override
-	public MetadataTemplate findTemplateByNameInPublicTemplates(final String name)
-			throws MetadataTemplateProcessingException, MetadataTemplateParsingException {
-		log.info("findTemplateByNameInPublicTemplates()");
-
-		if (name == null || name.isEmpty()) {
-			throw new IllegalArgumentException("name is null or empty");
-		}
-
-		MetadataTemplate returnTemplate = null;
-		IRODSFile collectionIrodsFile = null;
-		// for (String publicDir : getPublicTemplateLocations()) {
-		try {
-			collectionIrodsFile = this.getIrodsAccessObjectFactory()
-					.getIRODSFileFactory(retrieveIrodsAccountFromContext()).instanceIRODSFile(retrivePublicLocation());
-		} catch (JargonException je) {
-			log.error("JargonException when opening {} as IRODSFile", retrivePublicLocation(), je);
-			log.info("Could not open {}, skipping to next public dir", retrivePublicLocation());
-		}
-
-		for (File f : collectionIrodsFile.listFiles(new MetadataTemplateFileFilter())) {
-			String nameFromFilename = LocalFileUtils.getFileNameUpToExtension(f.getName());
-
-			if (nameFromFilename.equalsIgnoreCase(name)) {
-				log.info("Name matched: {}", f.getAbsolutePath());
-
-				try {
-					returnTemplate = processFileToMetadataTemplate((IRODSFile) f);
-				} catch (JargonException je) {
-					log.error("JargonException in processFileToMetadataTemplate", je);
-					log.info("Matched {} with {}, but file could not be processed", name, f.getAbsolutePath());
-					throw new MetadataTemplateParsingException("cannot parse template", je);
-
-				}
-				break;
-			}
-		}
-
-		return returnTemplate;
-	}
-
 	private String retrivePublicLocation() {
-		return this.getMetadataTemplateConfiguration().getPublicTemplateIdentifier();
+		return getMetadataTemplateConfiguration().getPublicTemplateIdentifier();
 	}
 
 	private IRODSAccount retrieveIrodsAccountFromContext() {
-		return this.getMetadataTemplateContext().getIrodsAccount();
+		return getMetadataTemplateContext().getIrodsAccount();
 	}
 
 	/**
@@ -345,7 +146,7 @@ public class JargonMetadataResolver extends AbstractMetadataResolver<MetadataTem
 			queryElements.add(AVUQueryElement.instanceForValueQuery(AVUQueryElement.AVUQueryPart.VALUE,
 					QueryConditionOperators.EQUAL, uuid.toString()));
 
-			queryResult = this.getIrodsAccessObjectFactory().getDataObjectAO(retrieveIrodsAccountFromContext())
+			queryResult = getIrodsAccessObjectFactory().getDataObjectAO(retrieveIrodsAccountFromContext())
 					.findMetadataValuesByMetadataQuery(queryElements);
 		} catch (JargonQueryException jqe) {
 			log.error("AvuQuery for UUID failed!", jqe);
@@ -371,15 +172,15 @@ public class JargonMetadataResolver extends AbstractMetadataResolver<MetadataTem
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * org.irods.jargon.metadatatemplate.AbstractMetadataResolver#saveTemplate(
 	 * org.irods.jargon.metadatatemplate.MetadataTemplate,
 	 * org.irods.jargon.metadatatemplate.MetadataTemplateLocationTypeEnum)
 	 */
 	@Override // FIXME: what about duplicate add? - mcc
-	public UUID saveTemplate(MetadataTemplate metadataTemplate,
-			MetadataTemplateLocationTypeEnum metadataTemplateLocationTypeEnum)
+	public UUID saveTemplate(final MetadataTemplate metadataTemplate,
+			final MetadataTemplateLocationTypeEnum metadataTemplateLocationTypeEnum)
 			throws MetadataTemplateProcessingException {
 
 		log.info("saveFormBasedTemplateAsJSON()");
@@ -400,12 +201,12 @@ public class JargonMetadataResolver extends AbstractMetadataResolver<MetadataTem
 
 			if (metadataTemplateLocationTypeEnum == MetadataTemplateLocationTypeEnum.PUBLIC) {
 				log.info("public dir used");
-				sb.append(this.getMetadataTemplateConfiguration().getPublicTemplateIdentifier());
+				sb.append(getMetadataTemplateConfiguration().getPublicTemplateIdentifier());
 			} else if (metadataTemplateLocationTypeEnum == MetadataTemplateLocationTypeEnum.USER) {
 				log.info("user dir used");
-				sb.append(dotIrodsService
-						.findOrCreateUserHomeCollection(this.retrieveIrodsAccountFromContext().getUserName())
-						.getAbsolutePath());
+				sb.append(
+						dotIrodsService.findOrCreateUserHomeCollection(retrieveIrodsAccountFromContext().getUserName())
+								.getAbsolutePath());
 				sb.append("/");
 				sb.append(DotIrodsConstants.METADATA_TEMPLATES_SUBDIR);
 			} else {
@@ -413,12 +214,11 @@ public class JargonMetadataResolver extends AbstractMetadataResolver<MetadataTem
 				throw new MetadataTemplateProcessingException("Unsupported metadata template location type");
 			}
 
-			IRODSFile mdTemplateParentFile = this.getPathAsIrodsFile(sb.toString());
+			IRODSFile mdTemplateParentFile = getPathAsIrodsFile(sb.toString());
 			log.info("parent for mdtemplate dir is:{}", mdTemplateParentFile);
 			mdTemplateParentFile.mkdirs();
-			mdTemplateFile = this.getIrodsAccessObjectFactory()
-					.getIRODSFileFactory(this.retrieveIrodsAccountFromContext())
-					.instanceIRODSFile(mdTemplateParentFile.getAbsolutePath(), this.generateMdTemplateFileName());
+			mdTemplateFile = getIrodsAccessObjectFactory().getIRODSFileFactory(retrieveIrodsAccountFromContext())
+					.instanceIRODSFile(mdTemplateParentFile.getAbsolutePath(), generateMdTemplateFileName());
 		} catch (JargonException e) {
 			log.error("exception creating mdtemplate file", e);
 			throw new MetadataTemplateProcessingException("unable to create mdtemplate file", e);
@@ -456,7 +256,7 @@ public class JargonMetadataResolver extends AbstractMetadataResolver<MetadataTem
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * org.irods.jargon.metadatatemplate.AbstractMetadataResolver#updateTemplate
 	 * (java.lang.String, org.irods.jargon.metadatatemplate.MetadataTemplate)
@@ -469,7 +269,7 @@ public class JargonMetadataResolver extends AbstractMetadataResolver<MetadataTem
 			throw new IllegalArgumentException("metadataTemplate is null or empty");
 		}
 
-		String absPath = this.findAbsolutePathForUUID(metadataTemplate.getUuid().toString());
+		String absPath = findAbsolutePathForUUID(metadataTemplate.getUuid().toString());
 		log.info("resolved absPath:{}", absPath);
 
 		IRODSFile inFile = getPathAsIrodsFile(absPath);
@@ -538,56 +338,6 @@ public class JargonMetadataResolver extends AbstractMetadataResolver<MetadataTem
 	}
 
 	/**
-	 * Save the values in the MetadataTemplate onto the object in the system
-	 * metadata table.
-	 *
-	 *
-	 * @param metadataTemplate
-	 * @param pathToObject
-	 *
-	 * @throws FileNotFoundException
-	 * @throws JargonException
-	 *
-	 */
-	/*
-	 * public void saveTemplateToSystemMetadataOnObject( MetadataTemplate
-	 * metadataTemplate, String pathToObject) throws FileNotFoundException,
-	 * JargonException { log.info("saveTemplateToSystemMetadataOnObject()");
-	 *
-	 * if (pathToObject == null || pathToObject.isEmpty()) { throw new
-	 * IllegalArgumentException("pathToObject is null or empty"); }
-	 *
-	 * if (metadataTemplate == null) { throw new
-	 * IllegalArgumentException("metadataTemplate is null"); }
-	 *
-	 * IRODSFile irodsObject = irodsAccessObjectFactory.getIRODSFileFactory(
-	 * irodsAccount).instanceIRODSFile(pathToObject);
-	 *
-	 * if (!irodsObject.exists()) { throw new FileNotFoundException(
-	 * "pathToObject does not resolve to an iRODS object"); }
-	 *
-	 * FileCatalogObjectAO objectAO = null;
-	 *
-	 * if (irodsObject.isFile()) { objectAO =
-	 * irodsAccessObjectFactory.getDataObjectAO(irodsAccount); } else if
-	 * (irodsObject.isDirectory()) { objectAO =
-	 * irodsAccessObjectFactory.getCollectionAO(irodsAccount); } else { throw
-	 * new IllegalArgumentException( "object at " + pathToObject +
-	 * " is neither a data object nor a collection - the JargonMetadataResolver currently only supports these types of objects"
-	 * ); }
-	 *
-	 * if (metadataTemplate.getType() == TemplateTypeEnum.FORM_BASED) { for
-	 * (MetadataElement me : ((FormBasedMetadataTemplate) metadataTemplate)
-	 * .getElements()) { if (!me.getCurrentValue().isEmpty()) { for (String s :
-	 * me.getCurrentValue()) { AvuData avuData = AvuData .instance(
-	 * me.getName(), s, JargonMetadataTemplateConstants.AVU_UNIT_PREFIX +
-	 * metadataTemplate.getUuid() .toString()); if (irodsObject.isFile()) {
-	 * ((DataObjectAO) objectAO).addAVUMetadata( pathToObject, avuData); } else
-	 * if (irodsObject.isDirectory()) { ((CollectionAO)
-	 * objectAO).addAVUMetadata( pathToObject, avuData); } } } } } // TODO else
-	 * if for different TemplateTypeEnum types }
-	 */
-	/**
 	 * Populate metadata templates from a list of AVUs
 	 *
 	 * TODO Are unaffiliated AVUs and orphan AVUs properly two separate lists?
@@ -620,11 +370,8 @@ public class JargonMetadataResolver extends AbstractMetadataResolver<MetadataTem
 		String templateSearchPath = pathObjStat.isSomeTypeOfCollection() ? irodsAbsolutePath
 				: getPathFromFqName(irodsAbsolutePath);
 
-		for (MetadataTemplate mt : listAllRequiredTemplates(templateSearchPath)) {
+		for (MetadataTemplate mt : listAllTemplatesBoundToPath(templateSearchPath)) {
 			log.info("Required template found: {}", mt.getName());
-			// TODO Right now, only supports searching by UUID
-			// nameUUID would be more general
-			// i.e. dublinCore01234567-0123-0123-0123-0123456789ab
 			String hashKey = mt.getUuid().toString();
 			templateMap.put(hashKey, mt);
 		}
@@ -641,7 +388,7 @@ public class JargonMetadataResolver extends AbstractMetadataResolver<MetadataTem
 		return mergeTemplateListAndAVUs(templateMap, avuList, irodsAbsolutePath);
 	}
 
-	MetadataMergeResult mergeTemplateListAndAVUs(final Map<String, MetadataTemplate> templateMap,
+	private MetadataMergeResult mergeTemplateListAndAVUs(final Map<String, MetadataTemplate> templateMap,
 			final List<MetaDataAndDomainData> avuList, final String irodsAbsolutePath)
 			throws FileNotFoundException, IOException, JargonException {
 		log.info("mergeTemplateListAndAVUs()");
@@ -685,7 +432,7 @@ public class JargonMetadataResolver extends AbstractMetadataResolver<MetadataTem
 					}
 				} else {
 					log.info("avu belongs to a template not in the map");
-					tempMt = this.findTemplateByUUID(uuid);
+					tempMt = findTemplateByUUID(uuid);
 					if (tempMt == null) {
 						log.info("no template found for UUID {}", uuid);
 					} else {
@@ -739,7 +486,7 @@ public class JargonMetadataResolver extends AbstractMetadataResolver<MetadataTem
 		return new MetadataMergeResult(returnList, orphans);
 	}
 
-	String getValueFromRefQuery(final String refQuery, final String irodsAbsolutePath) {
+	private String getValueFromRefQuery(final String refQuery, final String irodsAbsolutePath) {
 		String returnString = "";
 		/*
 		 * try { // Check if need to reinitialize dataProfileAccessor if
@@ -935,7 +682,7 @@ public class JargonMetadataResolver extends AbstractMetadataResolver<MetadataTem
 	 * @param path
 	 * @throws JargonException
 	 */
-	UUID addMdTemplateAVUToFile(final String name, final String path) throws JargonException {
+	private UUID addMdTemplateAVUToFile(final String name, final String path) throws JargonException {
 		log.info("addMdTemplateAVUToFile, name = {}", name);
 		UUID uuid = UUID.randomUUID();
 		AvuData avuData = AvuData.instance(name, uuid.toString(), JargonMetadataTemplateConstants.MD_TEMPLATE_UNIT);
@@ -956,255 +703,14 @@ public class JargonMetadataResolver extends AbstractMetadataResolver<MetadataTem
 	 * @param path
 	 * @throws JargonException
 	 */
-	void addMdElementAVUToFile(final String name, final String path) throws JargonException {
+	private void addMdElementAVUToFile(final String name, final String path) throws JargonException {
 		log.info("addMdElementAVUToFile, name = {}", name);
 		UUID uuid = UUID.randomUUID();
 		AvuData avuData = AvuData.instance(name, uuid.toString(), JargonMetadataTemplateConstants.MD_ELEMENT_UNIT);
 		getIrodsAccessObjectFactory().getDataObjectAO(retrieveIrodsAccountFromContext()).addAVUMetadata(path, avuData);
 	}
 
-	boolean createMetadataTemplatesCollectionUnderParent(final String irodsAbsolutePathToParent)
-			throws JargonException {
-		log.info("createMetadataTemplatesCollectionUnderParent()");
-
-		if (irodsAbsolutePathToParent == null || irodsAbsolutePathToParent.isEmpty()) {
-			throw new IllegalArgumentException("null or empty irodsAbsolutePathToParent");
-		}
-
-		log.info("irodsAbsolutePathToParent: {}", irodsAbsolutePathToParent);
-
-		String metadataTemplatesPath = computeMetadataTemplatesPathUnderParent(irodsAbsolutePathToParent);
-		log.info("metadataTemplatesPath computed to be:{}", metadataTemplatesPath);
-
-		IRODSFile dotIrodsFile = getPathAsIrodsFile(metadataTemplatesPath);
-		if (dotIrodsFile == null) {
-			// A JargonException was caught in getPathAsIrodsFile
-			throw new JargonException("JargonException thrown by instanceIRODSFile in getPathAsIrodsFile");
-		}
-		log.info("created");
-
-		return dotIrodsFile.mkdirs();
-	}
-
-	boolean createMetadataTemplatesCollectionUnderDotIrods(final String irodsAbsolutePathToDotIrods)
-			throws JargonException {
-		log.info("createMetadataTemplatesCollectionUnderDotIrods()");
-
-		if (irodsAbsolutePathToDotIrods == null || irodsAbsolutePathToDotIrods.isEmpty()) {
-			throw new IllegalArgumentException("null or empty irodsAbsolutePathToDotIrods");
-		}
-
-		log.info("irodsAbsolutePathToDotIrods: {}", irodsAbsolutePathToDotIrods);
-
-		String metadataTemplatesPath = computeMetadataTemplatesPathUnderDotIrods(irodsAbsolutePathToDotIrods);
-		log.info("metadataTemplatesPath computed to be:{}", metadataTemplatesPath);
-
-		IRODSFile metadataTemplatesFile = getPathAsIrodsFile(metadataTemplatesPath);
-		if (metadataTemplatesFile == null) {
-			// A JargonException was caught in getPathAsIrodsFile
-			throw new JargonException("JargonException thrown by instanceIRODSFile in getPathAsIrodsFile");
-		}
-		log.info("created");
-
-		return metadataTemplatesFile.mkdirs();
-	}
-
-	String computeDotIrodsPathUnderParent(final String irodsAbsolutePathToParent) {
-		log.info("computeDotIrodsPathUnderParent");
-
-		if (irodsAbsolutePathToParent == null || irodsAbsolutePathToParent.isEmpty()) {
-			throw new IllegalArgumentException("irodsAbsolutePathToParent is null or empty");
-		}
-		StringBuilder sb = new StringBuilder();
-		sb.append(irodsAbsolutePathToParent);
-		sb.append("/");
-		sb.append(DotIrodsConstants.DOT_IRODS_DIR);
-		return sb.toString();
-	}
-
-	String computeMetadataTemplatesPathUnderParent(final String irodsAbsolutePathToParent) {
-		log.info("computeMetadataTemplatesPathUnderParent");
-
-		if (irodsAbsolutePathToParent == null || irodsAbsolutePathToParent.isEmpty()) {
-			throw new IllegalArgumentException("irodsAbsolutePathToParent is null or empty");
-		}
-		StringBuilder sb = new StringBuilder();
-		sb.append(irodsAbsolutePathToParent);
-		sb.append("/");
-		sb.append(DotIrodsConstants.METADATA_TEMPLATES_DIR);
-		return sb.toString();
-	}
-
-	String computeMetadataTemplatesPathUnderDotIrods(final String irodsAbsolutePathToDotIrods) {
-		log.info("computeMetadataTemplatesPathUnderDotIrods");
-
-		if (irodsAbsolutePathToDotIrods == null || irodsAbsolutePathToDotIrods.isEmpty()) {
-			throw new IllegalArgumentException("irodsAbsolutePathToDotIrods is null or empty");
-		}
-		StringBuilder sb = new StringBuilder();
-		sb.append(irodsAbsolutePathToDotIrods);
-		sb.append("/");
-		sb.append(DotIrodsConstants.METADATA_TEMPLATES_SUBDIR);
-		return sb.toString();
-	}
-
-	boolean isMetadataTemplatesCollectionPresentUnderParentCollection(final String irodsAbsolutePath) {
-		log.info("isMetadataTemplatesCollectionPresentUnderParentCollection()");
-
-		if (irodsAbsolutePath == null || irodsAbsolutePath.isEmpty()) {
-			throw new IllegalArgumentException("null or empty irodsAbsolutePath");
-		}
-
-		log.info("irodsAbsolutePath:{}", irodsAbsolutePath);
-
-		try {
-			getIrodsAccessObjectFactory().getCollectionAO(retrieveIrodsAccountFromContext())
-					.findByAbsolutePath(irodsAbsolutePath);
-		} catch (JargonException je) {
-			log.info(
-					"JargonException thrown by findByAbsolutePath, {} does not exist or {} does not have sufficient permissions",
-					irodsAbsolutePath, retrieveIrodsAccountFromContext());
-			return false;
-		}
-
-		log.info("{} exists", irodsAbsolutePath);
-
-		IRODSFile metadataTemplatesCollectionAsFile = getPathAsIrodsFile(
-				computeMetadataTemplatesPathUnderParent(irodsAbsolutePath));
-
-		return (metadataTemplatesCollectionAsFile != null);
-	}
-
-	boolean isMetadataTemplatesCollectionPresentUnderDotIrodsCollection(final String irodsAbsolutePathToDotIrods) {
-		log.info("isMetadataTemplatesCollectionPresentUnderParentCollection()");
-
-		if (irodsAbsolutePathToDotIrods == null || irodsAbsolutePathToDotIrods.isEmpty()) {
-			throw new IllegalArgumentException("null or empty irodsAbsolutePathToDotIrods");
-		}
-
-		log.info("irodsAbsolutePathToDotIrods:{}", irodsAbsolutePathToDotIrods);
-
-		try {
-			getIrodsAccessObjectFactory().getCollectionAO(retrieveIrodsAccountFromContext())
-					.findByAbsolutePath(irodsAbsolutePathToDotIrods);
-		} catch (JargonException je) {
-			log.info(
-					"JargonException thrown by findByAbsolutePath, {} does not exist or {} does not have sufficient permissions",
-					irodsAbsolutePathToDotIrods, retrieveIrodsAccountFromContext());
-			return false;
-		}
-
-		log.info("{} exists", irodsAbsolutePathToDotIrods);
-
-		IRODSFile metadataTemplatesCollectionAsFile = getPathAsIrodsFile(
-				computeMetadataTemplatesPathUnderDotIrods(irodsAbsolutePathToDotIrods));
-
-		return (metadataTemplatesCollectionAsFile != null);
-	}
-
-	boolean isDotIrodsCollectionPresentInCollection(final String irodsAbsolutePath) {
-		log.info("isDotIrodsCollectionPresentInCollection()");
-
-		if (irodsAbsolutePath == null || irodsAbsolutePath.isEmpty()) {
-			throw new IllegalArgumentException("null or empty irodsAbsolutePath");
-		}
-
-		log.info("irodsAbsolutePath:{}", irodsAbsolutePath);
-
-		try {
-			getIrodsAccessObjectFactory().getCollectionAO(retrieveIrodsAccountFromContext())
-					.findByAbsolutePath(irodsAbsolutePath);
-		} catch (JargonException je) {
-			log.info(
-					"JargonException thrown by findByAbsolutePath, {} does not exist or {} does not have sufficient permissions",
-					computeDotIrodsPathUnderParent(irodsAbsolutePath), retrieveIrodsAccountFromContext());
-			return false;
-		}
-
-		log.info("{} exists", irodsAbsolutePath);
-
-		IRODSFile dotIrodsCollectionAsFile = getPathAsIrodsFile(computeDotIrodsPathUnderParent(irodsAbsolutePath));
-
-		return (dotIrodsCollectionAsFile != null);
-	}
-
-	boolean isMetadataTemplatesCollection(final String irodsAbsolutePath) {
-		log.info("isMetadataTemplatesCollection()");
-
-		if (irodsAbsolutePath == null || irodsAbsolutePath.isEmpty()) {
-			throw new IllegalArgumentException("null or empty irodsAbsolutePath");
-		}
-
-		log.info("irodsAbsolutePath:{}", irodsAbsolutePath);
-
-		try {
-			getIrodsAccessObjectFactory().getCollectionAO(retrieveIrodsAccountFromContext())
-					.findByAbsolutePath(irodsAbsolutePath);
-		} catch (JargonException je) {
-			log.info(
-					"JargonException thrown by findByAbsolutePath, {} does not exist or {} does not have sufficient permissions",
-					computeDotIrodsPathUnderParent(irodsAbsolutePath), retrieveIrodsAccountFromContext());
-			return false;
-		}
-
-		log.info("{} exists", irodsAbsolutePath);
-
-		boolean retVal = false;
-
-		if (!irodsAbsolutePath.endsWith(DotIrodsConstants.METADATA_TEMPLATES_DIR)) {
-			retVal = false;
-		} else {
-			IRODSFile pathAsFile = getPathAsIrodsFile(irodsAbsolutePath);
-
-			if (pathAsFile == null) {
-				retVal = false;
-			} else {
-				retVal = pathAsFile.isDirectory();
-			}
-		}
-
-		return retVal;
-	}
-
-	boolean isDotIrodsCollection(final String irodsAbsolutePath) {
-		log.info("isDotIrodsCollection()");
-
-		if (irodsAbsolutePath == null || irodsAbsolutePath.isEmpty()) {
-			throw new IllegalArgumentException("null or empty irodsAbsolutePath");
-		}
-
-		log.info("irodsAbsolutePath:{}", irodsAbsolutePath);
-
-		try {
-			getIrodsAccessObjectFactory().getCollectionAO(retrieveIrodsAccountFromContext())
-					.findByAbsolutePath(irodsAbsolutePath);
-		} catch (JargonException je) {
-			log.info(
-					"JargonException thrown by findByAbsolutePath, {} does not exist or {} does not have sufficient permissions",
-					computeDotIrodsPathUnderParent(irodsAbsolutePath), retrieveIrodsAccountFromContext());
-			return false;
-		}
-
-		log.info("{} exists", irodsAbsolutePath);
-
-		boolean retVal = false;
-
-		if (!irodsAbsolutePath.endsWith(DotIrodsConstants.DOT_IRODS_DIR)) {
-			retVal = false;
-		} else {
-			IRODSFile pathAsFile = getPathAsIrodsFile(irodsAbsolutePath);
-
-			if (pathAsFile == null) {
-				retVal = false;
-			} else {
-				retVal = pathAsFile.isDirectory();
-			}
-		}
-
-		return retVal;
-	}
-
-	IRODSFile getPathAsIrodsFile(final String irodsAbsolutePath) {
+	private IRODSFile getPathAsIrodsFile(final String irodsAbsolutePath) {
 		log.info("getPathAsIrodsFile()");
 
 		IRODSFile retFile = null;
@@ -1220,7 +726,8 @@ public class JargonMetadataResolver extends AbstractMetadataResolver<MetadataTem
 		return retFile;
 	}
 
-	void saveJSONStringToFile(final String json, final String irodsAbsolutePath) throws JargonException, IOException {
+	private void saveJSONStringToFile(final String json, final String irodsAbsolutePath)
+			throws JargonException, IOException {
 		log.info("saveJSONStringToFile()");
 
 		if (json == null || json.isEmpty()) {
@@ -1244,7 +751,7 @@ public class JargonMetadataResolver extends AbstractMetadataResolver<MetadataTem
 		templateIrodsFile.close();
 	}
 
-	List<MetaDataAndDomainData> queryTemplateAVUForFile(final String irodsAbsolutePathToFile)
+	private List<MetaDataAndDomainData> queryTemplateAVUForFile(final String irodsAbsolutePathToFile)
 			throws JargonQueryException, JargonException {
 		log.info("queryTemplateAVUForFile()");
 
@@ -1260,34 +767,7 @@ public class JargonMetadataResolver extends AbstractMetadataResolver<MetadataTem
 		return queryResult;
 	}
 
-	List<MetaDataAndDomainData> queryElementAVUForFile(final String irodsAbsolutePathToFile)
-			throws JargonQueryException, JargonException {
-		log.info("queryElementAVUForFile()");
-
-		List<AVUQueryElement> queryElements = new ArrayList<AVUQueryElement>();
-		List<MetaDataAndDomainData> queryResult = new ArrayList<MetaDataAndDomainData>();
-
-		queryElements.add(AVUQueryElement.instanceForValueQuery(AVUQueryElement.AVUQueryPart.UNITS,
-				QueryConditionOperators.EQUAL, JargonMetadataTemplateConstants.MD_ELEMENT_UNIT));
-
-		queryResult = getIrodsAccessObjectFactory().getDataObjectAO(retrieveIrodsAccountFromContext())
-				.findMetadataValuesForDataObjectUsingAVUQuery(queryElements, irodsAbsolutePathToFile);
-
-		return queryResult;
-	}
-
-	String getLocalFileNameWithoutExtension(final String inFileName) {
-		String localFileName;
-		int lastSlash = inFileName.lastIndexOf('/');
-		if (lastSlash == -1) {
-			localFileName = inFileName;
-		} else {
-			localFileName = inFileName.substring(lastSlash + 1);
-		}
-		return LocalFileUtils.getFileNameUpToExtension(localFileName);
-	}
-
-	String getPathFromFqName(final String inFileName) {
+	private String getPathFromFqName(final String inFileName) {
 		String path;
 		int lastSlash = inFileName.lastIndexOf('/');
 		if ((lastSlash == -1) || (lastSlash == (inFileName.length() - 1))) {
@@ -1300,12 +780,12 @@ public class JargonMetadataResolver extends AbstractMetadataResolver<MetadataTem
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see org.irods.jargon.metadatatemplate.AbstractMetadataResolver#
 	 * findTemplateByUUID(java.lang.String)
 	 */
 	@Override
-	public MetadataTemplate findTemplateByUUID(String uuid)
+	public MetadataTemplate findTemplateByUUID(final String uuid)
 			throws MetadataTemplateProcessingException, MetadataTemplateParsingException {
 
 		log.info("findTemplateByUUID()");
@@ -1317,8 +797,8 @@ public class JargonMetadataResolver extends AbstractMetadataResolver<MetadataTem
 		String absPath = findAbsolutePathForUUID(uuid);
 		IRODSFile templateFile;
 		try {
-			templateFile = this.getIrodsAccessObjectFactory()
-					.getIRODSFileFactory(this.retrieveIrodsAccountFromContext()).instanceIRODSFile(absPath);
+			templateFile = getIrodsAccessObjectFactory().getIRODSFileFactory(retrieveIrodsAccountFromContext())
+					.instanceIRODSFile(absPath);
 		} catch (JargonException e) {
 			log.error("error obtaining template file", e);
 			throw new MetadataTemplateProcessingException(e);
@@ -1336,6 +816,284 @@ public class JargonMetadataResolver extends AbstractMetadataResolver<MetadataTem
 			throw new MetadataTemplateParsingException("error processing template", e);
 		}
 
+	}
+
+	@Override
+	public List<MetadataTemplate> listAvailableTemplates() throws MetadataTemplateProcessingException {
+		log.info("listAvailableTemplates()");
+
+		List<AVUQueryElement> queryElements = new ArrayList<AVUQueryElement>();
+		List<MetaDataAndDomainData> queryResult = new ArrayList<MetaDataAndDomainData>();
+		List<MetadataTemplate> templates = new ArrayList<MetadataTemplate>();
+
+		try {
+			queryElements.add(AVUQueryElement.instanceForValueQuery(AVUQueryElement.AVUQueryPart.UNITS,
+					QueryConditionOperators.EQUAL, JargonMetadataTemplateConstants.MD_TEMPLATE_UNIT));
+
+			queryResult = getIrodsAccessObjectFactory().getDataObjectAO(retrieveIrodsAccountFromContext())
+					.findMetadataValuesByMetadataQuery(queryElements);
+
+			for (MetaDataAndDomainData metadata : queryResult) {
+				log.info("metadata:{}", metadata);
+				templates.add(findTemplateByUUID(metadata.getAvuValue()));
+			}
+
+			return templates;
+
+		} catch (JargonQueryException | JargonException e) {
+			log.error("error listing metadata templates", e);
+			throw new MetadataTemplateParsingException("error processing template", e);
+		}
+
+	}
+
+	@Override
+	public List<MetadataTemplate> listAllTemplatesBoundToPath(final String irodsAbsolutePath)
+			throws FileNotFoundException, MetadataTemplateProcessingException {
+		log.info("listAllTemplatesBoundToPath()");
+		if (irodsAbsolutePath == null || irodsAbsolutePath.isEmpty()) {
+			throw new IllegalArgumentException("null or empty irodsAbsolutePath");
+		}
+		log.info("for path:{}", irodsAbsolutePath);
+		try {
+			IRODSFileFactory irodsFileFactory = getIrodsAccessObjectFactory()
+					.getIRODSFileFactory(retrieveIrodsAccountFromContext());
+			IRODSFile dirFile = irodsFileFactory.instanceIRODSFile(irodsAbsolutePath);
+
+			if (!dirFile.exists()) {
+				log.warn("file path does not exist:{}", irodsAbsolutePath);
+				throw new FileNotFoundException("path does not exist");
+			}
+
+			String queryPath;
+
+			if (dirFile.isFile()) {
+				log.info("this is a file, get the parent and start looking at templates");
+				queryPath = dirFile.getParent();
+			} else {
+				queryPath = dirFile.getAbsolutePath();
+			}
+
+			/*
+			 * start walking up the tree querying each directory to accumulate
+			 * templates, closest template wins
+			 */
+
+			List<MetadataTemplate> metadataTemplates = new ArrayList<MetadataTemplate>();
+			accumlateTemplatesInHeirarchy(metadataTemplates, queryPath);
+
+			/**
+			 * The top of the list is the closest, so move into set, this will
+			 * filter
+			 */
+
+			Set<MetadataTemplate> finalTemplatesList = new LinkedHashSet<MetadataTemplate>();
+			for (MetadataTemplate templateCandidate : metadataTemplates) {
+				log.debug("candidate:{}", templateCandidate);
+				boolean added = finalTemplatesList.add(templateCandidate);
+				log.debug("added?:{}", added);
+			}
+
+			// TODO: shouldn't the accumulator just make a set? There is an
+			// intermediate collection here not necessary - mcc
+			return new ArrayList<MetadataTemplate>(finalTemplatesList);
+
+		} catch (JargonException e) {
+			log.error("exception listing bound templates", e);
+			throw new MetadataTemplateProcessingException(e);
+
+		}
+
+	}
+
+	/**
+	 * This is a list, so it will pick up duplicate bindings. It recurses
+	 * backwards up the tree, so that elements at the top of the list should
+	 * supercede elements at the bottom. This selecting of the overriding
+	 * template is external to the function of this method
+	 * 
+	 * @param metadataTemplates
+	 * @param queryPath
+	 * @throws MetadataTemplateParsingException
+	 */
+	private void accumlateTemplatesInHeirarchy(final List<MetadataTemplate> metadataTemplates, final String queryPath)
+			throws MetadataTemplateParsingException {
+
+		log.info("accumulateTemplatesInHeirarchy()");
+		log.info("queryPath:{}", queryPath);
+		List<AVUQueryElement> queryElements = new ArrayList<AVUQueryElement>();
+		List<MetaDataAndDomainData> queryResult = new ArrayList<MetaDataAndDomainData>();
+		String parentPath;
+
+		try {
+			queryElements.add(AVUQueryElement.instanceForValueQuery(AVUQueryElement.AVUQueryPart.UNITS,
+					QueryConditionOperators.EQUAL, JargonMetadataTemplateConstants.MD_BINDING_UNIT));
+
+			queryResult = getIrodsAccessObjectFactory().getCollectionAO(retrieveIrodsAccountFromContext())
+					.findMetadataValuesByMetadataQuery(queryElements);
+
+			for (MetaDataAndDomainData metadata : queryResult) {
+				log.info("metadata:{}", metadata);
+				metadataTemplates.add(findTemplateByUUID(metadata.getAvuValue()));
+			}
+
+			IRODSFile currentPathFile = getIrodsAccessObjectFactory()
+					.getIRODSFileFactory(retrieveIrodsAccountFromContext()).instanceIRODSFile(queryPath);
+
+			// TODO: add early escape checks
+
+			parentPath = currentPathFile.getParent();
+			if (parentPath.equals("/")) {
+				log.info("done accumulating");
+				return;
+			}
+
+			// more to walk, query again
+			accumlateTemplatesInHeirarchy(metadataTemplates, parentPath);
+
+		} catch (JargonQueryException | JargonException e) {
+			log.error("error listing metadata templates", e);
+			throw new MetadataTemplateParsingException("error processing template", e);
+		}
+
+	}
+
+	@Override
+	public List<MetadataTemplate> findTemplateByName(final String name,
+			final MetadataTemplateLocationTypeEnum metadataTemplateLocationTypeEnum)
+			throws MetadataTemplateProcessingException, MetadataTemplateParsingException {
+		log.info("findTemplateByName()");
+		if (name == null || name.isEmpty()) {
+			throw new IllegalArgumentException("null or empty name");
+		}
+
+		log.info("name:{}", name);
+		log.info("metadataTemplateLocationTypeEnum:{}", metadataTemplateLocationTypeEnum);
+
+		List<MetadataTemplate> metadataTemplates = new ArrayList<MetadataTemplate>();
+
+		List<AVUQueryElement> queryElements = new ArrayList<AVUQueryElement>();
+		List<MetaDataAndDomainData> queryResult = new ArrayList<MetaDataAndDomainData>();
+
+		try {
+			queryElements.add(AVUQueryElement.instanceForValueQuery(AVUQueryElement.AVUQueryPart.UNITS,
+					QueryConditionOperators.EQUAL, JargonMetadataTemplateConstants.MD_TEMPLATE_UNIT));
+
+			queryResult = getIrodsAccessObjectFactory().getDataObjectAO(retrieveIrodsAccountFromContext())
+					.findMetadataValuesByMetadataQuery(queryElements);
+		} catch (JargonQueryException | JargonException e) {
+			log.error("error querying for templates", e);
+			throw new MetadataTemplateProcessingException("error querying for templates", e);
+		}
+
+		// filter based on type
+
+		for (MetaDataAndDomainData metadata : queryResult) {
+
+			// if no filter just add
+			if (metadataTemplateLocationTypeEnum == null) {
+				log.debug("no filter");
+				metadataTemplates.add(findTemplateByUUID(metadata.getAvuValue()));
+				continue;
+
+			}
+
+			// filter out public or user as appropriate
+			if (metadataTemplateLocationTypeEnum == MetadataTemplateLocationTypeEnum.PUBLIC) {
+				log.debug("only public");
+				if (metadata.getDomainObjectUniqueName()
+						.equals(getMetadataTemplateConfiguration().getPublicTemplateIdentifier())) {
+					log.debug("data is public:{}", metadata);
+					metadataTemplates.add(findTemplateByUUID(metadata.getAvuValue()));
+				} else {
+					log.debug("filtered, not public");
+				}
+			} else if (metadataTemplateLocationTypeEnum == MetadataTemplateLocationTypeEnum.USER) {
+				log.debug("only user");
+
+				if (!(metadata.getDomainObjectUniqueName()
+						.equals(getMetadataTemplateConfiguration().getPublicTemplateIdentifier()))) {
+					log.debug("data is user:{}", metadata);
+					metadataTemplates.add(findTemplateByUUID(metadata.getAvuValue()));
+				} else {
+					log.debug("filtered, not user");
+				}
+
+			}
+
+		}
+
+		return metadataTemplates;
+
+	}
+
+	// FIXME: required? how to serialize? should this be absorbed into the JSON
+	// delievered to client?
+	@Override
+	public void bindTemplateToPath(final String irodsAbsolutePath, final String templateUuid, final boolean required)
+			throws FileNotFoundException, MetadataTemplateProcessingException {
+
+		log.info("bindTemplateToPath()");
+		if (irodsAbsolutePath == null || irodsAbsolutePath.isEmpty()) {
+			throw new IllegalArgumentException("null or empty irodsAbsolutePath");
+		}
+
+		if (templateUuid == null || templateUuid.isEmpty()) {
+			throw new IllegalArgumentException("null or empty templateUuid");
+		}
+
+		log.info("irodsAbsolutePath:{}", irodsAbsolutePath);
+		log.info("templateUuid:{}", templateUuid);
+
+		IRODSFile targetFile;
+		try {
+			targetFile = this.getIrodsAccessObjectFactory().getIRODSFileFactory(this.retrieveIrodsAccountFromContext())
+					.instanceIRODSFile(irodsAbsolutePath);
+			if (!targetFile.exists()) {
+				log.error("file for bind does not exist at :{}", irodsAbsolutePath);
+				throw new FileNotFoundException("file does not exist, cannot bind");
+			}
+
+			if (!targetFile.isDirectory()) {
+				log.error("file for bind does not exist at :{}", irodsAbsolutePath);
+				throw new FileNotFoundException("file does not exist, cannot bind");
+			}
+
+			addMdBindAvuToFile(templateUuid, targetFile.getAbsolutePath());
+		} catch (JargonException e) {
+			log.error("error binding templates", e);
+			throw new MetadataTemplateProcessingException("error binding templates", e);
+		}
+
+	}
+
+	private void addMdBindAvuToFile(final String uuid, final String path) throws MetadataTemplateProcessingException {
+		log.info("addMdBindAvuToFile()");
+		try {
+			AvuData avuData = AvuData.instance(JargonMetadataTemplateConstants.MD_BINDING_NAME, uuid,
+					JargonMetadataTemplateConstants.MD_BINDING_UNIT);
+			getIrodsAccessObjectFactory().getCollectionAO(retrieveIrodsAccountFromContext()).addAVUMetadata(path,
+					avuData);
+		} catch (JargonException e) {
+			log.error("error binding templates", e);
+			throw new MetadataTemplateProcessingException("error binding templates", e);
+		}
+	}
+
+	@Override
+	public void unbindTemplate(final String irodsAbsolutePath, final String templateUuid)
+			throws MetadataTemplateProcessingException {
+		log.info("unbindTemplate()");
+
+		try {
+			AvuData avuData = AvuData.instance(JargonMetadataTemplateConstants.MD_BINDING_NAME, templateUuid,
+					JargonMetadataTemplateConstants.MD_BINDING_UNIT);
+			getIrodsAccessObjectFactory().getCollectionAO(retrieveIrodsAccountFromContext())
+					.deleteAVUMetadata(irodsAbsolutePath, avuData);
+		} catch (JargonException e) {
+			log.error("error unbinding templates", e);
+			throw new MetadataTemplateProcessingException("error unbinding templates", e);
+		}
 	}
 
 }
