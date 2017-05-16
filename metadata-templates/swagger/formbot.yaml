@@ -43,6 +43,64 @@ paths:
             description: 'Successful ping, containing info on how long it too the REST backend to connect to iRODS'
             schema:
               $ref: '#/definitions/Ping'
+  /buildPopulatedForms:
+    post:
+      tags:
+        - FormBot
+        - build
+        - form
+      summary: Retrieve FormBot Forms representing the MetadataTemplates used by a given file
+      description: ""
+      operationId: buildPopulatedForms
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: JSON object that can be used to retrieve a file or collection object
+          required: true
+          schema:
+            "$ref": "#/definitions/DataObjectOrCollectionRequest"
+      responses:
+        "200":
+          description: Forms found
+          schema:
+            "$ref": "#/definitions/Forms"
+          examples:
+            application/json:
+              uniqueId: 01234567-0123-0123-0123-0123456789ab
+              name: test1
+              description: Test metadata template
+              fields:
+                - name: attribute1
+                  uniqueId: 01234567-0123-0123-0123-0123456789abattribute1
+                  type: RAW_STRING
+                  formElement: TEXT
+                  currentValue: 
+                    - value1
+                  defaultValue:
+                  displayValue:
+                    - value1
+                  paramList: 
+                    - value1
+                    - value2
+                    - value3
+                - name: attribute2
+                  uniqueId: 01234567-0123-0123-0123-0123456789abattribute2
+                  description: Second attribute
+                  type: RAW_INT
+                  formElement: NUMBER
+                  currentValue: 
+                    - 5
+                  paramList: 
+                    - 1
+                    - 10
+        "400":
+          description: Ill-formed request
+        "404":
+          description: Data object or collection could not be found
   /buildForm:
     post:
       tags:
@@ -292,6 +350,11 @@ paths:
         "404":
           description: MetadataTemplate could not be found
 definitions:
+  DataObjectOrCollectionRequest:
+    type: object
+    properties:
+      fqName:
+        type: string
   MetadataTemplateRequest:
     type: object
     properties:
@@ -345,6 +408,13 @@ definitions:
         type: array
         items:
           "$ref": "#/definitions/Field"
+  Forms:
+    type: object
+    properties:
+      forms:
+        type: array
+        items:
+          "$ref": "#/definitions/Form"          
   ValidationResult:
     type: object
     properties:
