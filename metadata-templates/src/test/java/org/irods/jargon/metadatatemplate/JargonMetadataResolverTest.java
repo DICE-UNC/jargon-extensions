@@ -6,10 +6,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
 
-import junit.framework.Assert;
-
 import org.irods.jargon.core.connection.IRODSAccount;
-import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.DataTransferOperations;
 import org.irods.jargon.core.pub.IRODSAccessObjectFactory;
 import org.irods.jargon.core.pub.IRODSFileSystem;
@@ -18,11 +15,12 @@ import org.irods.jargon.core.pub.io.IRODSFile;
 import org.irods.jargon.core.query.AVUQueryElement;
 import org.irods.jargon.core.query.MetaDataAndDomainData;
 import org.irods.jargon.core.query.QueryConditionOperators;
-import org.irods.jargon.dataprofile.accessor.DataProfileAccessorServiceImpl;
 import org.irods.jargon.testutils.TestingPropertiesHelper;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import junit.framework.Assert;
 
 public class JargonMetadataResolverTest {
 
@@ -55,8 +53,7 @@ public class JargonMetadataResolverTest {
 		irodsTestSetupUtilities = new org.irods.jargon.testutils.IRODSTestSetupUtilities();
 		irodsTestSetupUtilities.clearIrodsScratchDirectory();
 		irodsTestSetupUtilities.initializeIrodsScratchDirectory();
-		irodsTestSetupUtilities
-				.initializeDirectoryForTest(IRODS_TEST_SUBDIR_PATH);
+		irodsTestSetupUtilities.initializeDirectoryForTest(IRODS_TEST_SUBDIR_PATH);
 	}
 
 	@After
@@ -65,24 +62,18 @@ public class JargonMetadataResolverTest {
 	}
 
 	@Test
-	public void testSaveMetadataTemplateAsJsonNoDotIrodsSpecifiedDir()
-			throws Exception {
+	public void testSaveMetadataTemplateAsJsonNoDotIrodsSpecifiedDir() throws Exception {
 
 		String testDirName = "testSaveMetadataTemplateAsJsonNoDotIrodsSpecifiedDir";
 
-		String targetIrodsCollection = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName);
+		String targetIrodsCollection = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testDirName);
 
-		IRODSAccount irodsAccount = testingPropertiesHelper
-				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSAccount irodsAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
 
-		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
-				.getIRODSAccessObjectFactory();
-		IRODSFile targetCollectionAsFile = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection);
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem.getIRODSAccessObjectFactory();
+		IRODSFile targetCollectionAsFile = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection);
 		targetCollectionAsFile.mkdirs();
 		FormBasedMetadataTemplate template = new FormBasedMetadataTemplate();
 		template.setAuthor("me");
@@ -92,14 +83,11 @@ public class JargonMetadataResolverTest {
 		template.setSource(SourceEnum.USER);
 		template.setVersion("0.0.1");
 
-		JargonMetadataResolver resolver = new JargonMetadataResolver(
-				irodsAccount, accessObjectFactory);
+		JargonMetadataResolver resolver = new JargonMetadataResolver(irodsAccount, accessObjectFactory);
 
 		resolver.saveFormBasedTemplateAsJSON(template, targetIrodsCollection);
-		List<MetadataTemplate> metadataTemplates = resolver
-				.listAllTemplates(targetIrodsCollection);
-		Assert.assertTrue("no metadata template stored",
-				metadataTemplates.size() != 0);
+		List<MetadataTemplate> metadataTemplates = resolver.listAllTemplates(targetIrodsCollection);
+		Assert.assertTrue("no metadata template stored", metadataTemplates.size() != 0);
 
 	}
 
@@ -108,57 +96,42 @@ public class JargonMetadataResolverTest {
 		String testDirName1 = "listPublicTemplatesNoDuplicatesDir1";
 		String testDirName2 = "listPublicTemplatesNoDuplicatesDir2";
 
-		String targetIrodsCollection1 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName1);
-		String targetIrodsCollection2 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName2);
+		String targetIrodsCollection1 = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testDirName1);
+		String targetIrodsCollection2 = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testDirName2);
 
-		IRODSAccount irodsAccount = testingPropertiesHelper
-				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSAccount irodsAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
 
-		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
-				.getIRODSAccessObjectFactory();
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem.getIRODSAccessObjectFactory();
 
-		IRODSFile targetCollectionAsFile1 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection1);
-		IRODSFile targetCollectionAsFile2 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection2);
+		IRODSFile targetCollectionAsFile1 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection1);
+		IRODSFile targetCollectionAsFile2 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection2);
 
 		targetCollectionAsFile1.mkdirs();
 		targetCollectionAsFile2.mkdirs();
 
-		DataTransferOperations dataTransferOperations = irodsFileSystem
-				.getIRODSAccessObjectFactory().getDataTransferOperations(
-						irodsAccount);
+		DataTransferOperations dataTransferOperations = irodsFileSystem.getIRODSAccessObjectFactory()
+				.getDataTransferOperations(irodsAccount);
 
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				targetIrodsCollection1,
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1, targetIrodsCollection1,
 				irodsAccount.getDefaultStorageResource(), null, null);
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2,
-				targetIrodsCollection2,
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2, targetIrodsCollection2,
 				irodsAccount.getDefaultStorageResource(), null, null);
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME3,
-				targetIrodsCollection2,
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME3, targetIrodsCollection2,
 				irodsAccount.getDefaultStorageResource(), null, null);
 
-		List<MetadataTemplate> metadataTemplates = new ArrayList<MetadataTemplate>();
+		List<MetadataTemplate> metadataTemplates = new ArrayList<>();
 
-		JargonMetadataResolver resolver = new JargonMetadataResolver(
-				irodsAccount, accessObjectFactory);
+		JargonMetadataResolver resolver = new JargonMetadataResolver(irodsAccount, accessObjectFactory);
 
-		resolver.setPublicTemplateLocations(Arrays.asList(
-				targetIrodsCollection1, targetIrodsCollection2));
+		resolver.setPublicTemplateLocations(Arrays.asList(targetIrodsCollection1, targetIrodsCollection2));
 
 		metadataTemplates = resolver.listPublicTemplates();
 
-		Assert.assertTrue("wrong list returned from listPublicTemplates",
-				metadataTemplates.size() == 3);
+		Assert.assertTrue("wrong list returned from listPublicTemplates", metadataTemplates.size() == 3);
 	}
 
 	@Test
@@ -166,208 +139,150 @@ public class JargonMetadataResolverTest {
 		String testDirName1 = "listPublicTemplatesDuplicatesDir1";
 		String testDirName2 = "listPublicTemplatesDuplicatesDir2";
 
-		String targetIrodsCollection1 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName1);
-		String targetIrodsCollection2 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName2);
+		String targetIrodsCollection1 = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testDirName1);
+		String targetIrodsCollection2 = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testDirName2);
 
-		IRODSAccount irodsAccount = testingPropertiesHelper
-				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSAccount irodsAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
 
-		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
-				.getIRODSAccessObjectFactory();
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem.getIRODSAccessObjectFactory();
 
-		IRODSFile targetCollectionAsFile1 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection1);
-		IRODSFile targetCollectionAsFile2 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection2);
+		IRODSFile targetCollectionAsFile1 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection1);
+		IRODSFile targetCollectionAsFile2 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection2);
 
 		targetCollectionAsFile1.mkdirs();
 		targetCollectionAsFile2.mkdirs();
 
-		DataTransferOperations dataTransferOperations = irodsFileSystem
-				.getIRODSAccessObjectFactory().getDataTransferOperations(
-						irodsAccount);
+		DataTransferOperations dataTransferOperations = irodsFileSystem.getIRODSAccessObjectFactory()
+				.getDataTransferOperations(irodsAccount);
 
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				targetIrodsCollection1,
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1, targetIrodsCollection1,
 				irodsAccount.getDefaultStorageResource(), null, null);
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				targetIrodsCollection2,
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1, targetIrodsCollection2,
 				irodsAccount.getDefaultStorageResource(), null, null);
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2,
-				targetIrodsCollection2,
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2, targetIrodsCollection2,
 				irodsAccount.getDefaultStorageResource(), null, null);
 
-		String firstTemplateFqName = targetIrodsCollection1 + '/'
-				+ TEMPLATE_NOPATH1;
+		String firstTemplateFqName = targetIrodsCollection1 + '/' + TEMPLATE_NOPATH1;
 
-		List<MetadataTemplate> metadataTemplates = new ArrayList<MetadataTemplate>();
+		List<MetadataTemplate> metadataTemplates = new ArrayList<>();
 
-		JargonMetadataResolver resolver = new JargonMetadataResolver(
-				irodsAccount, accessObjectFactory);
+		JargonMetadataResolver resolver = new JargonMetadataResolver(irodsAccount, accessObjectFactory);
 
-		resolver.setPublicTemplateLocations(Arrays.asList(
-				targetIrodsCollection1, targetIrodsCollection2));
+		resolver.setPublicTemplateLocations(Arrays.asList(targetIrodsCollection1, targetIrodsCollection2));
 
 		metadataTemplates = resolver.listPublicTemplates();
 
-		Assert.assertTrue("wrong list returned from listPublicTemplates",
-				metadataTemplates.size() == 2);
+		Assert.assertTrue("wrong list returned from listPublicTemplates", metadataTemplates.size() == 2);
 		Assert.assertTrue("first appearance of template name not kept",
-				metadataTemplates.get(0).getFqName()
-						.equals(firstTemplateFqName));
+				metadataTemplates.get(0).getFqName().equals(firstTemplateFqName));
 	}
 
 	@Test
-	public void listTemplatesInDirectoryHierarchyAbovePathNoDuplicates()
-			throws Exception {
+	public void listTemplatesInDirectoryHierarchyAbovePathNoDuplicates() throws Exception {
 		String testDirName1 = "listPublicTemplatesNoDuplicatesDir";
 		String testDirName2 = "SubDir";
 		String testDirName3 = "StartDir";
 
-		String targetIrodsCollection1 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName1);
-		String targetIrodsCollection2 = targetIrodsCollection1 + '/'
-				+ testDirName2;
-		String targetIrodsCollection3 = targetIrodsCollection2 + '/'
-				+ testDirName3;
+		String targetIrodsCollection1 = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testDirName1);
+		String targetIrodsCollection2 = targetIrodsCollection1 + '/' + testDirName2;
+		String targetIrodsCollection3 = targetIrodsCollection2 + '/' + testDirName3;
 
-		IRODSAccount irodsAccount = testingPropertiesHelper
-				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSAccount irodsAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
 
-		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
-				.getIRODSAccessObjectFactory();
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem.getIRODSAccessObjectFactory();
 
-		IRODSFile targetCollectionAsFile1 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection1);
-		IRODSFile targetCollectionAsFile2 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection2);
-		IRODSFile targetCollectionAsFile3 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection3);
+		IRODSFile targetCollectionAsFile1 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection1);
+		IRODSFile targetCollectionAsFile2 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection2);
+		IRODSFile targetCollectionAsFile3 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection3);
 
 		targetCollectionAsFile1.mkdirs();
 		targetCollectionAsFile2.mkdirs();
 		targetCollectionAsFile3.mkdirs();
 
-		JargonMetadataResolver resolver = new JargonMetadataResolver(
-				irodsAccount, accessObjectFactory);
+		JargonMetadataResolver resolver = new JargonMetadataResolver(irodsAccount, accessObjectFactory);
 
-		String mdTemplatePath1 = resolver
-				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection3);
-		String mdTemplatePath2 = resolver
-				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection2);
-		String mdTemplatePath3 = resolver
-				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection1);
+		String mdTemplatePath1 = resolver.findOrCreateMetadataTemplatesCollection(targetIrodsCollection3);
+		String mdTemplatePath2 = resolver.findOrCreateMetadataTemplatesCollection(targetIrodsCollection2);
+		String mdTemplatePath3 = resolver.findOrCreateMetadataTemplatesCollection(targetIrodsCollection1);
 
-		DataTransferOperations dataTransferOperations = irodsFileSystem
-				.getIRODSAccessObjectFactory().getDataTransferOperations(
-						irodsAccount);
+		DataTransferOperations dataTransferOperations = irodsFileSystem.getIRODSAccessObjectFactory()
+				.getDataTransferOperations(irodsAccount);
 
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				mdTemplatePath1, irodsAccount.getDefaultStorageResource(),
-				null, null);
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2,
-				mdTemplatePath2, irodsAccount.getDefaultStorageResource(),
-				null, null);
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME3,
-				mdTemplatePath3, irodsAccount.getDefaultStorageResource(),
-				null, null);
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1, mdTemplatePath1,
+				irodsAccount.getDefaultStorageResource(), null, null);
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2, mdTemplatePath2,
+				irodsAccount.getDefaultStorageResource(), null, null);
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME3, mdTemplatePath3,
+				irodsAccount.getDefaultStorageResource(), null, null);
 
-		List<MetadataTemplate> metadataTemplates = new ArrayList<MetadataTemplate>();
+		List<MetadataTemplate> metadataTemplates = new ArrayList<>();
 
-		metadataTemplates = resolver
-				.listTemplatesInDirectoryHierarchyAbovePath(targetIrodsCollection3);
+		metadataTemplates = resolver.listTemplatesInDirectoryHierarchyAbovePath(targetIrodsCollection3);
 
-		Assert.assertTrue(
-				"wrong list returned from listTemplatesInDirectoryHierarchyAbovePath",
+		Assert.assertTrue("wrong list returned from listTemplatesInDirectoryHierarchyAbovePath",
 				metadataTemplates.size() == 3);
 	}
 
 	@Test
-	public void listTemplatesInDirectoryHierarchyAbovePathDuplicates()
-			throws Exception {
+	public void listTemplatesInDirectoryHierarchyAbovePathDuplicates() throws Exception {
 		String testDirName1 = "listPublicTemplatesDuplicatesDir";
 		String testDirName2 = "SubDir";
 		String testDirName3 = "StartDir";
 
-		String targetIrodsCollection1 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName1);
-		String targetIrodsCollection2 = targetIrodsCollection1 + '/'
-				+ testDirName2;
-		String targetIrodsCollection3 = targetIrodsCollection2 + '/'
-				+ testDirName3;
+		String targetIrodsCollection1 = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testDirName1);
+		String targetIrodsCollection2 = targetIrodsCollection1 + '/' + testDirName2;
+		String targetIrodsCollection3 = targetIrodsCollection2 + '/' + testDirName3;
 
-		IRODSAccount irodsAccount = testingPropertiesHelper
-				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSAccount irodsAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
 
-		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
-				.getIRODSAccessObjectFactory();
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem.getIRODSAccessObjectFactory();
 
-		IRODSFile targetCollectionAsFile1 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection1);
-		IRODSFile targetCollectionAsFile2 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection2);
-		IRODSFile targetCollectionAsFile3 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection3);
+		IRODSFile targetCollectionAsFile1 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection1);
+		IRODSFile targetCollectionAsFile2 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection2);
+		IRODSFile targetCollectionAsFile3 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection3);
 
 		targetCollectionAsFile1.mkdirs();
 		targetCollectionAsFile2.mkdirs();
 		targetCollectionAsFile3.mkdirs();
 
-		JargonMetadataResolver resolver = new JargonMetadataResolver(
-				irodsAccount, accessObjectFactory);
+		JargonMetadataResolver resolver = new JargonMetadataResolver(irodsAccount, accessObjectFactory);
 
-		String mdTemplatePath1 = resolver
-				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection3);
-		String mdTemplatePath2 = resolver
-				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection2);
-		String mdTemplatePath3 = resolver
-				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection1);
+		String mdTemplatePath1 = resolver.findOrCreateMetadataTemplatesCollection(targetIrodsCollection3);
+		String mdTemplatePath2 = resolver.findOrCreateMetadataTemplatesCollection(targetIrodsCollection2);
+		String mdTemplatePath3 = resolver.findOrCreateMetadataTemplatesCollection(targetIrodsCollection1);
 
 		String firstTemplateFqName = mdTemplatePath1 + '/' + TEMPLATE_NOPATH1;
 
-		DataTransferOperations dataTransferOperations = irodsFileSystem
-				.getIRODSAccessObjectFactory().getDataTransferOperations(
-						irodsAccount);
+		DataTransferOperations dataTransferOperations = irodsFileSystem.getIRODSAccessObjectFactory()
+				.getDataTransferOperations(irodsAccount);
 
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				mdTemplatePath1, irodsAccount.getDefaultStorageResource(),
-				null, null);
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2,
-				mdTemplatePath2, irodsAccount.getDefaultStorageResource(),
-				null, null);
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				mdTemplatePath3, irodsAccount.getDefaultStorageResource(),
-				null, null);
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1, mdTemplatePath1,
+				irodsAccount.getDefaultStorageResource(), null, null);
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2, mdTemplatePath2,
+				irodsAccount.getDefaultStorageResource(), null, null);
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1, mdTemplatePath3,
+				irodsAccount.getDefaultStorageResource(), null, null);
 
-		List<MetadataTemplate> metadataTemplates = new ArrayList<MetadataTemplate>();
+		List<MetadataTemplate> metadataTemplates = new ArrayList<>();
 
-		metadataTemplates = resolver
-				.listTemplatesInDirectoryHierarchyAbovePath(targetIrodsCollection3);
+		metadataTemplates = resolver.listTemplatesInDirectoryHierarchyAbovePath(targetIrodsCollection3);
 
-		Assert.assertTrue(
-				"wrong list returned from listTemplatesInDirectoryHierarchyAbovePath",
+		Assert.assertTrue("wrong list returned from listTemplatesInDirectoryHierarchyAbovePath",
 				metadataTemplates.size() == 2);
 		Assert.assertTrue("first appearance of template name not kept",
-				metadataTemplates.get(0).getFqName()
-						.equals(firstTemplateFqName));
+				metadataTemplates.get(0).getFqName().equals(firstTemplateFqName));
 	}
 
 	@Test
@@ -376,67 +291,48 @@ public class JargonMetadataResolverTest {
 		String testDirName2 = "SubDir";
 		String testDirName3 = "listAllTemplatesNoDuplicatesDir2";
 
-		String targetIrodsCollection1 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName1);
-		String targetIrodsCollection2 = targetIrodsCollection1 + '/'
-				+ testDirName2;
-		String targetIrodsCollection3 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName3);
+		String targetIrodsCollection1 = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testDirName1);
+		String targetIrodsCollection2 = targetIrodsCollection1 + '/' + testDirName2;
+		String targetIrodsCollection3 = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testDirName3);
 
-		IRODSAccount irodsAccount = testingPropertiesHelper
-				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSAccount irodsAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
 
-		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
-				.getIRODSAccessObjectFactory();
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem.getIRODSAccessObjectFactory();
 
-		IRODSFile targetCollectionAsFile1 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection1);
-		IRODSFile targetCollectionAsFile2 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection2);
-		IRODSFile targetCollectionAsFile3 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection3);
+		IRODSFile targetCollectionAsFile1 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection1);
+		IRODSFile targetCollectionAsFile2 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection2);
+		IRODSFile targetCollectionAsFile3 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection3);
 
 		targetCollectionAsFile1.mkdirs();
 		targetCollectionAsFile2.mkdirs();
 		targetCollectionAsFile3.mkdirs();
 
-		JargonMetadataResolver resolver = new JargonMetadataResolver(
-				irodsAccount, accessObjectFactory);
+		JargonMetadataResolver resolver = new JargonMetadataResolver(irodsAccount, accessObjectFactory);
 
-		String mdTemplatePath1 = resolver
-				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection1);
-		String mdTemplatePath2 = resolver
-				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection2);
+		String mdTemplatePath1 = resolver.findOrCreateMetadataTemplatesCollection(targetIrodsCollection1);
+		String mdTemplatePath2 = resolver.findOrCreateMetadataTemplatesCollection(targetIrodsCollection2);
 
-		DataTransferOperations dataTransferOperations = irodsFileSystem
-				.getIRODSAccessObjectFactory().getDataTransferOperations(
-						irodsAccount);
+		DataTransferOperations dataTransferOperations = irodsFileSystem.getIRODSAccessObjectFactory()
+				.getDataTransferOperations(irodsAccount);
 
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				mdTemplatePath2, irodsAccount.getDefaultStorageResource(),
-				null, null);
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2,
-				mdTemplatePath1, irodsAccount.getDefaultStorageResource(),
-				null, null);
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME3,
-				targetIrodsCollection3,
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1, mdTemplatePath2,
+				irodsAccount.getDefaultStorageResource(), null, null);
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2, mdTemplatePath1,
+				irodsAccount.getDefaultStorageResource(), null, null);
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME3, targetIrodsCollection3,
 				irodsAccount.getDefaultStorageResource(), null, null);
 
-		List<MetadataTemplate> metadataTemplates = new ArrayList<MetadataTemplate>();
+		List<MetadataTemplate> metadataTemplates = new ArrayList<>();
 
-		resolver.setPublicTemplateLocations(Arrays
-				.asList(targetIrodsCollection3));
+		resolver.setPublicTemplateLocations(Arrays.asList(targetIrodsCollection3));
 		metadataTemplates = resolver.listAllTemplates(targetIrodsCollection2);
 
-		Assert.assertTrue("wrong list returned from listAllTemplates",
-				metadataTemplates.size() == 3);
+		Assert.assertTrue("wrong list returned from listAllTemplates", metadataTemplates.size() == 3);
 	}
 
 	@Test
@@ -445,72 +341,52 @@ public class JargonMetadataResolverTest {
 		String testDirName2 = "SubDir";
 		String testDirName3 = "listAllTemplatesDuplicatesDir2";
 
-		String targetIrodsCollection1 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName1);
-		String targetIrodsCollection2 = targetIrodsCollection1 + '/'
-				+ testDirName2;
-		String targetIrodsCollection3 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName3);
+		String targetIrodsCollection1 = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testDirName1);
+		String targetIrodsCollection2 = targetIrodsCollection1 + '/' + testDirName2;
+		String targetIrodsCollection3 = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testDirName3);
 
-		IRODSAccount irodsAccount = testingPropertiesHelper
-				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSAccount irodsAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
 
-		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
-				.getIRODSAccessObjectFactory();
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem.getIRODSAccessObjectFactory();
 
-		IRODSFile targetCollectionAsFile1 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection1);
-		IRODSFile targetCollectionAsFile2 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection2);
-		IRODSFile targetCollectionAsFile3 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection3);
+		IRODSFile targetCollectionAsFile1 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection1);
+		IRODSFile targetCollectionAsFile2 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection2);
+		IRODSFile targetCollectionAsFile3 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection3);
 
 		targetCollectionAsFile1.mkdirs();
 		targetCollectionAsFile2.mkdirs();
 		targetCollectionAsFile3.mkdirs();
 
-		JargonMetadataResolver resolver = new JargonMetadataResolver(
-				irodsAccount, accessObjectFactory);
+		JargonMetadataResolver resolver = new JargonMetadataResolver(irodsAccount, accessObjectFactory);
 
-		String mdTemplatePath1 = resolver
-				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection1);
-		String mdTemplatePath2 = resolver
-				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection2);
+		String mdTemplatePath1 = resolver.findOrCreateMetadataTemplatesCollection(targetIrodsCollection1);
+		String mdTemplatePath2 = resolver.findOrCreateMetadataTemplatesCollection(targetIrodsCollection2);
 
-		DataTransferOperations dataTransferOperations = irodsFileSystem
-				.getIRODSAccessObjectFactory().getDataTransferOperations(
-						irodsAccount);
+		DataTransferOperations dataTransferOperations = irodsFileSystem.getIRODSAccessObjectFactory()
+				.getDataTransferOperations(irodsAccount);
 
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				mdTemplatePath2, irodsAccount.getDefaultStorageResource(),
-				null, null);
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2,
-				mdTemplatePath1, irodsAccount.getDefaultStorageResource(),
-				null, null);
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2,
-				targetIrodsCollection3,
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1, mdTemplatePath2,
+				irodsAccount.getDefaultStorageResource(), null, null);
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2, mdTemplatePath1,
+				irodsAccount.getDefaultStorageResource(), null, null);
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2, targetIrodsCollection3,
 				irodsAccount.getDefaultStorageResource(), null, null);
 
 		String firstTemplateFqName = mdTemplatePath1 + '/' + TEMPLATE_NOPATH2;
 
-		List<MetadataTemplate> metadataTemplates = new ArrayList<MetadataTemplate>();
+		List<MetadataTemplate> metadataTemplates = new ArrayList<>();
 
-		resolver.setPublicTemplateLocations(Arrays
-				.asList(targetIrodsCollection3));
+		resolver.setPublicTemplateLocations(Arrays.asList(targetIrodsCollection3));
 		metadataTemplates = resolver.listAllTemplates(targetIrodsCollection2);
 
-		Assert.assertTrue("wrong list returned from listAllTemplates",
-				metadataTemplates.size() == 2);
+		Assert.assertTrue("wrong list returned from listAllTemplates", metadataTemplates.size() == 2);
 		Assert.assertTrue("first appearance of template name not kept",
-				metadataTemplates.get(1).getFqName()
-						.equals(firstTemplateFqName));
+				metadataTemplates.get(1).getFqName().equals(firstTemplateFqName));
 	}
 
 	@Test
@@ -519,72 +395,52 @@ public class JargonMetadataResolverTest {
 		String testDirName2 = "SubDir";
 		String testDirName3 = "findTemplateByNameSingleMatchDir2";
 
-		String targetIrodsCollection1 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName1);
-		String targetIrodsCollection2 = targetIrodsCollection1 + '/'
-				+ testDirName2;
-		String targetIrodsCollection3 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName3);
+		String targetIrodsCollection1 = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testDirName1);
+		String targetIrodsCollection2 = targetIrodsCollection1 + '/' + testDirName2;
+		String targetIrodsCollection3 = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testDirName3);
 
-		IRODSAccount irodsAccount = testingPropertiesHelper
-				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSAccount irodsAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
 
-		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
-				.getIRODSAccessObjectFactory();
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem.getIRODSAccessObjectFactory();
 
-		IRODSFile targetCollectionAsFile1 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection1);
-		IRODSFile targetCollectionAsFile2 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection2);
-		IRODSFile targetCollectionAsFile3 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection3);
+		IRODSFile targetCollectionAsFile1 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection1);
+		IRODSFile targetCollectionAsFile2 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection2);
+		IRODSFile targetCollectionAsFile3 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection3);
 
 		targetCollectionAsFile1.mkdirs();
 		targetCollectionAsFile2.mkdirs();
 		targetCollectionAsFile3.mkdirs();
 
-		JargonMetadataResolver resolver = new JargonMetadataResolver(
-				irodsAccount, accessObjectFactory);
+		JargonMetadataResolver resolver = new JargonMetadataResolver(irodsAccount, accessObjectFactory);
 
-		String mdTemplatePath1 = resolver
-				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection1);
-		String mdTemplatePath2 = resolver
-				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection2);
+		String mdTemplatePath1 = resolver.findOrCreateMetadataTemplatesCollection(targetIrodsCollection1);
+		String mdTemplatePath2 = resolver.findOrCreateMetadataTemplatesCollection(targetIrodsCollection2);
 
-		DataTransferOperations dataTransferOperations = irodsFileSystem
-				.getIRODSAccessObjectFactory().getDataTransferOperations(
-						irodsAccount);
+		DataTransferOperations dataTransferOperations = irodsFileSystem.getIRODSAccessObjectFactory()
+				.getDataTransferOperations(irodsAccount);
 
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				mdTemplatePath2, irodsAccount.getDefaultStorageResource(),
-				null, null);
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2,
-				mdTemplatePath1, irodsAccount.getDefaultStorageResource(),
-				null, null);
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME3,
-				targetIrodsCollection3,
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1, mdTemplatePath2,
+				irodsAccount.getDefaultStorageResource(), null, null);
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2, mdTemplatePath1,
+				irodsAccount.getDefaultStorageResource(), null, null);
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME3, targetIrodsCollection3,
 				irodsAccount.getDefaultStorageResource(), null, null);
 
 		String templateFqName = mdTemplatePath2 + '/' + TEMPLATE_NOPATH1;
 
 		MetadataTemplate metadataTemplate = new FormBasedMetadataTemplate();
 
-		resolver.setPublicTemplateLocations(Arrays
-				.asList(targetIrodsCollection3));
-		metadataTemplate = resolver.findTemplateByName("test1",
-				targetIrodsCollection2);
+		resolver.setPublicTemplateLocations(Arrays.asList(targetIrodsCollection3));
+		metadataTemplate = resolver.findTemplateByName("test1", targetIrodsCollection2);
 
-		Assert.assertNotNull("no template returned from findTemplateByName",
-				metadataTemplate);
-		Assert.assertEquals("wrong template returned from findTemplateByName",
-				templateFqName, metadataTemplate.getFqName());
+		Assert.assertNotNull("no template returned from findTemplateByName", metadataTemplate);
+		Assert.assertEquals("wrong template returned from findTemplateByName", templateFqName,
+				metadataTemplate.getFqName());
 	}
 
 	@Test
@@ -593,72 +449,52 @@ public class JargonMetadataResolverTest {
 		String testDirName2 = "SubDir";
 		String testDirName3 = "findTemplateByNameDuplicateMatchDir2";
 
-		String targetIrodsCollection1 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName1);
-		String targetIrodsCollection2 = targetIrodsCollection1 + '/'
-				+ testDirName2;
-		String targetIrodsCollection3 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName3);
+		String targetIrodsCollection1 = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testDirName1);
+		String targetIrodsCollection2 = targetIrodsCollection1 + '/' + testDirName2;
+		String targetIrodsCollection3 = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testDirName3);
 
-		IRODSAccount irodsAccount = testingPropertiesHelper
-				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSAccount irodsAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
 
-		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
-				.getIRODSAccessObjectFactory();
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem.getIRODSAccessObjectFactory();
 
-		IRODSFile targetCollectionAsFile1 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection1);
-		IRODSFile targetCollectionAsFile2 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection2);
-		IRODSFile targetCollectionAsFile3 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection3);
+		IRODSFile targetCollectionAsFile1 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection1);
+		IRODSFile targetCollectionAsFile2 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection2);
+		IRODSFile targetCollectionAsFile3 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection3);
 
 		targetCollectionAsFile1.mkdirs();
 		targetCollectionAsFile2.mkdirs();
 		targetCollectionAsFile3.mkdirs();
 
-		JargonMetadataResolver resolver = new JargonMetadataResolver(
-				irodsAccount, accessObjectFactory);
+		JargonMetadataResolver resolver = new JargonMetadataResolver(irodsAccount, accessObjectFactory);
 
-		String mdTemplatePath1 = resolver
-				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection1);
-		String mdTemplatePath2 = resolver
-				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection2);
+		String mdTemplatePath1 = resolver.findOrCreateMetadataTemplatesCollection(targetIrodsCollection1);
+		String mdTemplatePath2 = resolver.findOrCreateMetadataTemplatesCollection(targetIrodsCollection2);
 
-		DataTransferOperations dataTransferOperations = irodsFileSystem
-				.getIRODSAccessObjectFactory().getDataTransferOperations(
-						irodsAccount);
+		DataTransferOperations dataTransferOperations = irodsFileSystem.getIRODSAccessObjectFactory()
+				.getDataTransferOperations(irodsAccount);
 
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				mdTemplatePath2, irodsAccount.getDefaultStorageResource(),
-				null, null);
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2,
-				mdTemplatePath1, irodsAccount.getDefaultStorageResource(),
-				null, null);
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				targetIrodsCollection3,
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1, mdTemplatePath2,
+				irodsAccount.getDefaultStorageResource(), null, null);
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2, mdTemplatePath1,
+				irodsAccount.getDefaultStorageResource(), null, null);
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1, targetIrodsCollection3,
 				irodsAccount.getDefaultStorageResource(), null, null);
 
 		String templateFqName = mdTemplatePath2 + '/' + TEMPLATE_NOPATH1;
 
 		MetadataTemplate metadataTemplate = new FormBasedMetadataTemplate();
 
-		resolver.setPublicTemplateLocations(Arrays
-				.asList(targetIrodsCollection3));
-		metadataTemplate = resolver
-				.findTemplateByName("test1", mdTemplatePath2);
+		resolver.setPublicTemplateLocations(Arrays.asList(targetIrodsCollection3));
+		metadataTemplate = resolver.findTemplateByName("test1", mdTemplatePath2);
 
-		Assert.assertNotNull("no template returned from findTemplateByName",
-				metadataTemplate);
-		Assert.assertEquals("wrong template returned from findTemplateByName",
-				templateFqName, metadataTemplate.getFqName());
+		Assert.assertNotNull("no template returned from findTemplateByName", metadataTemplate);
+		Assert.assertEquals("wrong template returned from findTemplateByName", templateFqName,
+				metadataTemplate.getFqName());
 	}
 
 	@Test
@@ -667,74 +503,52 @@ public class JargonMetadataResolverTest {
 		String testDirName2 = "SubDir";
 		String testDirName3 = "findTemplateByNameNoMatchDir2";
 
-		String targetIrodsCollection1 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName1);
-		String targetIrodsCollection2 = targetIrodsCollection1 + '/'
-				+ testDirName2;
-		String targetIrodsCollection3 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName3);
+		String targetIrodsCollection1 = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testDirName1);
+		String targetIrodsCollection2 = targetIrodsCollection1 + '/' + testDirName2;
+		String targetIrodsCollection3 = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testDirName3);
 
-		IRODSAccount irodsAccount = testingPropertiesHelper
-				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSAccount irodsAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
 
-		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
-				.getIRODSAccessObjectFactory();
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem.getIRODSAccessObjectFactory();
 
-		IRODSFile targetCollectionAsFile1 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection1);
-		IRODSFile targetCollectionAsFile2 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection2);
-		IRODSFile targetCollectionAsFile3 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection3);
+		IRODSFile targetCollectionAsFile1 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection1);
+		IRODSFile targetCollectionAsFile2 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection2);
+		IRODSFile targetCollectionAsFile3 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection3);
 
 		targetCollectionAsFile1.mkdirs();
 		targetCollectionAsFile2.mkdirs();
 		targetCollectionAsFile3.mkdirs();
 
-		JargonMetadataResolver resolver = new JargonMetadataResolver(
-				irodsAccount, accessObjectFactory);
+		JargonMetadataResolver resolver = new JargonMetadataResolver(irodsAccount, accessObjectFactory);
 
-		String mdTemplatePath1 = resolver
-				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection1);
-		String mdTemplatePath2 = resolver
-				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection2);
+		String mdTemplatePath1 = resolver.findOrCreateMetadataTemplatesCollection(targetIrodsCollection1);
+		String mdTemplatePath2 = resolver.findOrCreateMetadataTemplatesCollection(targetIrodsCollection2);
 
-		DataTransferOperations dataTransferOperations = irodsFileSystem
-				.getIRODSAccessObjectFactory().getDataTransferOperations(
-						irodsAccount);
+		DataTransferOperations dataTransferOperations = irodsFileSystem.getIRODSAccessObjectFactory()
+				.getDataTransferOperations(irodsAccount);
 
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				mdTemplatePath2, irodsAccount.getDefaultStorageResource(),
-				null, null);
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2,
-				mdTemplatePath1, irodsAccount.getDefaultStorageResource(),
-				null, null);
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME3,
-				targetIrodsCollection3,
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1, mdTemplatePath2,
+				irodsAccount.getDefaultStorageResource(), null, null);
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2, mdTemplatePath1,
+				irodsAccount.getDefaultStorageResource(), null, null);
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME3, targetIrodsCollection3,
 				irodsAccount.getDefaultStorageResource(), null, null);
 
 		MetadataTemplate metadataTemplate = new FormBasedMetadataTemplate();
 
-		resolver.setPublicTemplateLocations(Arrays
-				.asList(targetIrodsCollection3));
-		metadataTemplate = resolver.findTemplateByName("notGoingToMatch",
-				mdTemplatePath2);
+		resolver.setPublicTemplateLocations(Arrays.asList(targetIrodsCollection3));
+		metadataTemplate = resolver.findTemplateByName("notGoingToMatch", mdTemplatePath2);
 
-		Assert.assertNull(
-				"findTemplateByName should have returned null for no match",
-				metadataTemplate);
+		Assert.assertNull("findTemplateByName should have returned null for no match", metadataTemplate);
 	}
 
 	@Test
-	public void findTemplateByNameInDirectoryHierarchyFilePresent()
-			throws Exception {
+	public void findTemplateByNameInDirectoryHierarchyFilePresent() throws Exception {
 		// Create M directories in a hierarchy
 		// Create N template files across those directories, one of which with
 		// the desired name
@@ -747,77 +561,55 @@ public class JargonMetadataResolverTest {
 		String testDirName2 = "SubDir";
 		String testDirName3 = "StartDir";
 
-		String targetIrodsCollection1 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName1);
-		String targetIrodsCollection2 = targetIrodsCollection1 + '/'
-				+ testDirName2;
-		String targetIrodsCollection3 = targetIrodsCollection2 + '/'
-				+ testDirName3;
+		String targetIrodsCollection1 = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testDirName1);
+		String targetIrodsCollection2 = targetIrodsCollection1 + '/' + testDirName2;
+		String targetIrodsCollection3 = targetIrodsCollection2 + '/' + testDirName3;
 
-		IRODSAccount irodsAccount = testingPropertiesHelper
-				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSAccount irodsAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
 
-		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
-				.getIRODSAccessObjectFactory();
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem.getIRODSAccessObjectFactory();
 
-		IRODSFile targetCollectionAsFile1 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection1);
-		IRODSFile targetCollectionAsFile2 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection2);
-		IRODSFile targetCollectionAsFile3 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection3);
+		IRODSFile targetCollectionAsFile1 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection1);
+		IRODSFile targetCollectionAsFile2 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection2);
+		IRODSFile targetCollectionAsFile3 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection3);
 
 		targetCollectionAsFile1.mkdirs();
 		targetCollectionAsFile2.mkdirs();
 		targetCollectionAsFile3.mkdirs();
 
-		JargonMetadataResolver resolver = new JargonMetadataResolver(
-				irodsAccount, accessObjectFactory);
+		JargonMetadataResolver resolver = new JargonMetadataResolver(irodsAccount, accessObjectFactory);
 
-		String mdTemplatePath1 = resolver
-				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection1);
-		String mdTemplatePath2 = resolver
-				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection2);
-		String mdTemplatePath3 = resolver
-				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection3);
+		String mdTemplatePath1 = resolver.findOrCreateMetadataTemplatesCollection(targetIrodsCollection1);
+		String mdTemplatePath2 = resolver.findOrCreateMetadataTemplatesCollection(targetIrodsCollection2);
+		String mdTemplatePath3 = resolver.findOrCreateMetadataTemplatesCollection(targetIrodsCollection3);
 
-		DataTransferOperations dataTransferOperations = irodsFileSystem
-				.getIRODSAccessObjectFactory().getDataTransferOperations(
-						irodsAccount);
+		DataTransferOperations dataTransferOperations = irodsFileSystem.getIRODSAccessObjectFactory()
+				.getDataTransferOperations(irodsAccount);
 
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				mdTemplatePath3, irodsAccount.getDefaultStorageResource(),
-				null, null);
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2,
-				mdTemplatePath2, irodsAccount.getDefaultStorageResource(),
-				null, null);
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME3,
-				mdTemplatePath1, irodsAccount.getDefaultStorageResource(),
-				null, null);
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1, mdTemplatePath3,
+				irodsAccount.getDefaultStorageResource(), null, null);
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2, mdTemplatePath2,
+				irodsAccount.getDefaultStorageResource(), null, null);
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME3, mdTemplatePath1,
+				irodsAccount.getDefaultStorageResource(), null, null);
 
 		String templateFqName = mdTemplatePath3 + '/' + TEMPLATE_NOPATH1;
 
 		MetadataTemplate metadataTemplate = new FormBasedMetadataTemplate();
 
-		metadataTemplate = resolver.findTemplateByNameInDirectoryHierarchy(
-				"test1", targetIrodsCollection3);
+		metadataTemplate = resolver.findTemplateByNameInDirectoryHierarchy("test1", targetIrodsCollection3);
 
-		Assert.assertNotNull(
-				"no template returned from findTemplateByNameInDirectoryHierarchy",
-				metadataTemplate);
-		Assert.assertEquals(
-				"wrong template returned from findTemplateByNameInDirectoryHierarchy",
-				templateFqName, metadataTemplate.getFqName());
+		Assert.assertNotNull("no template returned from findTemplateByNameInDirectoryHierarchy", metadataTemplate);
+		Assert.assertEquals("wrong template returned from findTemplateByNameInDirectoryHierarchy", templateFqName,
+				metadataTemplate.getFqName());
 	}
 
 	@Test
-	public void findTemplateByNameInDirectoryHierarchyFileAbsent()
-			throws Exception {
+	public void findTemplateByNameInDirectoryHierarchyFileAbsent() throws Exception {
 		// Create M directories in a hierarchy
 		// Create N template files across those directories, none of which with
 		// the desired name
@@ -829,72 +621,52 @@ public class JargonMetadataResolverTest {
 		String testDirName2 = "SubDir";
 		String testDirName3 = "StartDir";
 
-		String targetIrodsCollection1 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName1);
-		String targetIrodsCollection2 = targetIrodsCollection1 + '/'
-				+ testDirName2;
-		String targetIrodsCollection3 = targetIrodsCollection2 + '/'
-				+ testDirName3;
+		String targetIrodsCollection1 = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testDirName1);
+		String targetIrodsCollection2 = targetIrodsCollection1 + '/' + testDirName2;
+		String targetIrodsCollection3 = targetIrodsCollection2 + '/' + testDirName3;
 
-		IRODSAccount irodsAccount = testingPropertiesHelper
-				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSAccount irodsAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
 
-		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
-				.getIRODSAccessObjectFactory();
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem.getIRODSAccessObjectFactory();
 
-		IRODSFile targetCollectionAsFile1 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection1);
-		IRODSFile targetCollectionAsFile2 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection2);
-		IRODSFile targetCollectionAsFile3 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection3);
+		IRODSFile targetCollectionAsFile1 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection1);
+		IRODSFile targetCollectionAsFile2 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection2);
+		IRODSFile targetCollectionAsFile3 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection3);
 
 		targetCollectionAsFile1.mkdirs();
 		targetCollectionAsFile2.mkdirs();
 		targetCollectionAsFile3.mkdirs();
 
-		JargonMetadataResolver resolver = new JargonMetadataResolver(
-				irodsAccount, accessObjectFactory);
+		JargonMetadataResolver resolver = new JargonMetadataResolver(irodsAccount, accessObjectFactory);
 
-		String mdTemplatePath1 = resolver
-				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection1);
-		String mdTemplatePath2 = resolver
-				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection2);
-		String mdTemplatePath3 = resolver
-				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection3);
+		String mdTemplatePath1 = resolver.findOrCreateMetadataTemplatesCollection(targetIrodsCollection1);
+		String mdTemplatePath2 = resolver.findOrCreateMetadataTemplatesCollection(targetIrodsCollection2);
+		String mdTemplatePath3 = resolver.findOrCreateMetadataTemplatesCollection(targetIrodsCollection3);
 
-		DataTransferOperations dataTransferOperations = irodsFileSystem
-				.getIRODSAccessObjectFactory().getDataTransferOperations(
-						irodsAccount);
+		DataTransferOperations dataTransferOperations = irodsFileSystem.getIRODSAccessObjectFactory()
+				.getDataTransferOperations(irodsAccount);
 
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				mdTemplatePath3, irodsAccount.getDefaultStorageResource(),
-				null, null);
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2,
-				mdTemplatePath2, irodsAccount.getDefaultStorageResource(),
-				null, null);
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME3,
-				mdTemplatePath1, irodsAccount.getDefaultStorageResource(),
-				null, null);
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1, mdTemplatePath3,
+				irodsAccount.getDefaultStorageResource(), null, null);
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2, mdTemplatePath2,
+				irodsAccount.getDefaultStorageResource(), null, null);
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME3, mdTemplatePath1,
+				irodsAccount.getDefaultStorageResource(), null, null);
 
 		MetadataTemplate metadataTemplate = new FormBasedMetadataTemplate();
 
-		metadataTemplate = resolver.findTemplateByNameInDirectoryHierarchy(
-				"notGoingToBeFound", targetIrodsCollection3);
+		metadataTemplate = resolver.findTemplateByNameInDirectoryHierarchy("notGoingToBeFound", targetIrodsCollection3);
 
-		Assert.assertNull(
-				"findTemplateByNameInDirectoryHierarchy should have returned null for no match",
+		Assert.assertNull("findTemplateByNameInDirectoryHierarchy should have returned null for no match",
 				metadataTemplate);
 	}
 
 	@Test
-	public void findTemplateByNameInPublicTemplatesFilePresent()
-			throws Exception {
+	public void findTemplateByNameInPublicTemplatesFilePresent() throws Exception {
 		// Create M public template dirs
 		// Create N template files in those dirs, one of which with
 		// the desired name
@@ -906,69 +678,50 @@ public class JargonMetadataResolverTest {
 		String testDirName1 = "findTemplateByNameInPublicTemplatesFilePresentDir1";
 		String testDirName2 = "findTemplateByNameInPublicTemplatesFilePresentDir2";
 
-		String targetIrodsCollection1 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName1);
-		String targetIrodsCollection2 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName2);
+		String targetIrodsCollection1 = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testDirName1);
+		String targetIrodsCollection2 = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testDirName2);
 
-		IRODSAccount irodsAccount = testingPropertiesHelper
-				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSAccount irodsAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
 
-		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
-				.getIRODSAccessObjectFactory();
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem.getIRODSAccessObjectFactory();
 
-		IRODSFile targetCollectionAsFile1 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection1);
-		IRODSFile targetCollectionAsFile2 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection2);
+		IRODSFile targetCollectionAsFile1 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection1);
+		IRODSFile targetCollectionAsFile2 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection2);
 
 		targetCollectionAsFile1.mkdirs();
 		targetCollectionAsFile2.mkdirs();
 
-		DataTransferOperations dataTransferOperations = irodsFileSystem
-				.getIRODSAccessObjectFactory().getDataTransferOperations(
-						irodsAccount);
+		DataTransferOperations dataTransferOperations = irodsFileSystem.getIRODSAccessObjectFactory()
+				.getDataTransferOperations(irodsAccount);
 
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				targetIrodsCollection1,
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1, targetIrodsCollection1,
 				irodsAccount.getDefaultStorageResource(), null, null);
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2,
-				targetIrodsCollection2,
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2, targetIrodsCollection2,
 				irodsAccount.getDefaultStorageResource(), null, null);
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME3,
-				targetIrodsCollection2,
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME3, targetIrodsCollection2,
 				irodsAccount.getDefaultStorageResource(), null, null);
 
 		String templateFqName = targetIrodsCollection1 + '/' + TEMPLATE_NOPATH1;
 
 		MetadataTemplate metadataTemplate = new FormBasedMetadataTemplate();
 
-		JargonMetadataResolver resolver = new JargonMetadataResolver(
-				irodsAccount, accessObjectFactory);
+		JargonMetadataResolver resolver = new JargonMetadataResolver(irodsAccount, accessObjectFactory);
 
-		resolver.setPublicTemplateLocations(Arrays.asList(
-				targetIrodsCollection1, targetIrodsCollection2));
+		resolver.setPublicTemplateLocations(Arrays.asList(targetIrodsCollection1, targetIrodsCollection2));
 
-		metadataTemplate = resolver
-				.findTemplateByNameInPublicTemplates("test1");
+		metadataTemplate = resolver.findTemplateByNameInPublicTemplates("test1");
 
-		Assert.assertNotNull(
-				"no template returned from findTemplateByNameInPublicTemplates",
-				metadataTemplate);
-		Assert.assertEquals(
-				"wrong template returned from findTemplateByNameInPublicTemplates",
-				templateFqName, metadataTemplate.getFqName());
+		Assert.assertNotNull("no template returned from findTemplateByNameInPublicTemplates", metadataTemplate);
+		Assert.assertEquals("wrong template returned from findTemplateByNameInPublicTemplates", templateFqName,
+				metadataTemplate.getFqName());
 	}
 
 	@Test
-	public void findTemplateByNameInPublicTemplatesFileAbsent()
-			throws Exception {
+	public void findTemplateByNameInPublicTemplatesFileAbsent() throws Exception {
 		// Create M public template dirs
 		// Create N template files in those dirs, none of which with
 		// the desired name
@@ -979,55 +732,40 @@ public class JargonMetadataResolverTest {
 		String testDirName1 = "findTemplateByNameInPublicTemplatesFileAbsentDir1";
 		String testDirName2 = "findTemplateByNameInPublicTemplatesFileAbsentDir2";
 
-		String targetIrodsCollection1 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName1);
-		String targetIrodsCollection2 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName2);
+		String targetIrodsCollection1 = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testDirName1);
+		String targetIrodsCollection2 = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testDirName2);
 
-		IRODSAccount irodsAccount = testingPropertiesHelper
-				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSAccount irodsAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
 
-		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
-				.getIRODSAccessObjectFactory();
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem.getIRODSAccessObjectFactory();
 
-		IRODSFile targetCollectionAsFile1 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection1);
-		IRODSFile targetCollectionAsFile2 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection2);
+		IRODSFile targetCollectionAsFile1 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection1);
+		IRODSFile targetCollectionAsFile2 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection2);
 
 		targetCollectionAsFile1.mkdirs();
 		targetCollectionAsFile2.mkdirs();
 
-		DataTransferOperations dataTransferOperations = irodsFileSystem
-				.getIRODSAccessObjectFactory().getDataTransferOperations(
-						irodsAccount);
+		DataTransferOperations dataTransferOperations = irodsFileSystem.getIRODSAccessObjectFactory()
+				.getDataTransferOperations(irodsAccount);
 
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME3,
-				targetIrodsCollection1,
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME3, targetIrodsCollection1,
 				irodsAccount.getDefaultStorageResource(), null, null);
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2,
-				targetIrodsCollection2,
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2, targetIrodsCollection2,
 				irodsAccount.getDefaultStorageResource(), null, null);
 
 		MetadataTemplate metadataTemplate = new FormBasedMetadataTemplate();
 
-		JargonMetadataResolver resolver = new JargonMetadataResolver(
-				irodsAccount, accessObjectFactory);
+		JargonMetadataResolver resolver = new JargonMetadataResolver(irodsAccount, accessObjectFactory);
 
-		resolver.setPublicTemplateLocations(Arrays.asList(
-				targetIrodsCollection1, targetIrodsCollection2));
+		resolver.setPublicTemplateLocations(Arrays.asList(targetIrodsCollection1, targetIrodsCollection2));
 
-		metadataTemplate = resolver
-				.findTemplateByNameInPublicTemplates("test1");
+		metadataTemplate = resolver.findTemplateByNameInPublicTemplates("test1");
 
-		Assert.assertNull(
-				"findTemplateByNameInPublicTemplates should have returned null for no match",
+		Assert.assertNull("findTemplateByNameInPublicTemplates should have returned null for no match",
 				metadataTemplate);
 	}
 
@@ -1040,36 +778,27 @@ public class JargonMetadataResolverTest {
 
 		String testDirName1 = "findTemplateByFqNameValidDir";
 
-		String targetIrodsCollection1 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName1);
+		String targetIrodsCollection1 = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testDirName1);
 
-		IRODSAccount irodsAccount = testingPropertiesHelper
-				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSAccount irodsAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
 
-		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
-				.getIRODSAccessObjectFactory();
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem.getIRODSAccessObjectFactory();
 
-		IRODSFile targetCollectionAsFile1 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection1);
+		IRODSFile targetCollectionAsFile1 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection1);
 
 		targetCollectionAsFile1.mkdirs();
 
-		JargonMetadataResolver resolver = new JargonMetadataResolver(
-				irodsAccount, accessObjectFactory);
+		JargonMetadataResolver resolver = new JargonMetadataResolver(irodsAccount, accessObjectFactory);
 
-		String mdTemplatePath1 = resolver
-				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection1);
+		String mdTemplatePath1 = resolver.findOrCreateMetadataTemplatesCollection(targetIrodsCollection1);
 
-		DataTransferOperations dataTransferOperations = irodsFileSystem
-				.getIRODSAccessObjectFactory().getDataTransferOperations(
-						irodsAccount);
+		DataTransferOperations dataTransferOperations = irodsFileSystem.getIRODSAccessObjectFactory()
+				.getDataTransferOperations(irodsAccount);
 
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				mdTemplatePath1, irodsAccount.getDefaultStorageResource(),
-				null, null);
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1, mdTemplatePath1,
+				irodsAccount.getDefaultStorageResource(), null, null);
 
 		String templateFqName = mdTemplatePath1 + '/' + TEMPLATE_NOPATH1;
 
@@ -1077,8 +806,7 @@ public class JargonMetadataResolverTest {
 
 		metadataTemplate = resolver.findTemplateByFqName(templateFqName);
 
-		Assert.assertNotNull("no template returned from findTemplateByName",
-				metadataTemplate);
+		Assert.assertNotNull("no template returned from findTemplateByName", metadataTemplate);
 	}
 
 	@Test
@@ -1089,36 +817,27 @@ public class JargonMetadataResolverTest {
 
 		String testDirName1 = "findTemplateByFqNameInvalidDir";
 
-		String targetIrodsCollection1 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName1);
+		String targetIrodsCollection1 = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testDirName1);
 
-		IRODSAccount irodsAccount = testingPropertiesHelper
-				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSAccount irodsAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
 
-		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
-				.getIRODSAccessObjectFactory();
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem.getIRODSAccessObjectFactory();
 
-		IRODSFile targetCollectionAsFile1 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection1);
+		IRODSFile targetCollectionAsFile1 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection1);
 
 		targetCollectionAsFile1.mkdirs();
 
-		JargonMetadataResolver resolver = new JargonMetadataResolver(
-				irodsAccount, accessObjectFactory);
+		JargonMetadataResolver resolver = new JargonMetadataResolver(irodsAccount, accessObjectFactory);
 
-		String mdTemplatePath1 = resolver
-				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection1);
+		String mdTemplatePath1 = resolver.findOrCreateMetadataTemplatesCollection(targetIrodsCollection1);
 
-		DataTransferOperations dataTransferOperations = irodsFileSystem
-				.getIRODSAccessObjectFactory().getDataTransferOperations(
-						irodsAccount);
+		DataTransferOperations dataTransferOperations = irodsFileSystem.getIRODSAccessObjectFactory()
+				.getDataTransferOperations(irodsAccount);
 
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				mdTemplatePath1, irodsAccount.getDefaultStorageResource(),
-				null, null);
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1, mdTemplatePath1,
+				irodsAccount.getDefaultStorageResource(), null, null);
 
 		String badTemplateFqName = mdTemplatePath1 + "/notReallyATemplateFile";
 
@@ -1126,8 +845,7 @@ public class JargonMetadataResolverTest {
 
 		metadataTemplate = resolver.findTemplateByFqName(badTemplateFqName);
 
-		Assert.assertNull("findTemplateByFqName should have returned null",
-				metadataTemplate);
+		Assert.assertNull("findTemplateByFqName should have returned null", metadataTemplate);
 	}
 
 	@Test
@@ -1138,100 +856,74 @@ public class JargonMetadataResolverTest {
 
 		String testDirName1 = "getFqNameForUuidValidDir1";
 
-		String targetIrodsCollection1 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName1);
+		String targetIrodsCollection1 = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testDirName1);
 
-		IRODSAccount irodsAccount = testingPropertiesHelper
-				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSAccount irodsAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
 
-		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
-				.getIRODSAccessObjectFactory();
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem.getIRODSAccessObjectFactory();
 
-		IRODSFile targetCollectionAsFile1 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection1);
+		IRODSFile targetCollectionAsFile1 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection1);
 
 		targetCollectionAsFile1.mkdirs();
 
-		DataTransferOperations dataTransferOperations = irodsFileSystem
-				.getIRODSAccessObjectFactory().getDataTransferOperations(
-						irodsAccount);
+		DataTransferOperations dataTransferOperations = irodsFileSystem.getIRODSAccessObjectFactory()
+				.getDataTransferOperations(irodsAccount);
 
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				targetIrodsCollection1,
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1, targetIrodsCollection1,
 				irodsAccount.getDefaultStorageResource(), null, null);
 
-		String mdTemplateFqName = targetIrodsCollection1 + '/'
-				+ TEMPLATE_NOPATH1;
+		String mdTemplateFqName = targetIrodsCollection1 + '/' + TEMPLATE_NOPATH1;
 
-		JargonMetadataResolver resolver = new JargonMetadataResolver(
-				irodsAccount, accessObjectFactory);
+		JargonMetadataResolver resolver = new JargonMetadataResolver(irodsAccount, accessObjectFactory);
 
 		UUID uuid = UUID.randomUUID();
-		AvuData avuData = AvuData.instance("test1", uuid.toString(),
-				JargonMetadataTemplateConstants.MD_TEMPLATE_UNIT);
-		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(
-				mdTemplateFqName, avuData);
+		AvuData avuData = AvuData.instance("test1", uuid.toString(), JargonMetadataTemplateConstants.MD_TEMPLATE_UNIT);
+		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(mdTemplateFqName, avuData);
 
 		String retFqName = resolver.getFqNameForUUID(uuid);
 
-		Assert.assertEquals("wrong fqName returned from getFqNameForUUID",
-				retFqName, mdTemplateFqName);
+		Assert.assertEquals("wrong fqName returned from getFqNameForUUID", retFqName, mdTemplateFqName);
 	}
 
 	@Test
 	public void getFqNameForUuidInvalid() throws Exception {
 		String testDirName1 = "getFqNameForUuidInvalidDir1";
 
-		String targetIrodsCollection1 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName1);
+		String targetIrodsCollection1 = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testDirName1);
 
-		IRODSAccount irodsAccount = testingPropertiesHelper
-				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSAccount irodsAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
 
-		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
-				.getIRODSAccessObjectFactory();
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem.getIRODSAccessObjectFactory();
 
-		IRODSFile targetCollectionAsFile1 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection1);
+		IRODSFile targetCollectionAsFile1 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection1);
 
 		targetCollectionAsFile1.mkdirs();
 
-		DataTransferOperations dataTransferOperations = irodsFileSystem
-				.getIRODSAccessObjectFactory().getDataTransferOperations(
-						irodsAccount);
+		DataTransferOperations dataTransferOperations = irodsFileSystem.getIRODSAccessObjectFactory()
+				.getDataTransferOperations(irodsAccount);
 
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				targetIrodsCollection1,
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1, targetIrodsCollection1,
 				irodsAccount.getDefaultStorageResource(), null, null);
 
-		String mdTemplateFqName = targetIrodsCollection1 + '/'
-				+ TEMPLATE_NOPATH1;
+		String mdTemplateFqName = targetIrodsCollection1 + '/' + TEMPLATE_NOPATH1;
 
-		JargonMetadataResolver resolver = new JargonMetadataResolver(
-				irodsAccount, accessObjectFactory);
+		JargonMetadataResolver resolver = new JargonMetadataResolver(irodsAccount, accessObjectFactory);
 
 		UUID uuid = UUID.randomUUID();
-		AvuData avuData = AvuData.instance("test1", uuid.toString(),
-				JargonMetadataTemplateConstants.MD_TEMPLATE_UNIT);
-		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(
-				mdTemplateFqName, avuData);
+		AvuData avuData = AvuData.instance("test1", uuid.toString(), JargonMetadataTemplateConstants.MD_TEMPLATE_UNIT);
+		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(mdTemplateFqName, avuData);
 
-		String retFqName = resolver.getFqNameForUUID(UUID
-				.fromString("01234567-01234-01234-01234-0123456789ab"));
+		String retFqName = resolver.getFqNameForUUID(UUID.fromString("01234567-01234-01234-01234-0123456789ab"));
 
-		Assert.assertNull("getFqNameForUUID should have returned null",
-				retFqName);
+		Assert.assertNull("getFqNameForUUID should have returned null", retFqName);
 	}
 
 	@Test
-	public void saveFormBasedTemplateAsJsonGivenMdTemplateDir()
-			throws Exception {
+	public void saveFormBasedTemplateAsJsonGivenMdTemplateDir() throws Exception {
 		// Create an instantiated FormBasedMetadataTemplate
 		// Create a directory, as well as its .irods and mdtemplates
 		// subdirectories
@@ -1242,46 +934,33 @@ public class JargonMetadataResolverTest {
 		String testDirName1 = "saveFormBasedTemplateAsJsonGivenMdTemplateDirLoadDir";
 		String testDirName2 = "saveFormBasedTemplateAsJsonGivenMdTemplateDirSaveDir";
 
-		String targetIrodsCollection1 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName1);
-		String targetIrodsCollection2 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName2);
+		String targetIrodsCollection1 = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testDirName1);
+		String targetIrodsCollection2 = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testDirName2);
 
-		IRODSAccount irodsAccount = testingPropertiesHelper
-				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSAccount irodsAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
 
-		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
-				.getIRODSAccessObjectFactory();
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem.getIRODSAccessObjectFactory();
 
-		IRODSFile targetCollectionAsFile1 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection1);
-		IRODSFile targetCollectionAsFile2 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection2);
+		IRODSFile targetCollectionAsFile1 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection1);
+		IRODSFile targetCollectionAsFile2 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection2);
 
 		targetCollectionAsFile1.mkdirs();
 		targetCollectionAsFile2.mkdirs();
 
-		JargonMetadataResolver resolver = new JargonMetadataResolver(
-				irodsAccount, accessObjectFactory);
+		JargonMetadataResolver resolver = new JargonMetadataResolver(irodsAccount, accessObjectFactory);
 
-		String mdTemplatePath1 = resolver
-				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection1);
-		String mdTemplatePath2 = resolver
-				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection2);
+		String mdTemplatePath1 = resolver.findOrCreateMetadataTemplatesCollection(targetIrodsCollection1);
+		String mdTemplatePath2 = resolver.findOrCreateMetadataTemplatesCollection(targetIrodsCollection2);
 
-		DataTransferOperations dataTransferOperations = irodsFileSystem
-				.getIRODSAccessObjectFactory().getDataTransferOperations(
-						irodsAccount);
+		DataTransferOperations dataTransferOperations = irodsFileSystem.getIRODSAccessObjectFactory()
+				.getDataTransferOperations(irodsAccount);
 
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				mdTemplatePath1, irodsAccount.getDefaultStorageResource(),
-				null, null);
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1, mdTemplatePath1,
+				irodsAccount.getDefaultStorageResource(), null, null);
 
 		String templateFqName = mdTemplatePath1 + '/' + TEMPLATE_NOPATH1;
 
@@ -1289,17 +968,13 @@ public class JargonMetadataResolverTest {
 
 		metadataTemplate = resolver.findTemplateByFqName(templateFqName);
 
-		String pathToSavedFile = resolver.saveFormBasedTemplateAsJSON(
-				(FormBasedMetadataTemplate) metadataTemplate, mdTemplatePath2);
+		String pathToSavedFile = resolver.saveFormBasedTemplateAsJSON((FormBasedMetadataTemplate) metadataTemplate,
+				mdTemplatePath2);
 
-		MetadataTemplate template = resolver
-				.findTemplateByFqName(pathToSavedFile);
+		MetadataTemplate template = resolver.findTemplateByFqName(pathToSavedFile);
 
-		Assert.assertNotNull(
-				"saveFormBasedTemplateAsJSON did not save template", template);
-		Assert.assertEquals(
-				"saveFormBasedTemplateAsJSON saved template incorrectly",
-				template.getName(), "test1");
+		Assert.assertNotNull("saveFormBasedTemplateAsJSON did not save template", template);
+		Assert.assertEquals("saveFormBasedTemplateAsJSON saved template incorrectly", template.getName(), "test1");
 	}
 
 	@Test
@@ -1313,44 +988,32 @@ public class JargonMetadataResolverTest {
 		String testDirName1 = "saveFormBasedTemplateAsJsonGivenParentDirLoadDir";
 		String testDirName2 = "saveFormBasedTemplateAsJsonGivenParentDirSaveDir";
 
-		String targetIrodsCollection1 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName1);
-		String targetIrodsCollection2 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName2);
+		String targetIrodsCollection1 = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testDirName1);
+		String targetIrodsCollection2 = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testDirName2);
 
-		IRODSAccount irodsAccount = testingPropertiesHelper
-				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSAccount irodsAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
 
-		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
-				.getIRODSAccessObjectFactory();
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem.getIRODSAccessObjectFactory();
 
-		IRODSFile targetCollectionAsFile1 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection1);
-		IRODSFile targetCollectionAsFile2 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection2);
+		IRODSFile targetCollectionAsFile1 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection1);
+		IRODSFile targetCollectionAsFile2 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection2);
 
 		targetCollectionAsFile1.mkdirs();
 		targetCollectionAsFile2.mkdirs();
 
-		JargonMetadataResolver resolver = new JargonMetadataResolver(
-				irodsAccount, accessObjectFactory);
+		JargonMetadataResolver resolver = new JargonMetadataResolver(irodsAccount, accessObjectFactory);
 
-		String mdTemplatePath1 = resolver
-				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection1);
+		String mdTemplatePath1 = resolver.findOrCreateMetadataTemplatesCollection(targetIrodsCollection1);
 
-		DataTransferOperations dataTransferOperations = irodsFileSystem
-				.getIRODSAccessObjectFactory().getDataTransferOperations(
-						irodsAccount);
+		DataTransferOperations dataTransferOperations = irodsFileSystem.getIRODSAccessObjectFactory()
+				.getDataTransferOperations(irodsAccount);
 
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				mdTemplatePath1, irodsAccount.getDefaultStorageResource(),
-				null, null);
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1, mdTemplatePath1,
+				irodsAccount.getDefaultStorageResource(), null, null);
 
 		String templateFqName = mdTemplatePath1 + '/' + TEMPLATE_NOPATH1;
 
@@ -1358,18 +1021,13 @@ public class JargonMetadataResolverTest {
 
 		metadataTemplate = resolver.findTemplateByFqName(templateFqName);
 
-		String pathToSavedFile = resolver.saveFormBasedTemplateAsJSON(
-				(FormBasedMetadataTemplate) metadataTemplate,
+		String pathToSavedFile = resolver.saveFormBasedTemplateAsJSON((FormBasedMetadataTemplate) metadataTemplate,
 				targetIrodsCollection2);
 
-		MetadataTemplate template = resolver
-				.findTemplateByFqName(pathToSavedFile);
+		MetadataTemplate template = resolver.findTemplateByFqName(pathToSavedFile);
 
-		Assert.assertNotNull(
-				"saveFormBasedTemplateAsJSON did not save template", template);
-		Assert.assertEquals(
-				"saveFormBasedTemplateAsJSON saved template incorrectly",
-				template.getName(), "test1");
+		Assert.assertNotNull("saveFormBasedTemplateAsJSON did not save template", template);
+		Assert.assertEquals("saveFormBasedTemplateAsJSON saved template incorrectly", template.getName(), "test1");
 	}
 
 	@Test
@@ -1384,46 +1042,33 @@ public class JargonMetadataResolverTest {
 		String testDirName1 = "saveFormBasedTemplateAsJsonCheckAVUsLoadDir";
 		String testDirName2 = "saveFormBasedTemplateAsJsonCheckAVUsSaveDir";
 
-		String targetIrodsCollection1 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName1);
-		String targetIrodsCollection2 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName2);
+		String targetIrodsCollection1 = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testDirName1);
+		String targetIrodsCollection2 = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testDirName2);
 
-		IRODSAccount irodsAccount = testingPropertiesHelper
-				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSAccount irodsAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
 
-		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
-				.getIRODSAccessObjectFactory();
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem.getIRODSAccessObjectFactory();
 
-		IRODSFile targetCollectionAsFile1 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection1);
-		IRODSFile targetCollectionAsFile2 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection2);
+		IRODSFile targetCollectionAsFile1 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection1);
+		IRODSFile targetCollectionAsFile2 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection2);
 
 		targetCollectionAsFile1.mkdirs();
 		targetCollectionAsFile2.mkdirs();
 
-		JargonMetadataResolver resolver = new JargonMetadataResolver(
-				irodsAccount, accessObjectFactory);
+		JargonMetadataResolver resolver = new JargonMetadataResolver(irodsAccount, accessObjectFactory);
 
-		String mdTemplatePath1 = resolver
-				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection1);
-		String mdTemplatePath2 = resolver
-				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection2);
+		String mdTemplatePath1 = resolver.findOrCreateMetadataTemplatesCollection(targetIrodsCollection1);
+		String mdTemplatePath2 = resolver.findOrCreateMetadataTemplatesCollection(targetIrodsCollection2);
 
-		DataTransferOperations dataTransferOperations = irodsFileSystem
-				.getIRODSAccessObjectFactory().getDataTransferOperations(
-						irodsAccount);
+		DataTransferOperations dataTransferOperations = irodsFileSystem.getIRODSAccessObjectFactory()
+				.getDataTransferOperations(irodsAccount);
 
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				mdTemplatePath1, irodsAccount.getDefaultStorageResource(),
-				null, null);
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1, mdTemplatePath1,
+				irodsAccount.getDefaultStorageResource(), null, null);
 
 		String templateFqName = mdTemplatePath1 + '/' + TEMPLATE_NOPATH1;
 
@@ -1431,20 +1076,14 @@ public class JargonMetadataResolverTest {
 
 		metadataTemplate = resolver.findTemplateByFqName(templateFqName);
 
-		String pathToSavedFile = resolver.saveFormBasedTemplateAsJSON(
-				(FormBasedMetadataTemplate) metadataTemplate, mdTemplatePath2);
+		String pathToSavedFile = resolver.saveFormBasedTemplateAsJSON((FormBasedMetadataTemplate) metadataTemplate,
+				mdTemplatePath2);
 
-		List<MetaDataAndDomainData> templateAVUs = resolver
-				.queryTemplateAVUForFile(pathToSavedFile);
-		List<MetaDataAndDomainData> elementAVUs = resolver
-				.queryElementAVUForFile(pathToSavedFile);
+		List<MetaDataAndDomainData> templateAVUs = resolver.queryTemplateAVUForFile(pathToSavedFile);
+		List<MetaDataAndDomainData> elementAVUs = resolver.queryElementAVUForFile(pathToSavedFile);
 
-		Assert.assertTrue(
-				"saveFormBasedMetadataTemplate did not create mdTemplate AVU",
-				templateAVUs.size() == 1);
-		Assert.assertTrue(
-				"saveFormBasedMetadataTemplate did not create mdElements AVUs",
-				elementAVUs.size() == 3);
+		Assert.assertTrue("saveFormBasedMetadataTemplate did not create mdTemplate AVU", templateAVUs.size() == 1);
+		Assert.assertTrue("saveFormBasedMetadataTemplate did not create mdElements AVUs", elementAVUs.size() == 3);
 	}
 
 	@Test
@@ -1452,63 +1091,46 @@ public class JargonMetadataResolverTest {
 		String testDirName1 = "renameTemplateByFqNameValidDir1";
 		String testDirName2 = "renameTemplateByFqNameValidDir2";
 
-		String targetIrodsCollection1 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName1);
-		String targetIrodsCollection2 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName2);
+		String targetIrodsCollection1 = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testDirName1);
+		String targetIrodsCollection2 = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testDirName2);
 
-		IRODSAccount irodsAccount = testingPropertiesHelper
-				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSAccount irodsAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
 
-		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
-				.getIRODSAccessObjectFactory();
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem.getIRODSAccessObjectFactory();
 
-		IRODSFile targetCollectionAsFile1 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection1);
-		IRODSFile targetCollectionAsFile2 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection2);
+		IRODSFile targetCollectionAsFile1 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection1);
+		IRODSFile targetCollectionAsFile2 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection2);
 
 		targetCollectionAsFile1.mkdirs();
 		targetCollectionAsFile2.mkdirs();
 
-		DataTransferOperations dataTransferOperations = irodsFileSystem
-				.getIRODSAccessObjectFactory().getDataTransferOperations(
-						irodsAccount);
+		DataTransferOperations dataTransferOperations = irodsFileSystem.getIRODSAccessObjectFactory()
+				.getDataTransferOperations(irodsAccount);
 
-		String mdTemplateFqName = targetIrodsCollection1 + '/'
-				+ TEMPLATE_NOPATH1;
+		String mdTemplateFqName = targetIrodsCollection1 + '/' + TEMPLATE_NOPATH1;
 
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				mdTemplateFqName, irodsAccount.getDefaultStorageResource(),
-				null, null);
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1, mdTemplateFqName,
+				irodsAccount.getDefaultStorageResource(), null, null);
 
-		String newFqName = targetIrodsCollection2
-				+ "/newTemplateName.mdTemplate";
+		String newFqName = targetIrodsCollection2 + "/newTemplateName.mdTemplate";
 
-		JargonMetadataResolver resolver = new JargonMetadataResolver(
-				irodsAccount, accessObjectFactory);
+		JargonMetadataResolver resolver = new JargonMetadataResolver(irodsAccount, accessObjectFactory);
 
-		boolean retVal = resolver.renameTemplateByFqName(mdTemplateFqName,
-				newFqName);
+		boolean retVal = resolver.renameTemplateByFqName(mdTemplateFqName, newFqName);
 
 		Assert.assertTrue("renameTemplateByFqName returned false", retVal);
 
 		MetadataTemplate template = resolver.findTemplateByFqName(newFqName);
 
-		Assert.assertNotNull("renameTemplateByFqName did not move template",
-				template);
+		Assert.assertNotNull("renameTemplateByFqName did not move template", template);
 
-		List<MetaDataAndDomainData> templateAVUs = resolver
-				.queryTemplateAVUForFile(newFqName);
+		List<MetaDataAndDomainData> templateAVUs = resolver.queryTemplateAVUForFile(newFqName);
 
-		Assert.assertEquals(
-				"renameTemplateByFqName did not update mdTemplate AVU",
+		Assert.assertEquals("renameTemplateByFqName did not update mdTemplate AVU",
 				templateAVUs.get(0).getAvuAttribute(), "newTemplateName");
 	}
 
@@ -1522,63 +1144,46 @@ public class JargonMetadataResolverTest {
 		String testDirName1 = "renameTemplateByFqNameInvalidDir1";
 		String testDirName2 = "renameTemplateByFqNameInvalidDir2";
 
-		String targetIrodsCollection1 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName1);
-		String targetIrodsCollection2 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName2);
+		String targetIrodsCollection1 = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testDirName1);
+		String targetIrodsCollection2 = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testDirName2);
 
-		IRODSAccount irodsAccount = testingPropertiesHelper
-				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSAccount irodsAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
 
-		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
-				.getIRODSAccessObjectFactory();
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem.getIRODSAccessObjectFactory();
 
-		IRODSFile targetCollectionAsFile1 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection1);
-		IRODSFile targetCollectionAsFile2 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection2);
+		IRODSFile targetCollectionAsFile1 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection1);
+		IRODSFile targetCollectionAsFile2 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection2);
 
 		targetCollectionAsFile1.mkdirs();
 		targetCollectionAsFile2.mkdirs();
 
-		DataTransferOperations dataTransferOperations = irodsFileSystem
-				.getIRODSAccessObjectFactory().getDataTransferOperations(
-						irodsAccount);
+		DataTransferOperations dataTransferOperations = irodsFileSystem.getIRODSAccessObjectFactory()
+				.getDataTransferOperations(irodsAccount);
 
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				targetIrodsCollection1,
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1, targetIrodsCollection1,
 				irodsAccount.getDefaultStorageResource(), null, null);
 
-		String mdTemplateFqName = targetIrodsCollection1 + '/'
-				+ TEMPLATE_NOPATH1;
+		String mdTemplateFqName = targetIrodsCollection1 + '/' + TEMPLATE_NOPATH1;
 		String newFqName = "this/is/a/bogus/filename.mdtemplate";
 
-		JargonMetadataResolver resolver = new JargonMetadataResolver(
-				irodsAccount, accessObjectFactory);
+		JargonMetadataResolver resolver = new JargonMetadataResolver(irodsAccount, accessObjectFactory);
 
-		boolean retVal = resolver.renameTemplateByFqName(mdTemplateFqName,
-				newFqName);
+		boolean retVal = resolver.renameTemplateByFqName(mdTemplateFqName, newFqName);
 
 		Assert.assertFalse("renameTemplateByFqName returned true", retVal);
 
-		MetadataTemplate template = resolver
-				.findTemplateByFqName(mdTemplateFqName);
+		MetadataTemplate template = resolver.findTemplateByFqName(mdTemplateFqName);
 
-		Assert.assertNotNull(
-				"renameTemplateByFqName moved original template inappropriately",
-				template);
+		Assert.assertNotNull("renameTemplateByFqName moved original template inappropriately", template);
 
-		List<MetaDataAndDomainData> templateAVUs = resolver
-				.queryTemplateAVUForFile(mdTemplateFqName);
+		List<MetaDataAndDomainData> templateAVUs = resolver.queryTemplateAVUForFile(mdTemplateFqName);
 
-		Assert.assertEquals("renameTemplateByFqName changed mdTemplate AVU",
-				templateAVUs.get(0).getAvuAttribute(), "test1");
+		Assert.assertEquals("renameTemplateByFqName changed mdTemplate AVU", templateAVUs.get(0).getAvuAttribute(),
+				"test1");
 	}
 
 	@Test
@@ -1593,53 +1198,39 @@ public class JargonMetadataResolverTest {
 		String testDirName1 = "updateFormBasedTemplateValidDir1";
 		String testDirName2 = "updateFormBasedTemplateValidDir2";
 
-		String targetIrodsCollection1 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName1);
-		String targetIrodsCollection2 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName2);
+		String targetIrodsCollection1 = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testDirName1);
+		String targetIrodsCollection2 = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testDirName2);
 
-		IRODSAccount irodsAccount = testingPropertiesHelper
-				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSAccount irodsAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
 
-		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
-				.getIRODSAccessObjectFactory();
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem.getIRODSAccessObjectFactory();
 
-		IRODSFile targetCollectionAsFile1 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection1);
-		IRODSFile targetCollectionAsFile2 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection2);
+		IRODSFile targetCollectionAsFile1 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection1);
+		IRODSFile targetCollectionAsFile2 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection2);
 
 		targetCollectionAsFile1.mkdirs();
 		targetCollectionAsFile2.mkdirs();
 
-		DataTransferOperations dataTransferOperations = irodsFileSystem
-				.getIRODSAccessObjectFactory().getDataTransferOperations(
-						irodsAccount);
+		DataTransferOperations dataTransferOperations = irodsFileSystem.getIRODSAccessObjectFactory()
+				.getDataTransferOperations(irodsAccount);
 
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				targetIrodsCollection1,
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1, targetIrodsCollection1,
 				irodsAccount.getDefaultStorageResource(), null, null);
 
-		String mdTemplateFqName1 = targetIrodsCollection1 + '/'
-				+ TEMPLATE_NOPATH1;
+		String mdTemplateFqName1 = targetIrodsCollection1 + '/' + TEMPLATE_NOPATH1;
 
-		JargonMetadataResolver resolver = new JargonMetadataResolver(
-				irodsAccount, accessObjectFactory);
+		JargonMetadataResolver resolver = new JargonMetadataResolver(irodsAccount, accessObjectFactory);
 
 		FormBasedMetadataTemplate template = (FormBasedMetadataTemplate) resolver
 				.findTemplateByFqName(mdTemplateFqName1);
 
-		String mdTemplateFqName2 = resolver.saveFormBasedTemplateAsJSON(
-				template, targetIrodsCollection2);
+		String mdTemplateFqName2 = resolver.saveFormBasedTemplateAsJSON(template, targetIrodsCollection2);
 
-		template = (FormBasedMetadataTemplate) resolver
-				.findTemplateByFqName(mdTemplateFqName2);
+		template = (FormBasedMetadataTemplate) resolver.findTemplateByFqName(mdTemplateFqName2);
 
 		MetadataElement me = new MetadataElement();
 		me.setElementName("addedElement");
@@ -1649,20 +1240,15 @@ public class JargonMetadataResolverTest {
 		template.setDescription("TemplateModified");
 		template.getElements().add(me);
 
-		boolean retVal = resolver.updateFormBasedTemplateByFqName(
-				mdTemplateFqName2, template);
+		boolean retVal = resolver.updateFormBasedTemplateByFqName(mdTemplateFqName2, template);
 
-		Assert.assertTrue("updateFormBasedTemplateByFqName returned false",
-				retVal);
+		Assert.assertTrue("updateFormBasedTemplateByFqName returned false", retVal);
 
-		template = (FormBasedMetadataTemplate) resolver
-				.findTemplateByFqName(mdTemplateFqName2);
+		template = (FormBasedMetadataTemplate) resolver.findTemplateByFqName(mdTemplateFqName2);
 
-		Assert.assertEquals(
-				"template description not changed by updateFormBasedTemplateByFqName",
+		Assert.assertEquals("template description not changed by updateFormBasedTemplateByFqName",
 				template.getDescription(), "TemplateModified");
-		Assert.assertTrue(
-				"elements list not changed by updateFormBasedTemplateByFqName",
+		Assert.assertTrue("elements list not changed by updateFormBasedTemplateByFqName",
 				template.getElements().size() == 4);
 	}
 
@@ -1679,53 +1265,39 @@ public class JargonMetadataResolverTest {
 		String testDirName1 = "updateFormBasedTemplateUuidMismatchDir1";
 		String testDirName2 = "updateFormBasedTemplateUuidMismatchDir2";
 
-		String targetIrodsCollection1 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName1);
-		String targetIrodsCollection2 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName2);
+		String targetIrodsCollection1 = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testDirName1);
+		String targetIrodsCollection2 = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testDirName2);
 
-		IRODSAccount irodsAccount = testingPropertiesHelper
-				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSAccount irodsAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
 
-		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
-				.getIRODSAccessObjectFactory();
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem.getIRODSAccessObjectFactory();
 
-		IRODSFile targetCollectionAsFile1 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection1);
-		IRODSFile targetCollectionAsFile2 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection2);
+		IRODSFile targetCollectionAsFile1 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection1);
+		IRODSFile targetCollectionAsFile2 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection2);
 
 		targetCollectionAsFile1.mkdirs();
 		targetCollectionAsFile2.mkdirs();
 
-		DataTransferOperations dataTransferOperations = irodsFileSystem
-				.getIRODSAccessObjectFactory().getDataTransferOperations(
-						irodsAccount);
+		DataTransferOperations dataTransferOperations = irodsFileSystem.getIRODSAccessObjectFactory()
+				.getDataTransferOperations(irodsAccount);
 
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				targetIrodsCollection1,
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1, targetIrodsCollection1,
 				irodsAccount.getDefaultStorageResource(), null, null);
 
-		String mdTemplateFqName1 = targetIrodsCollection1 + '/'
-				+ TEMPLATE_NOPATH1;
+		String mdTemplateFqName1 = targetIrodsCollection1 + '/' + TEMPLATE_NOPATH1;
 
-		JargonMetadataResolver resolver = new JargonMetadataResolver(
-				irodsAccount, accessObjectFactory);
+		JargonMetadataResolver resolver = new JargonMetadataResolver(irodsAccount, accessObjectFactory);
 
 		FormBasedMetadataTemplate template = (FormBasedMetadataTemplate) resolver
 				.findTemplateByFqName(mdTemplateFqName1);
 
-		String mdTemplateFqName2 = resolver.saveFormBasedTemplateAsJSON(
-				template, targetIrodsCollection2);
+		String mdTemplateFqName2 = resolver.saveFormBasedTemplateAsJSON(template, targetIrodsCollection2);
 
-		template = (FormBasedMetadataTemplate) resolver
-				.findTemplateByFqName(mdTemplateFqName2);
+		template = (FormBasedMetadataTemplate) resolver.findTemplateByFqName(mdTemplateFqName2);
 
 		MetadataElement me = new MetadataElement();
 		me.setElementName("addedElement");
@@ -1734,22 +1306,16 @@ public class JargonMetadataResolverTest {
 
 		template.setDescription("TemplateModified");
 		template.getElements().add(me);
-		template.setUuid(UUID
-				.fromString("01234567-01234-01234-01234-0123456789ab"));
+		template.setUuid(UUID.fromString("01234567-01234-01234-01234-0123456789ab"));
 
-		boolean retVal = resolver.updateFormBasedTemplateByFqName(
-				mdTemplateFqName2, template);
+		boolean retVal = resolver.updateFormBasedTemplateByFqName(mdTemplateFqName2, template);
 
-		template = (FormBasedMetadataTemplate) resolver
-				.findTemplateByFqName(mdTemplateFqName2);
+		template = (FormBasedMetadataTemplate) resolver.findTemplateByFqName(mdTemplateFqName2);
 
-		Assert.assertFalse("updateFormBasedTemplateByFqName returned true",
-				retVal);
-		Assert.assertEquals(
-				"template description inappropriately changed by updateFormBasedTemplateByFqName",
+		Assert.assertFalse("updateFormBasedTemplateByFqName returned true", retVal);
+		Assert.assertEquals("template description inappropriately changed by updateFormBasedTemplateByFqName",
 				template.getDescription(), "First test metadata template");
-		Assert.assertTrue(
-				"elements list inappropriately changed by updateFormBasedTemplateByFqName",
+		Assert.assertTrue("elements list inappropriately changed by updateFormBasedTemplateByFqName",
 				template.getElements().size() == 3);
 	}
 
@@ -1767,76 +1333,54 @@ public class JargonMetadataResolverTest {
 		String testDirName2 = "updateFormBasedTemplateFqNameInvalidDir2";
 		String testDirName3 = "updateFormBasedTemplateFqNameInvalidDir3";
 
-		String targetIrodsCollection1 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName1);
-		String targetIrodsCollection2 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName2);
-		String targetIrodsCollection3 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName3);
+		String targetIrodsCollection1 = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testDirName1);
+		String targetIrodsCollection2 = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testDirName2);
+		String targetIrodsCollection3 = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testDirName3);
 
-		IRODSAccount irodsAccount = testingPropertiesHelper
-				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSAccount irodsAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
 
-		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
-				.getIRODSAccessObjectFactory();
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem.getIRODSAccessObjectFactory();
 
-		IRODSFile targetCollectionAsFile1 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection1);
-		IRODSFile targetCollectionAsFile2 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection2);
-		IRODSFile targetCollectionAsFile3 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection3);
+		IRODSFile targetCollectionAsFile1 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection1);
+		IRODSFile targetCollectionAsFile2 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection2);
+		IRODSFile targetCollectionAsFile3 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection3);
 
 		targetCollectionAsFile1.mkdirs();
 		targetCollectionAsFile2.mkdirs();
 		targetCollectionAsFile3.mkdirs();
 
-		DataTransferOperations dataTransferOperations = irodsFileSystem
-				.getIRODSAccessObjectFactory().getDataTransferOperations(
-						irodsAccount);
+		DataTransferOperations dataTransferOperations = irodsFileSystem.getIRODSAccessObjectFactory()
+				.getDataTransferOperations(irodsAccount);
 
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				targetIrodsCollection1,
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1, targetIrodsCollection1,
 				irodsAccount.getDefaultStorageResource(), null, null);
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2,
-				targetIrodsCollection2,
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2, targetIrodsCollection2,
 				irodsAccount.getDefaultStorageResource(), null, null);
 
-		String mdTemplateFqName1 = targetIrodsCollection1 + '/'
-				+ TEMPLATE_NOPATH1;
-		String mdTemplateFqName2 = targetIrodsCollection2 + '/'
-				+ TEMPLATE_NOPATH2;
+		String mdTemplateFqName1 = targetIrodsCollection1 + '/' + TEMPLATE_NOPATH1;
+		String mdTemplateFqName2 = targetIrodsCollection2 + '/' + TEMPLATE_NOPATH2;
 
-		JargonMetadataResolver resolver = new JargonMetadataResolver(
-				irodsAccount, accessObjectFactory);
+		JargonMetadataResolver resolver = new JargonMetadataResolver(irodsAccount, accessObjectFactory);
 
 		FormBasedMetadataTemplate template = (FormBasedMetadataTemplate) resolver
 				.findTemplateByFqName(mdTemplateFqName1);
 
-		String mdTemplateFqName3 = resolver.saveFormBasedTemplateAsJSON(
-				template, targetIrodsCollection1);
+		String mdTemplateFqName3 = resolver.saveFormBasedTemplateAsJSON(template, targetIrodsCollection1);
 
-		template = (FormBasedMetadataTemplate) resolver
-				.findTemplateByFqName(mdTemplateFqName2);
+		template = (FormBasedMetadataTemplate) resolver.findTemplateByFqName(mdTemplateFqName2);
 
-		String mdTemplateFqName4 = resolver.saveFormBasedTemplateAsJSON(
-				template, targetIrodsCollection2);
+		String mdTemplateFqName4 = resolver.saveFormBasedTemplateAsJSON(template, targetIrodsCollection2);
 
-		String mdTemplateFqName5 = resolver
-				.computeMetadataTemplatesPathUnderParent(targetIrodsCollection2)
-				+ '/' + TEMPLATE_NOPATH1;
+		String mdTemplateFqName5 = resolver.computeMetadataTemplatesPathUnderParent(targetIrodsCollection2) + '/'
+				+ TEMPLATE_NOPATH1;
 
-		template = (FormBasedMetadataTemplate) resolver
-				.findTemplateByFqName(mdTemplateFqName3);
+		template = (FormBasedMetadataTemplate) resolver.findTemplateByFqName(mdTemplateFqName3);
 
 		MetadataElement me = new MetadataElement();
 		me.setElementName("addedElement");
@@ -1846,23 +1390,16 @@ public class JargonMetadataResolverTest {
 		template.setDescription("TemplateModified");
 		template.getElements().add(me);
 
-		boolean retVal = resolver.updateFormBasedTemplateByFqName(
-				mdTemplateFqName4, template);
+		boolean retVal = resolver.updateFormBasedTemplateByFqName(mdTemplateFqName4, template);
 
-		Assert.assertFalse("updateFormBasedTemplateByFqName returned true",
-				retVal);
+		Assert.assertFalse("updateFormBasedTemplateByFqName returned true", retVal);
 
-		MetadataTemplate template2 = resolver
-				.findTemplateByFqName(mdTemplateFqName5);
-		template = (FormBasedMetadataTemplate) resolver
-				.findTemplateByFqName(mdTemplateFqName4);
+		MetadataTemplate template2 = resolver.findTemplateByFqName(mdTemplateFqName5);
+		template = (FormBasedMetadataTemplate) resolver.findTemplateByFqName(mdTemplateFqName4);
 
-		Assert.assertNull(
-				"updateFormBasedTemplateByFqName inappropriately saved a file",
-				template2);
+		Assert.assertNull("updateFormBasedTemplateByFqName inappropriately saved a file", template2);
 
-		Assert.assertEquals(
-				"updateFormBasedTemplateByFqName inappropriately modified an existing file",
+		Assert.assertEquals("updateFormBasedTemplateByFqName inappropriately modified an existing file",
 				template.getName(), "test2");
 	}
 
@@ -1875,39 +1412,29 @@ public class JargonMetadataResolverTest {
 
 		String testDirName1 = "deleteTemplateByFqNameValidDir1";
 
-		String targetIrodsCollection1 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName1);
+		String targetIrodsCollection1 = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testDirName1);
 
-		IRODSAccount irodsAccount = testingPropertiesHelper
-				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSAccount irodsAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
 
-		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
-				.getIRODSAccessObjectFactory();
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem.getIRODSAccessObjectFactory();
 
-		IRODSFile targetCollectionAsFile1 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection1);
+		IRODSFile targetCollectionAsFile1 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection1);
 
 		targetCollectionAsFile1.mkdirs();
 
-		DataTransferOperations dataTransferOperations = irodsFileSystem
-				.getIRODSAccessObjectFactory().getDataTransferOperations(
-						irodsAccount);
+		DataTransferOperations dataTransferOperations = irodsFileSystem.getIRODSAccessObjectFactory()
+				.getDataTransferOperations(irodsAccount);
 
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				targetIrodsCollection1,
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1, targetIrodsCollection1,
 				irodsAccount.getDefaultStorageResource(), null, null);
 
-		String mdTemplateFqName = targetIrodsCollection1 + '/'
-				+ TEMPLATE_NOPATH1;
+		String mdTemplateFqName = targetIrodsCollection1 + '/' + TEMPLATE_NOPATH1;
 
-		JargonMetadataResolver resolver = new JargonMetadataResolver(
-				irodsAccount, accessObjectFactory);
+		JargonMetadataResolver resolver = new JargonMetadataResolver(irodsAccount, accessObjectFactory);
 
-		MetadataTemplate template = resolver
-				.findTemplateByFqName(mdTemplateFqName);
+		MetadataTemplate template = resolver.findTemplateByFqName(mdTemplateFqName);
 
 		Assert.assertNotNull("template could not be loaded", template);
 
@@ -1917,8 +1444,7 @@ public class JargonMetadataResolverTest {
 
 		template = resolver.findTemplateByFqName(mdTemplateFqName);
 
-		Assert.assertNull("template was not deleted by deleteTemplateByFqName",
-				template);
+		Assert.assertNull("template was not deleted by deleteTemplateByFqName", template);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -1927,27 +1453,21 @@ public class JargonMetadataResolverTest {
 		String testDirName1 = "deleteTemplateByFqNameNotATemplateFileDir1";
 		String bogusFilename = "jagnoadngaoig.gif";
 
-		String targetIrodsCollection1 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName1);
+		String targetIrodsCollection1 = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testDirName1);
 
-		IRODSAccount irodsAccount = testingPropertiesHelper
-				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSAccount irodsAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
 
-		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
-				.getIRODSAccessObjectFactory();
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem.getIRODSAccessObjectFactory();
 
-		IRODSFile targetCollectionAsFile1 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection1);
+		IRODSFile targetCollectionAsFile1 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection1);
 
 		targetCollectionAsFile1.mkdirs();
 
 		String mdTemplateFqName = targetIrodsCollection1 + '/' + bogusFilename;
 
-		JargonMetadataResolver resolver = new JargonMetadataResolver(
-				irodsAccount, accessObjectFactory);
+		JargonMetadataResolver resolver = new JargonMetadataResolver(irodsAccount, accessObjectFactory);
 
 		resolver.deleteTemplateByFqName(mdTemplateFqName);
 	}
@@ -1957,125 +1477,81 @@ public class JargonMetadataResolverTest {
 		String testDirName1 = "getAndMergeTemplateListForFileDir1";
 		String testDirName2 = "getAndMergeTemplateListForFileDir2";
 
-		String targetIrodsCollection1 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName1);
-		String targetIrodsCollection2 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName2);
+		String targetIrodsCollection1 = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testDirName1);
+		String targetIrodsCollection2 = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testDirName2);
 
-		IRODSAccount irodsAccount = testingPropertiesHelper
-				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSAccount irodsAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
 
-		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
-				.getIRODSAccessObjectFactory();
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem.getIRODSAccessObjectFactory();
 
-		IRODSFile targetCollectionAsFile1 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection1);
-		IRODSFile targetCollectionAsFile2 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection2);
+		IRODSFile targetCollectionAsFile1 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection1);
+		IRODSFile targetCollectionAsFile2 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection2);
 
 		targetCollectionAsFile1.mkdirs();
 		targetCollectionAsFile2.mkdirs();
 
-		JargonMetadataResolver resolver = new JargonMetadataResolver(
-				irodsAccount, accessObjectFactory);
+		JargonMetadataResolver resolver = new JargonMetadataResolver(irodsAccount, accessObjectFactory);
 
-		String mdTemplatePath1 = resolver
-				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection1);
+		String mdTemplatePath1 = resolver.findOrCreateMetadataTemplatesCollection(targetIrodsCollection1);
 
-		DataTransferOperations dataTransferOperations = irodsFileSystem
-				.getIRODSAccessObjectFactory().getDataTransferOperations(
-						irodsAccount);
+		DataTransferOperations dataTransferOperations = irodsFileSystem.getIRODSAccessObjectFactory()
+				.getDataTransferOperations(irodsAccount);
 
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				mdTemplatePath1, irodsAccount.getDefaultStorageResource(),
-				null, null);
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME3,
-				mdTemplatePath1, irodsAccount.getDefaultStorageResource(),
-				null, null);
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2,
-				targetIrodsCollection2,
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1, mdTemplatePath1,
+				irodsAccount.getDefaultStorageResource(), null, null);
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME3, mdTemplatePath1,
+				irodsAccount.getDefaultStorageResource(), null, null);
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2, targetIrodsCollection2,
 				irodsAccount.getDefaultStorageResource(), null, null);
 
 		String templateFqName1 = mdTemplatePath1 + '/' + TEMPLATE_NOPATH1;
 		String templateFqName3 = mdTemplatePath1 + '/' + TEMPLATE_NOPATH3;
-		String templateFqName2 = targetIrodsCollection2 + '/'
-				+ TEMPLATE_NOPATH2;
+		String templateFqName2 = targetIrodsCollection2 + '/' + TEMPLATE_NOPATH2;
 
-		resolver.setPublicTemplateLocations(Arrays
-				.asList(targetIrodsCollection2));
+		resolver.setPublicTemplateLocations(Arrays.asList(targetIrodsCollection2));
 
 		UUID uuid1 = UUID.randomUUID();
-		AvuData avuData = AvuData.instance("test1", uuid1.toString(),
-				JargonMetadataTemplateConstants.MD_TEMPLATE_UNIT);
-		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(
-				templateFqName1, avuData);
+		AvuData avuData = AvuData.instance("test1", uuid1.toString(), JargonMetadataTemplateConstants.MD_TEMPLATE_UNIT);
+		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(templateFqName1, avuData);
 
 		UUID uuid2 = UUID.randomUUID();
-		avuData = AvuData.instance("test2", uuid2.toString(),
-				JargonMetadataTemplateConstants.MD_TEMPLATE_UNIT);
-		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(
-				templateFqName2, avuData);
+		avuData = AvuData.instance("test2", uuid2.toString(), JargonMetadataTemplateConstants.MD_TEMPLATE_UNIT);
+		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(templateFqName2, avuData);
 
 		UUID uuid3 = UUID.randomUUID();
-		avuData = AvuData.instance("test3", uuid3.toString(),
-				JargonMetadataTemplateConstants.MD_TEMPLATE_UNIT);
-		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(
-				templateFqName3, avuData);
+		avuData = AvuData.instance("test3", uuid3.toString(), JargonMetadataTemplateConstants.MD_TEMPLATE_UNIT);
+		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(templateFqName3, avuData);
 
 		// Create a file in targetIrodsCollection1
-		dataTransferOperations.putOperation(TEST_FILE_NAME,
-				targetIrodsCollection1,
+		dataTransferOperations.putOperation(TEST_FILE_NAME, targetIrodsCollection1,
 				irodsAccount.getDefaultStorageResource(), null, null);
 		String testFileNameFQ = targetIrodsCollection1 + '/' + TEST_FILE_NOPATH;
 
-		avuData = AvuData.instance(
-				"attribute3",
-				"test_value",
-				JargonMetadataTemplateConstants.AVU_UNIT_PREFIX
-						+ uuid2.toString());
-		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(
-				testFileNameFQ, avuData);
-		avuData = AvuData.instance(
-				"optional2",
-				"42",
-				JargonMetadataTemplateConstants.AVU_UNIT_PREFIX
-						+ uuid2.toString());
-		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(
-				testFileNameFQ, avuData);
-		avuData = AvuData.instance(
-				"attribute5",
-				"12",
-				JargonMetadataTemplateConstants.AVU_UNIT_PREFIX
-						+ uuid3.toString());
-		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(
-				testFileNameFQ, avuData);
-		avuData = AvuData.instance(
-				"attribute6",
-				"true",
-				JargonMetadataTemplateConstants.AVU_UNIT_PREFIX
-						+ uuid3.toString());
-		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(
-				testFileNameFQ, avuData);
+		avuData = AvuData.instance("attribute3", "test_value",
+				JargonMetadataTemplateConstants.AVU_UNIT_PREFIX + uuid2.toString());
+		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(testFileNameFQ, avuData);
+		avuData = AvuData.instance("optional2", "42",
+				JargonMetadataTemplateConstants.AVU_UNIT_PREFIX + uuid2.toString());
+		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(testFileNameFQ, avuData);
+		avuData = AvuData.instance("attribute5", "12",
+				JargonMetadataTemplateConstants.AVU_UNIT_PREFIX + uuid3.toString());
+		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(testFileNameFQ, avuData);
+		avuData = AvuData.instance("attribute6", "true",
+				JargonMetadataTemplateConstants.AVU_UNIT_PREFIX + uuid3.toString());
+		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(testFileNameFQ, avuData);
 		avuData = AvuData.instance("orphan1", "littleOrphanAnnie", "");
-		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(
-				testFileNameFQ, avuData);
+		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(testFileNameFQ, avuData);
 		avuData = AvuData.instance("orphan2", "oliverTwist", "");
-		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(
-				testFileNameFQ, avuData);
+		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(testFileNameFQ, avuData);
 
-		MetadataMergeResult result = resolver
-				.getAndMergeTemplateListForPath(testFileNameFQ);
+		MetadataMergeResult result = resolver.getAndMergeTemplateListForPath(testFileNameFQ);
 
-		Assert.assertEquals("Wrong number of templates found", 3, result
-				.getTemplates().size());
-		Assert.assertEquals("Wrong number of orphan AVUs", 2, result
-				.getUnmatchedAvus().size());
+		Assert.assertEquals("Wrong number of templates found", 3, result.getTemplates().size());
+		Assert.assertEquals("Wrong number of orphan AVUs", 2, result.getUnmatchedAvus().size());
 
 		// Because templates are assigned random UUIDs, they come out in random
 		// order. Need to find the right one to test.
@@ -2096,121 +1572,78 @@ public class JargonMetadataResolverTest {
 		String testDirName1 = "getAndMergeTemplateListForCollectionDir1";
 		String testDirName2 = "getAndMergeTemplateListForCollectionDir2";
 
-		String targetIrodsCollection1 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName1);
-		String targetIrodsCollection2 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName2);
+		String targetIrodsCollection1 = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testDirName1);
+		String targetIrodsCollection2 = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testDirName2);
 
-		IRODSAccount irodsAccount = testingPropertiesHelper
-				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSAccount irodsAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
 
-		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
-				.getIRODSAccessObjectFactory();
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem.getIRODSAccessObjectFactory();
 
-		IRODSFile targetCollectionAsFile1 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection1);
-		IRODSFile targetCollectionAsFile2 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection2);
+		IRODSFile targetCollectionAsFile1 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection1);
+		IRODSFile targetCollectionAsFile2 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection2);
 
 		targetCollectionAsFile1.mkdirs();
 		targetCollectionAsFile2.mkdirs();
 
-		JargonMetadataResolver resolver = new JargonMetadataResolver(
-				irodsAccount, accessObjectFactory);
+		JargonMetadataResolver resolver = new JargonMetadataResolver(irodsAccount, accessObjectFactory);
 
-		String mdTemplatePath1 = resolver
-				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection1);
+		String mdTemplatePath1 = resolver.findOrCreateMetadataTemplatesCollection(targetIrodsCollection1);
 
-		DataTransferOperations dataTransferOperations = irodsFileSystem
-				.getIRODSAccessObjectFactory().getDataTransferOperations(
-						irodsAccount);
+		DataTransferOperations dataTransferOperations = irodsFileSystem.getIRODSAccessObjectFactory()
+				.getDataTransferOperations(irodsAccount);
 
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				mdTemplatePath1, irodsAccount.getDefaultStorageResource(),
-				null, null);
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME3,
-				mdTemplatePath1, irodsAccount.getDefaultStorageResource(),
-				null, null);
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2,
-				targetIrodsCollection2,
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1, mdTemplatePath1,
+				irodsAccount.getDefaultStorageResource(), null, null);
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME3, mdTemplatePath1,
+				irodsAccount.getDefaultStorageResource(), null, null);
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME2, targetIrodsCollection2,
 				irodsAccount.getDefaultStorageResource(), null, null);
 
 		String templateFqName1 = mdTemplatePath1 + '/' + TEMPLATE_NOPATH1;
 		String templateFqName3 = mdTemplatePath1 + '/' + TEMPLATE_NOPATH3;
-		String templateFqName2 = targetIrodsCollection2 + '/'
-				+ TEMPLATE_NOPATH2;
+		String templateFqName2 = targetIrodsCollection2 + '/' + TEMPLATE_NOPATH2;
 
-		resolver.setPublicTemplateLocations(Arrays
-				.asList(targetIrodsCollection2));
+		resolver.setPublicTemplateLocations(Arrays.asList(targetIrodsCollection2));
 
 		UUID uuid1 = UUID.randomUUID();
-		AvuData avuData = AvuData.instance("test1", uuid1.toString(),
-				JargonMetadataTemplateConstants.MD_TEMPLATE_UNIT);
-		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(
-				templateFqName1, avuData);
+		AvuData avuData = AvuData.instance("test1", uuid1.toString(), JargonMetadataTemplateConstants.MD_TEMPLATE_UNIT);
+		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(templateFqName1, avuData);
 
 		UUID uuid2 = UUID.randomUUID();
-		avuData = AvuData.instance("test2", uuid2.toString(),
-				JargonMetadataTemplateConstants.MD_TEMPLATE_UNIT);
-		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(
-				templateFqName2, avuData);
+		avuData = AvuData.instance("test2", uuid2.toString(), JargonMetadataTemplateConstants.MD_TEMPLATE_UNIT);
+		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(templateFqName2, avuData);
 
 		UUID uuid3 = UUID.randomUUID();
-		avuData = AvuData.instance("test3", uuid3.toString(),
-				JargonMetadataTemplateConstants.MD_TEMPLATE_UNIT);
-		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(
-				templateFqName3, avuData);
+		avuData = AvuData.instance("test3", uuid3.toString(), JargonMetadataTemplateConstants.MD_TEMPLATE_UNIT);
+		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(templateFqName3, avuData);
 
 		String irodsCollectionString = targetIrodsCollection1;
 
-		avuData = AvuData.instance(
-				"attribute3",
-				"test_value",
-				JargonMetadataTemplateConstants.AVU_UNIT_PREFIX
-						+ uuid2.toString());
-		accessObjectFactory.getCollectionAO(irodsAccount).addAVUMetadata(
-				irodsCollectionString, avuData);
-		avuData = AvuData.instance(
-				"optional2",
-				"42",
-				JargonMetadataTemplateConstants.AVU_UNIT_PREFIX
-						+ uuid2.toString());
-		accessObjectFactory.getCollectionAO(irodsAccount).addAVUMetadata(
-				irodsCollectionString, avuData);
-		avuData = AvuData.instance(
-				"attribute5",
-				"12",
-				JargonMetadataTemplateConstants.AVU_UNIT_PREFIX
-						+ uuid3.toString());
-		accessObjectFactory.getCollectionAO(irodsAccount).addAVUMetadata(
-				irodsCollectionString, avuData);
-		avuData = AvuData.instance(
-				"attribute6",
-				"true",
-				JargonMetadataTemplateConstants.AVU_UNIT_PREFIX
-						+ uuid3.toString());
-		accessObjectFactory.getCollectionAO(irodsAccount).addAVUMetadata(
-				irodsCollectionString, avuData);
+		avuData = AvuData.instance("attribute3", "test_value",
+				JargonMetadataTemplateConstants.AVU_UNIT_PREFIX + uuid2.toString());
+		accessObjectFactory.getCollectionAO(irodsAccount).addAVUMetadata(irodsCollectionString, avuData);
+		avuData = AvuData.instance("optional2", "42",
+				JargonMetadataTemplateConstants.AVU_UNIT_PREFIX + uuid2.toString());
+		accessObjectFactory.getCollectionAO(irodsAccount).addAVUMetadata(irodsCollectionString, avuData);
+		avuData = AvuData.instance("attribute5", "12",
+				JargonMetadataTemplateConstants.AVU_UNIT_PREFIX + uuid3.toString());
+		accessObjectFactory.getCollectionAO(irodsAccount).addAVUMetadata(irodsCollectionString, avuData);
+		avuData = AvuData.instance("attribute6", "true",
+				JargonMetadataTemplateConstants.AVU_UNIT_PREFIX + uuid3.toString());
+		accessObjectFactory.getCollectionAO(irodsAccount).addAVUMetadata(irodsCollectionString, avuData);
 		avuData = AvuData.instance("orphan1", "littleOrphanAnnie", "");
-		accessObjectFactory.getCollectionAO(irodsAccount).addAVUMetadata(
-				irodsCollectionString, avuData);
+		accessObjectFactory.getCollectionAO(irodsAccount).addAVUMetadata(irodsCollectionString, avuData);
 		avuData = AvuData.instance("orphan2", "oliverTwist", "");
-		accessObjectFactory.getCollectionAO(irodsAccount).addAVUMetadata(
-				irodsCollectionString, avuData);
+		accessObjectFactory.getCollectionAO(irodsAccount).addAVUMetadata(irodsCollectionString, avuData);
 
-		MetadataMergeResult result = resolver
-				.getAndMergeTemplateListForPath(irodsCollectionString);
+		MetadataMergeResult result = resolver.getAndMergeTemplateListForPath(irodsCollectionString);
 
-		Assert.assertEquals("Wrong number of templates found", 3, result
-				.getTemplates().size());
-		Assert.assertEquals("Wrong number of orphan AVUs", 2, result
-				.getUnmatchedAvus().size());
+		Assert.assertEquals("Wrong number of templates found", 3, result.getTemplates().size());
+		Assert.assertEquals("Wrong number of orphan AVUs", 2, result.getUnmatchedAvus().size());
 
 		// Because templates are assigned random UUIDs, they come out in random
 		// order. Need to find the right one to test.
@@ -2230,159 +1663,101 @@ public class JargonMetadataResolverTest {
 	public void getAndMergeTemplateWithRefIrodsQueryForFile() throws Exception {
 		String testDirName1 = "getAndMergeTemplateWithRefIrodsQueryForFileDir1";
 
-		String targetIrodsCollection1 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName1);
+		String targetIrodsCollection1 = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testDirName1);
 
-		IRODSAccount irodsAccount = testingPropertiesHelper
-				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSAccount irodsAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
 
-		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
-				.getIRODSAccessObjectFactory();
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem.getIRODSAccessObjectFactory();
 
-		IRODSFile targetCollectionAsFile1 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection1);
+		IRODSFile targetCollectionAsFile1 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection1);
 
 		targetCollectionAsFile1.mkdirs();
 
-		JargonMetadataResolver resolver = new JargonMetadataResolver(
-				irodsAccount, accessObjectFactory);
+		JargonMetadataResolver resolver = new JargonMetadataResolver(irodsAccount, accessObjectFactory);
 
-		String mdTemplatePath1 = resolver
-				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection1);
+		String mdTemplatePath1 = resolver.findOrCreateMetadataTemplatesCollection(targetIrodsCollection1);
 
-		DataTransferOperations dataTransferOperations = irodsFileSystem
-				.getIRODSAccessObjectFactory().getDataTransferOperations(
-						irodsAccount);
+		DataTransferOperations dataTransferOperations = irodsFileSystem.getIRODSAccessObjectFactory()
+				.getDataTransferOperations(irodsAccount);
 
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME4,
-				mdTemplatePath1, irodsAccount.getDefaultStorageResource(),
-				null, null);
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME4, mdTemplatePath1,
+				irodsAccount.getDefaultStorageResource(), null, null);
 
 		String templateFqName1 = mdTemplatePath1 + '/' + TEMPLATE_NOPATH4;
 
 		UUID uuid1 = UUID.randomUUID();
-		AvuData avuData = AvuData.instance("test4", uuid1.toString(),
-				JargonMetadataTemplateConstants.MD_TEMPLATE_UNIT);
-		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(
-				templateFqName1, avuData);
+		AvuData avuData = AvuData.instance("test4", uuid1.toString(), JargonMetadataTemplateConstants.MD_TEMPLATE_UNIT);
+		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(templateFqName1, avuData);
 
 		// Create a file in targetIrodsCollection1
-		dataTransferOperations.putOperation(TEST_FILE_NAME,
-				targetIrodsCollection1,
+		dataTransferOperations.putOperation(TEST_FILE_NAME, targetIrodsCollection1,
 				irodsAccount.getDefaultStorageResource(), null, null);
 		String testFileNameFQ = targetIrodsCollection1 + '/' + TEST_FILE_NOPATH;
 
-		MetadataMergeResult result = resolver
-				.getAndMergeTemplateListForPath(testFileNameFQ);
+		MetadataMergeResult result = resolver.getAndMergeTemplateListForPath(testFileNameFQ);
 
-		FormBasedMetadataTemplate template = (FormBasedMetadataTemplate) result
-				.getTemplates().get(0);
+		FormBasedMetadataTemplate template = (FormBasedMetadataTemplate) result.getTemplates().get(0);
 
 		for (MetadataElement me : template.getElements()) {
 			if (me.getName().equalsIgnoreCase("data_name")) {
-				Assert.assertEquals("data.name not in currentValue",
-						"data.name", me.getCurrentValue());
-				Assert.assertEquals("data.name not populated",
-						TEST_FILE_NOPATH, me.getDisplayValue());
+				Assert.assertEquals("data.name not in currentValue", "data.name", me.getCurrentValue());
 			} else if (me.getName().equalsIgnoreCase("data_owner_name")) {
-				Assert.assertEquals("data.owner_name not in currentValue",
-						"data.owner_name", me.getCurrentValue());
-				Assert.assertEquals(
-						"data.owner_name not populated",
-						testingPropertiesHelper.getTestProperties()
-								.getProperty(
-										TestingPropertiesHelper.IRODS_USER_KEY),
-						me.getDisplayValue());
+				Assert.assertEquals("data.owner_name not in currentValue", "data.owner_name", me.getCurrentValue());
+
 			} else if (me.getName().equalsIgnoreCase("data_owner_zone")) {
-				Assert.assertEquals("data.owner_zone not in currentValue",
-						"data.owner_zone", me.getCurrentValue());
-				Assert.assertEquals(
-						"data.owner_zone not populated",
-						testingPropertiesHelper.getTestProperties()
-								.getProperty(
-										TestingPropertiesHelper.IRODS_ZONE_KEY),
-						me.getDisplayValue());
+				Assert.assertEquals("data.owner_zone not in currentValue", "data.owner_zone", me.getCurrentValue());
+
 			} else if (me.getName().equalsIgnoreCase("user_type")) {
-				Assert.assertEquals("user.type not in currentValue",
-						"user.type", me.getCurrentValue());
-				Assert.assertEquals("user.type not populated", "rodsuser",
-						me.getDisplayValue());
+				Assert.assertEquals("user.type not in currentValue", "user.type", me.getCurrentValue());
 			}
 		}
 	}
 
 	@Test
-	public void getAndMergeTemplateWithRefIrodsQueryForCollection()
-			throws Exception {
+	public void getAndMergeTemplateWithRefIrodsQueryForCollection() throws Exception {
 		String testDirName1 = "getAndMergeTemplateWithRefIrodsQueryForCollectionDir1";
 
-		String targetIrodsCollection1 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName1);
+		String targetIrodsCollection1 = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testDirName1);
 
-		IRODSAccount irodsAccount = testingPropertiesHelper
-				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSAccount irodsAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
 
-		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
-				.getIRODSAccessObjectFactory();
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem.getIRODSAccessObjectFactory();
 
-		IRODSFile targetCollectionAsFile1 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection1);
+		IRODSFile targetCollectionAsFile1 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection1);
 
 		targetCollectionAsFile1.mkdirs();
 
-		JargonMetadataResolver resolver = new JargonMetadataResolver(
-				irodsAccount, accessObjectFactory);
+		JargonMetadataResolver resolver = new JargonMetadataResolver(irodsAccount, accessObjectFactory);
 
-		String mdTemplatePath1 = resolver
-				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection1);
+		String mdTemplatePath1 = resolver.findOrCreateMetadataTemplatesCollection(targetIrodsCollection1);
 
-		DataTransferOperations dataTransferOperations = irodsFileSystem
-				.getIRODSAccessObjectFactory().getDataTransferOperations(
-						irodsAccount);
+		DataTransferOperations dataTransferOperations = irodsFileSystem.getIRODSAccessObjectFactory()
+				.getDataTransferOperations(irodsAccount);
 
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME5,
-				mdTemplatePath1, irodsAccount.getDefaultStorageResource(),
-				null, null);
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME5, mdTemplatePath1,
+				irodsAccount.getDefaultStorageResource(), null, null);
 
 		String templateFqName1 = mdTemplatePath1 + '/' + TEMPLATE_NOPATH5;
 
 		UUID uuid1 = UUID.randomUUID();
-		AvuData avuData = AvuData.instance("test5", uuid1.toString(),
-				JargonMetadataTemplateConstants.MD_TEMPLATE_UNIT);
-		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(
-				templateFqName1, avuData);
+		AvuData avuData = AvuData.instance("test5", uuid1.toString(), JargonMetadataTemplateConstants.MD_TEMPLATE_UNIT);
+		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(templateFqName1, avuData);
 
-		MetadataMergeResult result = resolver
-				.getAndMergeTemplateListForPath(targetIrodsCollection1);
+		MetadataMergeResult result = resolver.getAndMergeTemplateListForPath(targetIrodsCollection1);
 
-		FormBasedMetadataTemplate template = (FormBasedMetadataTemplate) result
-				.getTemplates().get(0);
+		FormBasedMetadataTemplate template = (FormBasedMetadataTemplate) result.getTemplates().get(0);
 
 		for (MetadataElement me : template.getElements()) {
 			if (me.getName().equalsIgnoreCase("coll_owner")) {
-				Assert.assertEquals("coll.owner not in currentValue",
-						"coll.owner", me.getCurrentValue());
-				Assert.assertEquals(
-						"coll.owner not populated",
-						testingPropertiesHelper.getTestProperties()
-								.getProperty(
-										TestingPropertiesHelper.IRODS_USER_KEY),
-						me.getDisplayValue());
+				Assert.assertEquals("coll.owner not in currentValue", "coll.owner", me.getCurrentValue());
+
 			} else if (me.getName().equalsIgnoreCase("coll_owner_zone")) {
-				Assert.assertEquals("coll.owner_zone not in currentValue",
-						"coll.owner_zone", me.getCurrentValue());
-				Assert.assertEquals(
-						"coll.owner_zone not populated",
-						testingPropertiesHelper.getTestProperties()
-								.getProperty(
-										TestingPropertiesHelper.IRODS_ZONE_KEY),
-						me.getDisplayValue());
+				Assert.assertEquals("coll.owner_zone not in currentValue", "coll.owner_zone", me.getCurrentValue());
+
 			}
 		}
 	}
@@ -2391,53 +1766,40 @@ public class JargonMetadataResolverTest {
 	public void saveTemplateToSystemMetadataForDataObject() throws Exception {
 		String testDirName1 = "saveTemplateToSystemMetadataForDataObjectDir";
 
-		String targetIrodsCollection1 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName1);
+		String targetIrodsCollection1 = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testDirName1);
 
-		IRODSAccount irodsAccount = testingPropertiesHelper
-				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSAccount irodsAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
 
-		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
-				.getIRODSAccessObjectFactory();
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem.getIRODSAccessObjectFactory();
 
-		IRODSFile targetCollectionAsFile1 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection1);
+		IRODSFile targetCollectionAsFile1 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection1);
 
 		targetCollectionAsFile1.mkdirs();
 
-		JargonMetadataResolver resolver = new JargonMetadataResolver(
-				irodsAccount, accessObjectFactory);
+		JargonMetadataResolver resolver = new JargonMetadataResolver(irodsAccount, accessObjectFactory);
 
-		String mdTemplatePath1 = resolver
-				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection1);
+		String mdTemplatePath1 = resolver.findOrCreateMetadataTemplatesCollection(targetIrodsCollection1);
 
-		DataTransferOperations dataTransferOperations = irodsFileSystem
-				.getIRODSAccessObjectFactory().getDataTransferOperations(
-						irodsAccount);
+		DataTransferOperations dataTransferOperations = irodsFileSystem.getIRODSAccessObjectFactory()
+				.getDataTransferOperations(irodsAccount);
 
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				mdTemplatePath1, irodsAccount.getDefaultStorageResource(),
-				null, null);
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1, mdTemplatePath1,
+				irodsAccount.getDefaultStorageResource(), null, null);
 
 		String templateFqName1 = mdTemplatePath1 + '/' + TEMPLATE_NOPATH1;
 
 		UUID uuid1 = UUID.randomUUID();
-		AvuData avuData = AvuData.instance("test1", uuid1.toString(),
-				JargonMetadataTemplateConstants.MD_TEMPLATE_UNIT);
-		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(
-				templateFqName1, avuData);
+		AvuData avuData = AvuData.instance("test1", uuid1.toString(), JargonMetadataTemplateConstants.MD_TEMPLATE_UNIT);
+		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(templateFqName1, avuData);
 
 		// Create a file in targetIrodsCollection1
-		dataTransferOperations.putOperation(TEST_FILE_NAME,
-				targetIrodsCollection1,
+		dataTransferOperations.putOperation(TEST_FILE_NAME, targetIrodsCollection1,
 				irodsAccount.getDefaultStorageResource(), null, null);
 		String testFileNameFQ = targetIrodsCollection1 + '/' + TEST_FILE_NOPATH;
 
-		MetadataTemplate metadataTemplate = resolver
-				.findTemplateByFqName(templateFqName1);
+		MetadataTemplate metadataTemplate = resolver.findTemplateByFqName(templateFqName1);
 		FormBasedMetadataTemplate fbmt = null;
 
 		if (metadataTemplate.getType() == TemplateTypeEnum.FORM_BASED) {
@@ -2456,62 +1818,50 @@ public class JargonMetadataResolverTest {
 
 		resolver.saveTemplateToSystemMetadataOnObject(fbmt, testFileNameFQ);
 
-		List<AVUQueryElement> queryElements = new ArrayList<AVUQueryElement>();
-		List<MetaDataAndDomainData> queryResult = new ArrayList<MetaDataAndDomainData>();
+		List<AVUQueryElement> queryElements = new ArrayList<>();
+		List<MetaDataAndDomainData> queryResult = new ArrayList<>();
 
-		queryElements.add(AVUQueryElement.instanceForValueQuery(
-				AVUQueryElement.AVUQueryPart.ATTRIBUTE,
+		queryElements.add(AVUQueryElement.instanceForValueQuery(AVUQueryElement.AVUQueryPart.ATTRIBUTE,
 				QueryConditionOperators.EQUAL, "attribute1"));
 
 		queryResult = accessObjectFactory.getDataObjectAO(irodsAccount)
-				.findMetadataValuesForDataObjectUsingAVUQuery(queryElements,
-						testFileNameFQ);
+				.findMetadataValuesForDataObjectUsingAVUQuery(queryElements, testFileNameFQ);
 
-		Assert.assertTrue(
-				"saveTemplateToSystemMetadataOnObject did not create Attribute attribute1",
+		Assert.assertTrue("saveTemplateToSystemMetadataOnObject did not create Attribute attribute1",
 				!queryResult.isEmpty());
 
 		for (MetaDataAndDomainData mdd : queryResult) {
-			Assert.assertEquals("attribute1 has wrong value", "value1",
-					mdd.getAvuValue());
+			Assert.assertEquals("attribute1 has wrong value", "value1", mdd.getAvuValue());
 		}
 
 		queryElements.clear();
 
-		queryElements.add(AVUQueryElement.instanceForValueQuery(
-				AVUQueryElement.AVUQueryPart.ATTRIBUTE,
+		queryElements.add(AVUQueryElement.instanceForValueQuery(AVUQueryElement.AVUQueryPart.ATTRIBUTE,
 				QueryConditionOperators.EQUAL, "attribute2"));
 
 		queryResult = accessObjectFactory.getDataObjectAO(irodsAccount)
-				.findMetadataValuesForDataObjectUsingAVUQuery(queryElements,
-						testFileNameFQ);
+				.findMetadataValuesForDataObjectUsingAVUQuery(queryElements, testFileNameFQ);
 
-		Assert.assertTrue(
-				"saveTemplateToSystemMetadataOnObject did not create Attribute attribute2",
+		Assert.assertTrue("saveTemplateToSystemMetadataOnObject did not create Attribute attribute2",
 				!queryResult.isEmpty());
 
 		for (MetaDataAndDomainData mdd : queryResult) {
-			Assert.assertEquals("attribute2 has wrong value", "42",
-					mdd.getAvuValue());
+			Assert.assertEquals("attribute2 has wrong value", "42", mdd.getAvuValue());
 		}
 
 		queryElements.clear();
 
-		queryElements.add(AVUQueryElement.instanceForValueQuery(
-				AVUQueryElement.AVUQueryPart.ATTRIBUTE,
+		queryElements.add(AVUQueryElement.instanceForValueQuery(AVUQueryElement.AVUQueryPart.ATTRIBUTE,
 				QueryConditionOperators.EQUAL, "optional1"));
 
 		queryResult = accessObjectFactory.getDataObjectAO(irodsAccount)
-				.findMetadataValuesForDataObjectUsingAVUQuery(queryElements,
-						testFileNameFQ);
+				.findMetadataValuesForDataObjectUsingAVUQuery(queryElements, testFileNameFQ);
 
-		Assert.assertTrue(
-				"saveTemplateToSystemMetadataOnObject did not create Attribute optional1",
+		Assert.assertTrue("saveTemplateToSystemMetadataOnObject did not create Attribute optional1",
 				!queryResult.isEmpty());
 
 		for (MetaDataAndDomainData mdd : queryResult) {
-			Assert.assertEquals("attribute2 has wrong value",
-					"optional_value1", mdd.getAvuValue());
+			Assert.assertEquals("attribute2 has wrong value", "optional_value1", mdd.getAvuValue());
 		}
 	}
 
@@ -2519,53 +1869,42 @@ public class JargonMetadataResolverTest {
 	public void saveTemplateToSystemMetadataForCollection() throws Exception {
 		String testDirName1 = "saveTemplateToSystemMetadataForCollectionDir";
 
-		String targetIrodsCollection1 = testingPropertiesHelper
-				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
-								+ testDirName1);
+		String targetIrodsCollection1 = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testDirName1);
 
-		IRODSAccount irodsAccount = testingPropertiesHelper
-				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSAccount irodsAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
 
-		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem
-				.getIRODSAccessObjectFactory();
+		IRODSAccessObjectFactory accessObjectFactory = irodsFileSystem.getIRODSAccessObjectFactory();
 
-		IRODSFile targetCollectionAsFile1 = accessObjectFactory
-				.getIRODSFileFactory(irodsAccount).instanceIRODSFile(
-						targetIrodsCollection1);
+		IRODSFile targetCollectionAsFile1 = accessObjectFactory.getIRODSFileFactory(irodsAccount)
+				.instanceIRODSFile(targetIrodsCollection1);
 
 		targetCollectionAsFile1.mkdirs();
 
-		JargonMetadataResolver resolver = new JargonMetadataResolver(
-				irodsAccount, accessObjectFactory);
+		JargonMetadataResolver resolver = new JargonMetadataResolver(irodsAccount, accessObjectFactory);
 
-		String mdTemplatePath1 = resolver
-				.findOrCreateMetadataTemplatesCollection(targetIrodsCollection1);
+		String mdTemplatePath1 = resolver.findOrCreateMetadataTemplatesCollection(targetIrodsCollection1);
 
-		DataTransferOperations dataTransferOperations = irodsFileSystem
-				.getIRODSAccessObjectFactory().getDataTransferOperations(
-						irodsAccount);
+		DataTransferOperations dataTransferOperations = irodsFileSystem.getIRODSAccessObjectFactory()
+				.getDataTransferOperations(irodsAccount);
 
-		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1,
-				mdTemplatePath1, irodsAccount.getDefaultStorageResource(),
-				null, null);
+		dataTransferOperations.putOperation(TEMPLATE_FILE_NAME1, mdTemplatePath1,
+				irodsAccount.getDefaultStorageResource(), null, null);
 
 		String templateFqName1 = mdTemplatePath1 + '/' + TEMPLATE_NOPATH1;
 
 		UUID uuid1 = UUID.randomUUID();
-		AvuData avuData = AvuData.instance("test1", uuid1.toString(),
-				JargonMetadataTemplateConstants.MD_TEMPLATE_UNIT);
-		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(
-				templateFqName1, avuData);
+		AvuData avuData = AvuData.instance("test1", uuid1.toString(), JargonMetadataTemplateConstants.MD_TEMPLATE_UNIT);
+		accessObjectFactory.getDataObjectAO(irodsAccount).addAVUMetadata(templateFqName1, avuData);
 
-//		// Create a file in targetIrodsCollection1
-//		dataTransferOperations.putOperation(TEST_FILE_NAME,
-//				targetIrodsCollection1,
-//				irodsAccount.getDefaultStorageResource(), null, null);
-//		String testFileNameFQ = targetIrodsCollection1 + '/' + TEST_FILE_NOPATH;
+		// // Create a file in targetIrodsCollection1
+		// dataTransferOperations.putOperation(TEST_FILE_NAME,
+		// targetIrodsCollection1,
+		// irodsAccount.getDefaultStorageResource(), null, null);
+		// String testFileNameFQ = targetIrodsCollection1 + '/' +
+		// TEST_FILE_NOPATH;
 
-		MetadataTemplate metadataTemplate = resolver
-				.findTemplateByFqName(templateFqName1);
+		MetadataTemplate metadataTemplate = resolver.findTemplateByFqName(templateFqName1);
 		FormBasedMetadataTemplate fbmt = null;
 
 		if (metadataTemplate.getType() == TemplateTypeEnum.FORM_BASED) {
@@ -2584,62 +1923,50 @@ public class JargonMetadataResolverTest {
 
 		resolver.saveTemplateToSystemMetadataOnObject(fbmt, targetIrodsCollection1);
 
-		List<AVUQueryElement> queryElements = new ArrayList<AVUQueryElement>();
-		List<MetaDataAndDomainData> queryResult = new ArrayList<MetaDataAndDomainData>();
+		List<AVUQueryElement> queryElements = new ArrayList<>();
+		List<MetaDataAndDomainData> queryResult = new ArrayList<>();
 
-		queryElements.add(AVUQueryElement.instanceForValueQuery(
-				AVUQueryElement.AVUQueryPart.ATTRIBUTE,
+		queryElements.add(AVUQueryElement.instanceForValueQuery(AVUQueryElement.AVUQueryPart.ATTRIBUTE,
 				QueryConditionOperators.EQUAL, "attribute1"));
 
 		queryResult = accessObjectFactory.getCollectionAO(irodsAccount)
-				.findMetadataValuesByMetadataQueryForCollection(queryElements,
-						targetIrodsCollection1);
+				.findMetadataValuesByMetadataQueryForCollection(queryElements, targetIrodsCollection1);
 
-		Assert.assertTrue(
-				"saveTemplateToSystemMetadataOnObject did not create Attribute attribute1",
+		Assert.assertTrue("saveTemplateToSystemMetadataOnObject did not create Attribute attribute1",
 				!queryResult.isEmpty());
 
 		for (MetaDataAndDomainData mdd : queryResult) {
-			Assert.assertEquals("attribute1 has wrong value", "value1",
-					mdd.getAvuValue());
+			Assert.assertEquals("attribute1 has wrong value", "value1", mdd.getAvuValue());
 		}
 
 		queryElements.clear();
 
-		queryElements.add(AVUQueryElement.instanceForValueQuery(
-				AVUQueryElement.AVUQueryPart.ATTRIBUTE,
+		queryElements.add(AVUQueryElement.instanceForValueQuery(AVUQueryElement.AVUQueryPart.ATTRIBUTE,
 				QueryConditionOperators.EQUAL, "attribute2"));
 
 		queryResult = accessObjectFactory.getCollectionAO(irodsAccount)
-				.findMetadataValuesByMetadataQueryForCollection(queryElements,
-						targetIrodsCollection1);
+				.findMetadataValuesByMetadataQueryForCollection(queryElements, targetIrodsCollection1);
 
-		Assert.assertTrue(
-				"saveTemplateToSystemMetadataOnObject did not create Attribute attribute2",
+		Assert.assertTrue("saveTemplateToSystemMetadataOnObject did not create Attribute attribute2",
 				!queryResult.isEmpty());
 
 		for (MetaDataAndDomainData mdd : queryResult) {
-			Assert.assertEquals("attribute2 has wrong value", "42",
-					mdd.getAvuValue());
+			Assert.assertEquals("attribute2 has wrong value", "42", mdd.getAvuValue());
 		}
 
 		queryElements.clear();
 
-		queryElements.add(AVUQueryElement.instanceForValueQuery(
-				AVUQueryElement.AVUQueryPart.ATTRIBUTE,
+		queryElements.add(AVUQueryElement.instanceForValueQuery(AVUQueryElement.AVUQueryPart.ATTRIBUTE,
 				QueryConditionOperators.EQUAL, "optional1"));
 
 		queryResult = accessObjectFactory.getCollectionAO(irodsAccount)
-				.findMetadataValuesByMetadataQueryForCollection(queryElements,
-						targetIrodsCollection1);
+				.findMetadataValuesByMetadataQueryForCollection(queryElements, targetIrodsCollection1);
 
-		Assert.assertTrue(
-				"saveTemplateToSystemMetadataOnObject did not create Attribute optional1",
+		Assert.assertTrue("saveTemplateToSystemMetadataOnObject did not create Attribute optional1",
 				!queryResult.isEmpty());
 
 		for (MetaDataAndDomainData mdd : queryResult) {
-			Assert.assertEquals("attribute2 has wrong value",
-					"optional_value1", mdd.getAvuValue());
+			Assert.assertEquals("attribute2 has wrong value", "optional_value1", mdd.getAvuValue());
 		}
 	}
 }
