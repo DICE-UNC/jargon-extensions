@@ -1,6 +1,6 @@
 package org.irods.jargon.vircoll.impl;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.irods.jargon.core.connection.IRODSAccount;
 import org.irods.jargon.core.exception.JargonException;

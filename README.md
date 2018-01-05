@@ -4,20 +4,20 @@ Jargon Extensions API
 
 # Project: Jargon Extensions API
 ### Date:
-### Release Version: 4.2.1.0-SNAPSHOT
-### git tag: 
+### Release Version: 4.3.0.0-SNAPSHOT
+### git tag:
 
 ## News
 
 Please go to [[https://github.com/DICE-UNC/jargon-extensions]] for the latest news and info.
 
-Extended support in Jargon for advanced iRODS and DFC mid-tier capabilities
+Extended support in Jargon for advanced mid-tier capabilities
 
 ## Requirements
 
 *Jargon depends on Java 1.7+
 *Jargon is built using Apache Maven2, see POM for dependencies
-*Jargon supports iRODS 3.0 through iRODS 3.3.1 community, as well as iRODS 4.0.3 consortium
+*Jargon supports iRODS 3.0 through iRODS 3.3.1 community, as well as iRODS 4.2.2 consortium
 
 ## Libraries
 
